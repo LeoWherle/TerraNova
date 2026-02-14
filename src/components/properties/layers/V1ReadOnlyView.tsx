@@ -14,7 +14,8 @@ function RoleBadge({ role }: { role: string }) {
 }
 
 function ReadOnlyLayerCard({ layer, onClick }: { layer: MaterialLayer; onClick: () => void }) {
-  const color = MATERIAL_COLORS[layer.material.toLowerCase()] ?? "#666";
+  const materialName = typeof layer.material === "string" ? layer.material : "unknown";
+  const color = MATERIAL_COLORS[materialName.toLowerCase()] ?? "#666";
 
   return (
     <button
@@ -27,7 +28,7 @@ function ReadOnlyLayerCard({ layer, onClick }: { layer: MaterialLayer; onClick: 
       />
       <div className="flex-1 min-w-0">
         <div className="text-xs font-medium text-tn-text capitalize">
-          {layer.material}
+          {materialName}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
           <RoleBadge role={layer.role} />

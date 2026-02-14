@@ -237,6 +237,17 @@ describe("extractMaterialLayers — V1", () => {
   it("returns empty for no nodes", () => {
     expect(extractMaterialLayers([], [])).toHaveLength(0);
   });
+
+  it("handles object-form Material (Hytale { Solid, Fluid } format)", () => {
+    const nodes = [
+      makeNode("c", "Constant", {
+        Material: { Solid: "stone", Fluid: "", SolidBottomUp: false },
+      }),
+    ];
+    const layers = extractMaterialLayers(nodes, []);
+    expect(layers).toHaveLength(1);
+    expect(layers[0].material).toBe("stone");
+  });
 });
 
 /* ── extractMaterialLayers (V2) ────────────────────────────────────── */
@@ -311,6 +322,23 @@ describe("extractMaterialLayers — V2", () => {
     expect(layers).toHaveLength(1);
     expect(layers[0].material).toBe("stone");
     expect(layers[0].layerIndex).toBe(0);
+  });
+
+  it("handles object-form Material in V2 layer Constant node", () => {
+    const nodes = [
+      makeNode("sad", "SpaceAndDepth", { LayerContext: "DEPTH_INTO_FLOOR", MaxExpectedDepth: 16 }),
+      makeNode("layer0", "ConstantThickness", { Thickness: 3 }),
+      makeNode("mat0", "Constant", {
+        Material: { Solid: "dirt", Fluid: "", SolidBottomUp: false },
+      }),
+    ];
+    const edges = [
+      makeEdge("layer0", "sad", "Layers[0]"),
+      makeEdge("mat0", "layer0", "Material"),
+    ];
+    const layers = extractMaterialLayers(nodes, edges);
+    expect(layers).toHaveLength(1);
+    expect(layers[0].material).toBe("dirt");
   });
 
   it("handles V2 layer with no material edge", () => {

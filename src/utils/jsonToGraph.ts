@@ -106,7 +106,7 @@ function resolveNodeType(assetType: string, parentFieldName?: string): string {
  * Convert a V2 JSON asset into React Flow nodes and edges.
  * Nested assets become separate nodes connected by edges.
  */
-export function jsonToGraph(json: V2Asset, startX = 0, startY = 0, idPrefix = "graph"): GraphResult {
+export function jsonToGraph(json: V2Asset, startX = 0, startY = 0, idPrefix = "graph", rootParentField?: string): GraphResult {
   let localCounter = 0;
   const nodes: Node[] = [];
   const edges: Edge[] = [];
@@ -190,6 +190,6 @@ export function jsonToGraph(json: V2Asset, startX = 0, startY = 0, idPrefix = "g
     return nodeId;
   }
 
-  processAsset(json, startX, startY);
+  processAsset(json, startX, startY, rootParentField);
   return { nodes, edges };
 }

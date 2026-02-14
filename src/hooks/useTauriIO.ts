@@ -98,7 +98,7 @@ async function extractBiomeSections(
   // MaterialProvider → graph entire subtree
   const matProvider = wrapper.MaterialProvider;
   if (matProvider && typeof matProvider === "object" && "Type" in (matProvider as Record<string, unknown>)) {
-    const { nodes, edges } = jsonToGraph(matProvider as Record<string, unknown>, 0, 0, "mat");
+    const { nodes, edges } = jsonToGraph(matProvider as Record<string, unknown>, 0, 0, "mat", "MaterialProvider");
     let matOutputId: string | null = null;
     if (nodes.length > 0) {
       const rootNode = nodes[nodes.length - 1];

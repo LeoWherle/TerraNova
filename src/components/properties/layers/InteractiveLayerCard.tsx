@@ -19,7 +19,8 @@ export function InteractiveLayerCard({
   onDragStart: (e: React.PointerEvent) => void;
 }) {
   const [typeOpen, setTypeOpen] = useState(false);
-  const color = MATERIAL_COLORS[layer.material.toLowerCase()] ?? "#666";
+  const materialName = typeof layer.material === "string" ? layer.material : "unknown";
+  const color = MATERIAL_COLORS[materialName.toLowerCase()] ?? "#666";
 
   return (
     <div className="flex items-center gap-1.5 p-2 rounded border border-tn-border bg-white/[0.02] transition-all duration-150 hover:border-white/20 hover:bg-white/5">
@@ -43,13 +44,13 @@ export function InteractiveLayerCard({
         onClick={onClick}
         className="w-6 h-6 rounded shrink-0 border border-white/10 hover:border-white/30 transition-colors"
         style={{ backgroundColor: color }}
-        title={`Select ${layer.material}`}
+        title={`Select ${materialName}`}
       />
 
       {/* Info */}
       <div onClick={onClick} className="flex-1 min-w-0 text-left cursor-pointer" role="button" tabIndex={0}>
         <div className="text-xs font-medium text-tn-text capitalize truncate">
-          {layer.material}
+          {materialName}
         </div>
         <div className="flex items-center gap-1.5 mt-0.5">
           {/* Layer type badge */}

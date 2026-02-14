@@ -228,6 +228,19 @@ export function matchMaterialColor(name: string): string {
 }
 
 /**
+ * Normalize a Material field that may be either a plain string ("stone")
+ * or the Hytale object form ({ Solid: "stone", Fluid: "", SolidBottomUp: false }).
+ */
+function resolveMaterialField(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    if (typeof obj.Solid === "string" && obj.Solid.length > 0) return obj.Solid;
+  }
+  return "unknown";
+}
+
+/**
  * Walk the MaterialProvider graph from root to extract material layers.
  * Handles Conditional, SpaceAndDepth (V1 Solid/Empty + V2 Layers[]),
  * HeightGradient, and Constant nodes.
@@ -288,7 +301,7 @@ export function extractMaterialLayers(
         if (matType === "Constant") {
           layers.push({
             nodeId: materialSrc,
-            material: (matFields.Material as string) ?? "unknown",
+            material: resolveMaterialField(matFields.Material),
             role: `Layer ${layerIndex}`,
             depth: maxDepth,
             parentType: layerType,
@@ -328,7 +341,7 @@ export function extractMaterialLayers(
     if (type === "Constant") {
       layers.push({
         nodeId,
-        material: (fields.Material as string) ?? "unknown",
+        material: resolveMaterialField(fields.Material),
         role,
         depth,
         parentType: type,

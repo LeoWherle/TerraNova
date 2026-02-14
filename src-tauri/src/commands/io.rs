@@ -146,7 +146,7 @@ pub fn create_blank_project(target_path: String) -> Result<(), String> {
         },
         "MaterialProvider": {
             "Type": "Constant",
-            "Material": { "Solid": "stone", "Fluid": "", "SolidBottomUp": false }
+            "Material": "stone"
         },
         "Props": [],
         "EnvironmentProvider": { "Type": "Constant", "Environment": "default" },
