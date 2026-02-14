@@ -12,6 +12,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
 import { saveRef } from "@/utils/saveRef";
 import { checkForUpdates } from "@/utils/updater";
+import { useSettingsStore } from "@/stores/settingsStore";
 
 type PendingAction = "window-close" | "close-project";
 
@@ -44,8 +45,9 @@ export default function App() {
     setShowDialog(false);
   }, []);
 
-  // ---- Auto-check for updates on launch ----
+  // ---- Auto-check for updates on launch (if enabled in settings) ----
   useEffect(() => {
+    if (!useSettingsStore.getState().autoCheckUpdates) return;
     const timer = setTimeout(checkForUpdates, 3000);
     return () => clearTimeout(timer);
   }, []);

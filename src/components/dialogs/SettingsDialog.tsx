@@ -1,4 +1,8 @@
+import { useEffect, useState } from "react";
+import { getVersion } from "@tauri-apps/api/app";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useUpdateStore } from "@/stores/updateStore";
+import { checkForUpdates, downloadAndInstall, restartToUpdate } from "@/utils/updater";
 import { terranovaLanguage } from "@/languages/terranova";
 import { hytaleLanguage } from "@/languages/hytale";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
@@ -29,6 +33,17 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const setAutoLayoutOnOpen = useSettingsStore((s) => s.setAutoLayoutOnOpen);
   const exportPath = useSettingsStore((s) => s.exportPath);
   const setExportPath = useSettingsStore((s) => s.setExportPath);
+  const autoCheckUpdates = useSettingsStore((s) => s.autoCheckUpdates);
+  const setAutoCheckUpdates = useSettingsStore((s) => s.setAutoCheckUpdates);
+
+  const updateStatus = useUpdateStore((s) => s.status);
+  const updateVersion = useUpdateStore((s) => s.version);
+  const updateProgress = useUpdateStore((s) => s.progress);
+
+  const [appVersion, setAppVersion] = useState("");
+  useEffect(() => {
+    getVersion().then(setAppVersion);
+  }, []);
 
   async function handleBrowseExportPath() {
     const selected = await openDialog({ directory: true, defaultPath: exportPath ?? undefined });
@@ -144,6 +159,58 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
             </button>
           </div>
           <p className="text-xs text-tn-text-muted">Default target directory for File &gt; Export operations</p>
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-xs text-tn-text-muted">Updates</label>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between px-3 py-2 rounded border border-tn-border bg-tn-bg">
+              <div>
+                <span className="text-sm font-medium">Current version</span>
+                <p className="text-xs text-tn-text-muted">v{appVersion}</p>
+              </div>
+              {updateStatus === "available" ? (
+                <button
+                  onClick={downloadAndInstall}
+                  className="px-3 py-1.5 text-sm rounded border border-tn-accent text-tn-accent hover:bg-tn-accent/10"
+                >
+                  Download v{updateVersion}
+                </button>
+              ) : updateStatus === "downloading" ? (
+                <span className="text-sm text-amber-400">Downloading {updateProgress}%</span>
+              ) : updateStatus === "ready" ? (
+                <button
+                  onClick={restartToUpdate}
+                  className="px-3 py-1.5 text-sm rounded border border-emerald-400 text-emerald-400 hover:bg-emerald-400/10"
+                >
+                  Restart to update
+                </button>
+              ) : updateStatus === "checking" ? (
+                <span className="text-sm text-tn-text-muted">Checking...</span>
+              ) : (
+                <button
+                  onClick={checkForUpdates}
+                  className="px-3 py-1.5 text-sm rounded border border-tn-border hover:bg-tn-surface"
+                >
+                  Check for updates
+                </button>
+              )}
+            </div>
+            <button
+              onClick={() => setAutoCheckUpdates(!autoCheckUpdates)}
+              className={`text-left px-3 py-2 rounded border text-sm ${
+                autoCheckUpdates
+                  ? "border-tn-accent bg-tn-accent/10"
+                  : "border-tn-border bg-tn-bg hover:bg-tn-surface"
+              }`}
+            >
+              <span className="font-medium">Auto-check for updates</span>
+              <span className="ml-2 text-[10px] font-medium text-tn-text-muted">
+                {autoCheckUpdates ? "On" : "Off"}
+              </span>
+              <p className="text-xs text-tn-text-muted mt-0.5">Automatically check for new versions on launch</p>
+            </button>
+          </div>
         </div>
 
         <div className="flex justify-end pt-2 border-t border-tn-border">
