@@ -2,6 +2,30 @@
 
 All notable changes to [TerraNova](https://github.com/HyperSystemsDev/TerraNova) are documented in this file.
 
+## [0.1.3] — 2026-02-14
+
+### Added
+
+- **Auto-Updater** — App checks GitHub Releases on launch, notifies in the StatusBar, and applies updates on restart ([#7])
+- **Updates Section in Settings** — Current version display, manual "Check for updates" button with feedback toast, and persistent auto-check toggle
+- **Dynamic Version Display** — StatusBar now shows live version via `getVersion()` instead of hardcoded `v0.1.0`
+- **GitHub Templates** — Issue templates (bug report, feature request) and pull request template
+- **Code of Conduct** — `CODE_OF_CONDUCT.md` added to the repository
+- **Design System Reference** — `docs/planning/DESIGN_SYSTEMS.md` documenting the app's visual design system
+
+### Fixed
+
+- **Material Tab Crash** — Opening a blank/void template project no longer crashes the Material tab; guard added against missing material sections ([#6])
+- **SimplexNoise2D Settings** — Noise parameters (frequency, amplitude, etc.) now properly propagate to the evaluator and preview ([#8])
+- **CI Version Sync** — App version now syncs from the git tag during CI release builds (was always `0.1.0` regardless of release tag)
+- **BiomeRangeEditor Redesign** — Overhauled with improved UX, better range management, and cleaner layout
+
+### Changed
+
+- **README.md Overhauled** — Updated screenshots, installation guide, and corrected license to LGPL-2.1
+- **Tauri Dependencies Updated** — All `@tauri-apps` npm packages bumped to latest versions
+- **Docs Consolidated** — Roadmap and planning documents consolidated and updated; changelog moved to `docs/`
+
 ## [0.1.2] — 2026-02-13
 
 Patch release fixing render crashes when opening biome files containing node fields with object values.
@@ -184,9 +208,13 @@ Built over 85 commits (Feb 6–13, 2026) in the private TerraNovaDev repository 
 
 ---
 
+[0.1.3]: https://github.com/HyperSystemsDev/TerraNova/releases/tag/v0.1.3
 [0.1.2]: https://github.com/HyperSystemsDev/TerraNova/releases/tag/v0.1.2
 [0.1.1]: https://github.com/HyperSystemsDev/TerraNova/releases/tag/v0.1.1
 [0.1.0]: https://github.com/HyperSystemsDev/TerraNova/releases/tag/v0.1.0
 [#1]: https://github.com/HyperSystemsDev/TerraNova/pull/1
 [#2]: https://github.com/HyperSystemsDev/TerraNova/pull/2
 [#3]: https://github.com/HyperSystemsDev/TerraNova/pull/3
+[#6]: https://github.com/HyperSystemsDev/TerraNova/pull/6
+[#7]: https://github.com/HyperSystemsDev/TerraNova/pull/7
+[#8]: https://github.com/HyperSystemsDev/TerraNova/pull/8
