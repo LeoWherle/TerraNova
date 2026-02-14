@@ -58,6 +58,20 @@ function getStoredExportPath(): string | null {
   return null;
 }
 
+function getStoredAutoCheckUpdates(): boolean {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return true;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.autoCheckUpdates === "boolean") {
+      return parsed.autoCheckUpdates;
+    }
+  } catch {
+    // ignore
+  }
+  return true;
+}
+
 function getStoredKeybindingOverrides(): Record<string, string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -76,6 +90,7 @@ function persistSettings(settings: {
   language: LanguageId;
   flowDirection: FlowDirection;
   autoLayoutOnOpen: boolean;
+  autoCheckUpdates: boolean;
   keybindingOverrides: Record<string, string>;
   exportPath: string | null;
 }) {
@@ -90,11 +105,13 @@ interface SettingsState {
   language: LanguageId;
   flowDirection: FlowDirection;
   autoLayoutOnOpen: boolean;
+  autoCheckUpdates: boolean;
   keybindingOverrides: Record<string, string>;
   exportPath: string | null;
   setLanguage: (lang: LanguageId) => void;
   setFlowDirection: (dir: FlowDirection) => void;
   setAutoLayoutOnOpen: (value: boolean) => void;
+  setAutoCheckUpdates: (value: boolean) => void;
   setKeybindingOverride: (id: string, key: string) => void;
   resetKeybinding: (id: string) => void;
   resetAllKeybindings: () => void;
@@ -106,6 +123,7 @@ function getAllSettings(state: SettingsState) {
     language: state.language,
     flowDirection: state.flowDirection,
     autoLayoutOnOpen: state.autoLayoutOnOpen,
+    autoCheckUpdates: state.autoCheckUpdates,
     keybindingOverrides: state.keybindingOverrides,
     exportPath: state.exportPath,
   };
@@ -115,6 +133,7 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   language: getStoredLanguage(),
   flowDirection: getStoredFlowDirection(),
   autoLayoutOnOpen: getStoredAutoLayoutOnOpen(),
+  autoCheckUpdates: getStoredAutoCheckUpdates(),
   keybindingOverrides: getStoredKeybindingOverrides(),
   exportPath: getStoredExportPath(),
 
@@ -131,6 +150,11 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
   setAutoLayoutOnOpen: (value) => {
     set({ autoLayoutOnOpen: value });
     persistSettings(getAllSettings({ ...get(), autoLayoutOnOpen: value }));
+  },
+
+  setAutoCheckUpdates: (value) => {
+    set({ autoCheckUpdates: value });
+    persistSettings(getAllSettings({ ...get(), autoCheckUpdates: value }));
   },
 
   setKeybindingOverride: (id, key) => {
