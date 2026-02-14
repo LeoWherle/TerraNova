@@ -106,6 +106,8 @@ interface PreviewState {
   compareLoadingB: boolean;
   linkCameras3D: boolean;
 
+  fidelityScore: number;
+
   // Actions
   setMode: (mode: PreviewMode) => void;
   setResolution: (res: number) => void;
@@ -185,6 +187,7 @@ interface PreviewState {
   setCompareLoadingA: (loading: boolean) => void;
   setCompareLoadingB: (loading: boolean) => void;
   setLinkCameras3D: (link: boolean) => void;
+  setFidelityScore: (score: number) => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -358,6 +361,7 @@ export const usePreviewStore = create<PreviewState>((originalSet) => {
     compareMaxB: 1,
     compareLoadingA: false,
     compareLoadingB: false,
+    fidelityScore: 100,
 
     // Hydrated persisted values
     ...hydrated,
@@ -390,6 +394,7 @@ export const usePreviewStore = create<PreviewState>((originalSet) => {
     setCompareValuesB: (compareValuesB, compareMinB, compareMaxB) => originalSet({ compareValuesB, compareMinB, compareMaxB }),
     setCompareLoadingA: (compareLoadingA) => originalSet({ compareLoadingA }),
     setCompareLoadingB: (compareLoadingB) => originalSet({ compareLoadingB }),
+    setFidelityScore: (fidelityScore) => originalSet({ fidelityScore }),
 
     // Persisted setters — use persistedSet for auto-localStorage sync
     setViewMode: (viewMode) => persistedSet({ viewMode }),

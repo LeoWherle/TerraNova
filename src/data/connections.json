@@ -1,0 +1,956 @@
+{
+  "version": "1.0.0",
+  "edges": [
+    {
+      "source": "Cache",
+      "sourceCategory": "VectorProvider",
+      "field": "VectorProvider",
+      "targetCategory": "VectorProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Anchor",
+      "sourceCategory": "PositionProvider",
+      "field": "Positions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Clamp",
+      "sourceCategory": "Curve",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Ceiling",
+      "sourceCategory": "Pattern",
+      "field": "Ceiling",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Ceiling",
+      "sourceCategory": "Pattern",
+      "field": "Origin",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "SmoothClamp",
+      "sourceCategory": "Curve",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Cylinder",
+      "sourceCategory": "Density",
+      "field": "RadialCurve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Cylinder",
+      "sourceCategory": "Density",
+      "field": "AxialCurve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "BaseHeight",
+      "sourceCategory": "PositionProvider",
+      "field": "Positions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Ellipsoid",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "SmoothCeiling",
+      "sourceCategory": "Curve",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Floor",
+      "sourceCategory": "Pattern",
+      "field": "Floor",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Floor",
+      "sourceCategory": "Pattern",
+      "field": "Origin",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Axis",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "SmoothFloor",
+      "sourceCategory": "Curve",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "CurveMapper",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Shell",
+      "sourceCategory": "Density",
+      "field": "AngleCurve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Shell",
+      "sourceCategory": "Density",
+      "field": "DistanceCurve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Distance",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Plane",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Exported",
+      "sourceCategory": "VectorProvider",
+      "field": "VectorProvider",
+      "targetCategory": "VectorProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Cube",
+      "sourceCategory": "Density",
+      "field": "Curve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Cuboid",
+      "sourceCategory": "Pattern",
+      "field": "SubPattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Not",
+      "sourceCategory": "Pattern",
+      "field": "Pattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "FieldFunction",
+      "sourceCategory": "Assignment",
+      "field": "FieldFunction",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "RangeThickness",
+      "sourceCategory": "Layer",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "SimpleHorizontal",
+      "sourceCategory": "PositionProvider",
+      "field": "Positions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Solidity",
+      "sourceCategory": "MaterialProvider",
+      "field": "Solid",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Solidity",
+      "sourceCategory": "MaterialProvider",
+      "field": "Empty",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Striped",
+      "sourceCategory": "MaterialProvider",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "NoiseThickness",
+      "sourceCategory": "Layer",
+      "field": "ThicknessFunctionXZ",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "NoiseThickness",
+      "sourceCategory": "Layer",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "ConstantThickness",
+      "sourceCategory": "Layer",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "DownwardDepth",
+      "sourceCategory": "MaterialProvider",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "DownwardSpace",
+      "sourceCategory": "MaterialProvider",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "UpwardSpace",
+      "sourceCategory": "MaterialProvider",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "UpwardDepth",
+      "sourceCategory": "MaterialProvider",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "WeightedThickness",
+      "sourceCategory": "Layer",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Wall",
+      "sourceCategory": "Pattern",
+      "field": "Wall",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Wall",
+      "sourceCategory": "Pattern",
+      "field": "Origin",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Gap",
+      "sourceCategory": "Pattern",
+      "field": "GapPattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Gap",
+      "sourceCategory": "Pattern",
+      "field": "AnchorPattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Surface",
+      "sourceCategory": "Pattern",
+      "field": "Surface",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Surface",
+      "sourceCategory": "Pattern",
+      "field": "Medium",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Occurrence",
+      "sourceCategory": "PositionProvider",
+      "field": "FieldFunction",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "Occurrence",
+      "sourceCategory": "PositionProvider",
+      "field": "Positions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Bound",
+      "sourceCategory": "PositionProvider",
+      "field": "Positions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Pattern",
+      "sourceCategory": "Directionality",
+      "field": "Pattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Box",
+      "sourceCategory": "Prop",
+      "field": "Pattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Box",
+      "sourceCategory": "Prop",
+      "field": "Scanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "Prefab",
+      "sourceCategory": "Prop",
+      "field": "Scanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "Prefab",
+      "sourceCategory": "Prop",
+      "field": "MoldingPattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Prefab",
+      "sourceCategory": "Prop",
+      "field": "MoldingScanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "Density",
+      "sourceCategory": "Prop",
+      "field": "Pattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Density",
+      "sourceCategory": "Prop",
+      "field": "Scanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "Density",
+      "sourceCategory": "Prop",
+      "field": "Density",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "Density",
+      "sourceCategory": "Prop",
+      "field": "Material",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "Cluster",
+      "sourceCategory": "Prop",
+      "field": "DistanceCurve",
+      "targetCategory": "Curve",
+      "relationship": "references"
+    },
+    {
+      "source": "Cluster",
+      "sourceCategory": "Prop",
+      "field": "Pattern",
+      "targetCategory": "Pattern",
+      "relationship": "references"
+    },
+    {
+      "source": "Cluster",
+      "sourceCategory": "Prop",
+      "field": "Scanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "Area",
+      "sourceCategory": "Scanner",
+      "field": "ChildScanner",
+      "targetCategory": "Scanner",
+      "relationship": "references"
+    },
+    {
+      "source": "DensityGradient",
+      "sourceCategory": "VectorProvider",
+      "field": "FieldFunction",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "DensityDelimited",
+      "sourceCategory": "TintProvider",
+      "field": "FieldFunction",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "WorldStructureAsset",
+      "sourceCategory": "Biome",
+      "field": "Density",
+      "targetCategory": "Density",
+      "relationship": "references"
+    },
+    {
+      "source": "WorldStructureAsset",
+      "sourceCategory": "Biome",
+      "field": "SpawnPositions",
+      "targetCategory": "PositionProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "BiomeAsset",
+      "sourceCategory": "Biome",
+      "field": "MaterialProvider",
+      "targetCategory": "MaterialProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "BiomeAsset",
+      "sourceCategory": "Biome",
+      "field": "EnvironmentProvider",
+      "targetCategory": "EnvironmentProvider",
+      "relationship": "references"
+    },
+    {
+      "source": "BiomeAsset",
+      "sourceCategory": "Biome",
+      "field": "TintProvider",
+      "targetCategory": "TintProvider",
+      "relationship": "references"
+    }
+  ],
+  "categoryBridges": [
+    {
+      "from": "Density",
+      "to": "Curve",
+      "bridgeTypes": [
+        "Cylinder",
+        "Ellipsoid",
+        "Axis",
+        "CurveMapper",
+        "Shell",
+        "Distance",
+        "Plane",
+        "Cube"
+      ],
+      "bridgeFields": [
+        "RadialCurve",
+        "AxialCurve",
+        "Curve",
+        "AngleCurve",
+        "DistanceCurve"
+      ]
+    },
+    {
+      "from": "Condition",
+      "to": "SpaceAndDepth",
+      "bridgeTypes": [
+        "AlwaysTrueCondition"
+      ],
+      "bridgeFields": [
+        "output"
+      ]
+    },
+    {
+      "from": "Assignment",
+      "to": "Density",
+      "bridgeTypes": [
+        "FieldFunction"
+      ],
+      "bridgeFields": [
+        "FieldFunction"
+      ]
+    },
+    {
+      "from": "Layer",
+      "to": "MaterialProvider",
+      "bridgeTypes": [
+        "RangeThickness",
+        "NoiseThickness",
+        "ConstantThickness",
+        "WeightedThickness"
+      ],
+      "bridgeFields": [
+        "Material"
+      ]
+    },
+    {
+      "from": "Layer",
+      "to": "SpaceAndDepth",
+      "bridgeTypes": [
+        "RangeThickness"
+      ],
+      "bridgeFields": [
+        "output"
+      ]
+    },
+    {
+      "from": "Layer",
+      "to": "Density",
+      "bridgeTypes": [
+        "NoiseThickness"
+      ],
+      "bridgeFields": [
+        "ThicknessFunctionXZ"
+      ]
+    },
+    {
+      "from": "PositionProvider",
+      "to": "Density",
+      "bridgeTypes": [
+        "Occurrence"
+      ],
+      "bridgeFields": [
+        "FieldFunction"
+      ]
+    },
+    {
+      "from": "Directionality",
+      "to": "Prefab",
+      "bridgeTypes": [
+        "Random"
+      ],
+      "bridgeFields": [
+        "output"
+      ]
+    },
+    {
+      "from": "Directionality",
+      "to": "Pattern",
+      "bridgeTypes": [
+        "Pattern"
+      ],
+      "bridgeFields": [
+        "Pattern"
+      ]
+    },
+    {
+      "from": "Prop",
+      "to": "Pattern",
+      "bridgeTypes": [
+        "Box",
+        "Prefab",
+        "Density",
+        "Cluster"
+      ],
+      "bridgeFields": [
+        "Pattern",
+        "MoldingPattern"
+      ]
+    },
+    {
+      "from": "Prop",
+      "to": "Scanner",
+      "bridgeTypes": [
+        "Box",
+        "Prefab",
+        "Density",
+        "Cluster"
+      ],
+      "bridgeFields": [
+        "Scanner",
+        "MoldingScanner"
+      ]
+    },
+    {
+      "from": "Prop",
+      "to": "Density",
+      "bridgeTypes": [
+        "Density"
+      ],
+      "bridgeFields": [
+        "Density"
+      ]
+    },
+    {
+      "from": "Prop",
+      "to": "MaterialProvider",
+      "bridgeTypes": [
+        "Density"
+      ],
+      "bridgeFields": [
+        "Material"
+      ]
+    },
+    {
+      "from": "Prop",
+      "to": "Curve",
+      "bridgeTypes": [
+        "Cluster"
+      ],
+      "bridgeFields": [
+        "DistanceCurve"
+      ]
+    },
+    {
+      "from": "VectorProvider",
+      "to": "Density",
+      "bridgeTypes": [
+        "DensityGradient"
+      ],
+      "bridgeFields": [
+        "FieldFunction"
+      ]
+    },
+    {
+      "from": "TintProvider",
+      "to": "Density",
+      "bridgeTypes": [
+        "DensityDelimited"
+      ],
+      "bridgeFields": [
+        "FieldFunction"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "Density",
+      "bridgeTypes": [
+        "WorldStructureAsset"
+      ],
+      "bridgeFields": [
+        "Density"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "PositionProvider",
+      "bridgeTypes": [
+        "WorldStructureAsset"
+      ],
+      "bridgeFields": [
+        "SpawnPositions"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "MaterialProvider",
+      "bridgeTypes": [
+        "BiomeAsset"
+      ],
+      "bridgeFields": [
+        "MaterialProvider"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "EnvironmentProvider",
+      "bridgeTypes": [
+        "BiomeAsset"
+      ],
+      "bridgeFields": [
+        "EnvironmentProvider"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "TintProvider",
+      "bridgeTypes": [
+        "BiomeAsset"
+      ],
+      "bridgeFields": [
+        "TintProvider"
+      ]
+    },
+    {
+      "from": "Biome",
+      "to": "WorldStructureAsset",
+      "bridgeTypes": [
+        "BiomeAsset"
+      ],
+      "bridgeFields": [
+        "output"
+      ]
+    }
+  ],
+  "connectionMatrix": {
+    "Assignment": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Biome": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 1,
+      "Pattern": 0,
+      "PositionProvider": 1,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 1,
+      "VectorProvider": 0
+    },
+    "Condition": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Curve": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 4,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Density": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 10,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Directionality": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 1,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Layer": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 4,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "MaterialProvider": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 7,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Pattern": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 12,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "PositionProvider": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 5,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Prop": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 1,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 1,
+      "Pattern": 4,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 5,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "Scanner": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 0,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 1,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "TintProvider": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 0
+    },
+    "VectorProvider": {
+      "Assignment": 0,
+      "Biome": 0,
+      "Condition": 0,
+      "Curve": 0,
+      "Density": 1,
+      "Directionality": 0,
+      "Layer": 0,
+      "MaterialProvider": 0,
+      "Pattern": 0,
+      "PositionProvider": 0,
+      "Prop": 0,
+      "Scanner": 0,
+      "TintProvider": 0,
+      "VectorProvider": 2
+    }
+  },
+  "stats": {
+    "totalEdges": 68,
+    "totalBridges": 22,
+    "totalTypes": 127
+  }
+}

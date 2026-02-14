@@ -11,11 +11,15 @@ import { useLanguage } from "@/languages/useLanguage";
 import { getEvalStatus } from "@/utils/densityEvaluator";
 import { NODE_TIPS } from "@/schema/nodeTips";
 import { useDiagnosticsStore } from "@/stores/diagnosticsStore";
+import { useDragStore } from "@/stores/dragStore";
+import { isAcceptableTarget } from "@/hooks/useConnectionSuggestions";
 import type { DiagnosticSeverity } from "@/utils/graphDiagnostics";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { getDensityAccentColor } from "@/schema/densitySubcategories";
 import { HANDLE_REGISTRY } from "@/nodes/handleRegistry";
 import { isLegacyTypeKey } from "@/nodes/shared/legacyTypes";
+import { getBridgeInfo } from "@/data/bridgeRegistry";
+import { getSchemaPortDescription } from "@/schema/schemaLoader";
 
 /** Tiny error boundary scoped to a single node body.  Prevents one
  *  bad field value (e.g. object rendered as React child) from crashing
@@ -103,6 +107,8 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
   const densitySubColor = isDensity ? getDensityAccentColor(nodeData.type) : undefined;
   const effectiveColor = densitySubColor ?? headerColor;
   const evalStatus = isDensity ? getEvalStatus(nodeData.type) : null;
+  const bridgeInfo = getBridgeInfo(nodeData.type);
+  const bridgeToColor = bridgeInfo ? CATEGORY_COLORS[bridgeInfo.to] : null;
   const tips = NODE_TIPS[nodeData.type];
   const headerTip = tips?.[0]?.message;
 
@@ -120,6 +126,12 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
   const legacyPrefix = CATEGORY_TO_PREFIX[category];
   const legacyKey = legacyPrefix ? `${legacyPrefix}:${nodeData.type}` : nodeData.type;
   const isLegacy = isLegacyTypeKey(legacyKey);
+
+  // Connection suggestion highlight
+  const connectingCategory = useDragStore((s) => s.connectingCategory);
+  const isConnectionTarget = connectingCategory
+    ? isAcceptableTarget(connectingCategory, category)
+    : null;
 
   // Validation badge
   const nodeDiags = useDiagnosticsStore((s) => s.byNodeId.get(id));
@@ -160,14 +172,17 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
 
   return (
     <div
-      className="rounded-md min-w-[200px] max-w-[280px]"
+      className="rounded-md min-w-[200px] max-w-[280px] transition-opacity duration-150"
       style={{
         background: "#262320",
-        boxShadow: isOutputNode
+        boxShadow: isConnectionTarget === true
+          ? `0 0 0 2px ${effectiveColor}, 0 0 14px ${effectiveColor}66`
+          : isOutputNode
           ? SHADOW_OUTPUT
           : selected
           ? SHADOW_SELECTED
           : SHADOW_DEFAULT,
+        opacity: isConnectionTarget === false ? 0.35 : 1,
       }}
     >
       {/* Header */}
@@ -175,7 +190,9 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
         className="px-3 py-1.5 text-xs font-semibold text-white text-left flex items-center gap-1.5"
         title={headerTip}
         style={{
-          backgroundColor: effectiveColor,
+          background: bridgeToColor
+            ? `linear-gradient(90deg, ${effectiveColor} 60%, ${bridgeToColor} 100%)`
+            : effectiveColor,
           borderRadius: "5px 5px 0 0",
         }}
       >
@@ -201,6 +218,15 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
             title="Legacy type: not present in the Hytale pre-release API"
           >
             LEGACY
+          </span>
+        )}
+        {bridgeInfo && (
+          <span
+            className="shrink-0 px-1 py-px rounded text-[8px] font-bold leading-none"
+            style={{ backgroundColor: bridgeToColor ?? "#888", color: "#fff" }}
+            title={`Bridge: accepts ${CATEGORY_LABELS[bridgeInfo.to] ?? bridgeInfo.to} inputs`}
+          >
+            ⇄
           </span>
         )}
         {topSeverity && (
@@ -235,7 +261,9 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
       {maxRows > 0 && (
         <div className="relative" style={{ height: maxRows * ROW_H }}>
           {/* Input handles + labels + tooltips */}
-          {inputs.map((handle, i) => (
+          {inputs.map((handle, i) => {
+            const portDesc = getSchemaPortDescription(nodeData.type, handle.id);
+            return (
             <Fragment key={handle.id}>
               <div className="group" style={{ position: "absolute", [inSide]: -7, top: handleTop(i), transform: "translateY(-50%)" }}>
                 <Handle
@@ -254,9 +282,12 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
                 />
                 <div className={`pointer-events-none absolute z-50 opacity-0 group-hover:opacity-100
                   transition-opacity duration-150 bg-[#1c1a17] border border-tn-border rounded
-                  px-2 py-1 text-[10px] whitespace-nowrap ${inSide}-4 top-1/2 -translate-y-1/2`}>
+                  px-2 py-1 text-[10px] ${portDesc ? "max-w-[220px] whitespace-normal" : "whitespace-nowrap"} ${inSide}-4 top-1/2 -translate-y-1/2`}>
                   <span className="font-medium text-tn-text">{showIndex ? `[${i}] ${handle.label}` : handle.label}</span>
                   <span className="text-tn-text-muted ml-1">({CATEGORY_LABELS[handle.category] ?? handle.category})</span>
+                  {portDesc && (
+                    <div className="text-tn-text-muted mt-0.5 text-[9px]">{portDesc}</div>
+                  )}
                 </div>
               </div>
               <div
@@ -266,10 +297,13 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
                 {showIndex ? `[${i}] ${handle.label}` : handle.label}
               </div>
             </Fragment>
-          ))}
+          );
+          })}
 
           {/* Output handles + labels + tooltips */}
-          {outputs.map((handle, i) => (
+          {outputs.map((handle, i) => {
+            const outPortDesc = getSchemaPortDescription(nodeData.type, handle.id);
+            return (
             <Fragment key={handle.id}>
               <div className="group" style={{ position: "absolute", [outSide]: -7, top: handleTop(i), transform: "translateY(-50%)" }}>
                 <Handle
@@ -288,9 +322,12 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
                 />
                 <div className={`pointer-events-none absolute z-50 opacity-0 group-hover:opacity-100
                   transition-opacity duration-150 bg-[#1c1a17] border border-tn-border rounded
-                  px-2 py-1 text-[10px] whitespace-nowrap ${outSide}-4 top-1/2 -translate-y-1/2`}>
+                  px-2 py-1 text-[10px] ${outPortDesc ? "max-w-[220px] whitespace-normal" : "whitespace-nowrap"} ${outSide}-4 top-1/2 -translate-y-1/2`}>
                   <span className="font-medium text-tn-text">{showOutputIndex ? `[${i}] ${handle.label}` : handle.label}</span>
                   <span className="text-tn-text-muted ml-1">({CATEGORY_LABELS[handle.category] ?? handle.category})</span>
+                  {outPortDesc && (
+                    <div className="text-tn-text-muted mt-0.5 text-[9px]">{outPortDesc}</div>
+                  )}
                 </div>
               </div>
               <div
@@ -300,7 +337,8 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
                 {showOutputIndex ? `[${i}] ${handle.label}` : handle.label}
               </div>
             </Fragment>
-          ))}
+            );
+          })}
         </div>
       )}
 

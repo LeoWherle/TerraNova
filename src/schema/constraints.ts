@@ -1,4 +1,5 @@
 import type { FieldConstraint } from "./validation";
+import { getSchemaConstraints } from "./schemaLoader";
 
 /**
  * Per-type field constraints for inline validation.
@@ -155,6 +156,14 @@ export const FIELD_CONSTRAINTS: Record<string, Record<string, FieldConstraint>> 
     TargetPlayerCount: { min: 1, max: 64, message: "Must be between 1 and 64" },
   },
 };
+
+/**
+ * Get field constraints for a node type.
+ * Local overrides take precedence, schema fills gaps.
+ */
+export function getConstraints(nodeType: string): Record<string, FieldConstraint> | undefined {
+  return FIELD_CONSTRAINTS[nodeType] ?? getSchemaConstraints(nodeType) ?? undefined;
+}
 
 /**
  * Known output ranges for density node types.

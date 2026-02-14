@@ -38,7 +38,7 @@ export function ControlsVoxel() {
       <div className="flex flex-col gap-2 border-t border-tn-border pt-2">
         <span className="text-[10px] text-tn-text-muted font-medium">Voxel Options</span>
 
-        <SliderField label="Resolution" value={voxelResolution} min={8} max={128} step={8} onChange={setVoxelResolution} />
+        <SliderField label="Resolution" value={voxelResolution} min={8} max={256} step={8} allowInputOverflow onChange={setVoxelResolution} />
         <SliderField label="Y Min" value={voxelYMin} min={0} max={255} step={1} onChange={setVoxelYMin} />
         <SliderField label="Y Max" value={voxelYMax} min={1} max={256} step={1} onChange={setVoxelYMax} />
         <SliderField label="Y Slices" value={voxelYSlices} min={8} max={128} step={4} onChange={setVoxelYSlices} />

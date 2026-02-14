@@ -2,10 +2,23 @@ import { useCallback } from "react";
 import type { Edge, Connection } from "@xyflow/react";
 import { findHandleDef } from "@/nodes/handleRegistry";
 import { useEditorStore } from "@/stores/editorStore";
+import connectionsData from "@/data/connections.json";
+
+/** Cross-category connection matrix from connections.json */
+const connectionMatrix = connectionsData.connectionMatrix as Record<string, Record<string, number>>;
+
+/**
+ * Check if a cross-category connection is valid according to the connection matrix.
+ * The matrix uses category names from the V2 schema (e.g. "Density", "Curve").
+ */
+function isCrossCategoryAllowed(sourceCategory: string, targetCategory: string): boolean {
+  return (connectionMatrix[sourceCategory]?.[targetCategory] ?? 0) > 0;
+}
 
 /**
  * Connection type validation for ReactFlow edges.
- * Ensures source/target handle categories match.
+ * Ensures source/target handle categories match, or that the
+ * cross-category connection is allowed by the connection matrix.
  */
 export function useConnectionValidation() {
   return useCallback(
@@ -39,7 +52,11 @@ export function useConnectionValidation() {
         // If either handle isn't in the registry, allow (unknown/dynamic handles)
         if (!sourceDef || !targetDef) return true;
 
-        return sourceDef.category === targetDef.category;
+        // Same-category: always valid
+        if (sourceDef.category === targetDef.category) return true;
+
+        // Cross-category: check the connection matrix
+        return isCrossCategoryAllowed(sourceDef.category, targetDef.category);
       } catch (err) {
         if (import.meta.env.DEV) console.warn("isValidConnection error:", err);
         return true;

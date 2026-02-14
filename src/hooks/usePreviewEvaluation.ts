@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateInWorker, cancelEvaluation } from "@/utils/densityWorkerClient";
+import { computeFidelityScore } from "@/utils/graphDiagnostics";
 import { DEBOUNCE_MS } from "@/constants";
 
 /**
@@ -59,6 +60,7 @@ export function usePreviewEvaluation() {
         // Only apply if this is still the latest evaluation
         if (evalId === evalIdRef.current) {
           setValues(result.values, result.minValue, result.maxValue);
+          usePreviewStore.getState().setFidelityScore(computeFidelityScore(nodes));
         }
       } catch (err) {
         if (err === "cancelled") return; // expected

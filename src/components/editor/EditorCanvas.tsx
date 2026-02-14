@@ -37,6 +37,7 @@ import {
   getBidirectionalEdgeIds,
   findNearestEdge,
 } from "@/utils/graphGeometry";
+import { findHandleDef } from "@/nodes/handleRegistry";
 
 /** Map node type prefix to category for minimap coloring */
 const PREFIX_TO_CATEGORY: Record<string, AssetCategory> = {
@@ -178,6 +179,7 @@ export function EditorCanvas() {
   const handleConnect = useCallback((connection: Connection) => {
     connectionMadeRef.current = true;
     onConnect(connection);
+    useDragStore.getState().setConnectingCategory(null);
   }, [onConnect]);
 
   // ── fitView on biome section switch ───────────────────────────────────
@@ -396,9 +398,18 @@ export function EditorCanvas() {
     } else {
       setSelectedHandle(null);
     }
+
+    // Broadcast source handle category for connection suggestions
+    const nodes = useEditorStore.getState().nodes;
+    const node = nodes.find((n) => n.id === params.nodeId);
+    const nodeType = node?.type ?? "default";
+    const handleId = params.handleId ?? (handleType === "source" ? "output" : "Input");
+    const handleDef = findHandleDef(nodeType, handleId);
+    useDragStore.getState().setConnectingCategory(handleDef?.category ?? null);
   }, []);
 
   const handleConnectEnd = useCallback((event: MouseEvent | TouchEvent) => {
+    useDragStore.getState().setConnectingCategory(null);
     const pending = pendingHandleRef.current;
     pendingHandleRef.current = null;
     if (!pending) return;

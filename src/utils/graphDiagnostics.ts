@@ -1,9 +1,14 @@
 import type { Node, Edge } from "@xyflow/react";
 import type { BaseNodeData } from "@/nodes/shared/BaseNode";
-import { HANDLE_REGISTRY } from "@/nodes/handleRegistry";
+import { HANDLE_REGISTRY, findHandleDef } from "@/nodes/handleRegistry";
 import { FIELD_CONSTRAINTS, OUTPUT_RANGES } from "@/schema/constraints";
 import { validateFields } from "@/schema/validation";
 import { isLegacyTypeKey } from "@/nodes/shared/legacyTypes";
+import { getEvalStatus } from "@/utils/densityEvaluator";
+import { EvalStatus } from "@/schema/types";
+import connectionsData from "@/data/connections.json";
+
+const connectionMatrix = connectionsData.connectionMatrix as Record<string, Record<string, number>>;
 
 export type DiagnosticSeverity = "error" | "warning" | "info";
 
@@ -266,8 +271,35 @@ export function analyzeGraph(nodes: Node[], edges: Edge[]): GraphDiagnostic[] {
     }
   }
 
-  // 9. Output range mismatch hints
+  // 9. Cross-category connection validation
   const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+  for (const edge of edges) {
+    const sourceNode = nodeMap.get(edge.source);
+    const targetNode = nodeMap.get(edge.target);
+    if (!sourceNode || !targetNode) continue;
+
+    const sourceType = sourceNode.type ?? getNodeType(sourceNode);
+    const targetType = targetNode.type ?? getNodeType(targetNode);
+    const sh = edge.sourceHandle ?? "output";
+    const th = edge.targetHandle ?? "Input";
+
+    const sourceDef = findHandleDef(sourceType, sh);
+    const targetDef = findHandleDef(targetType, th);
+    if (!sourceDef || !targetDef) continue;
+    if (sourceDef.category === targetDef.category) continue;
+
+    // Check the connection matrix
+    const allowed = (connectionMatrix[sourceDef.category]?.[targetDef.category] ?? 0) > 0;
+    if (!allowed) {
+      diagnostics.push({
+        nodeId: targetNode.id,
+        message: `Invalid cross-category connection: ${sourceDef.category} → ${targetDef.category} (${getNodeType(sourceNode)} → ${getNodeType(targetNode)}.${th})`,
+        severity: "warning",
+      });
+    }
+  }
+
+  // 10. Output range mismatch hints
   for (const edge of edges) {
     const sourceNode = nodeMap.get(edge.source);
     const targetNode = nodeMap.get(edge.target);
@@ -321,4 +353,20 @@ export function analyzeGraph(nodes: Node[], edges: Edge[]): GraphDiagnostic[] {
   }
 
   return diagnostics;
+}
+
+/**
+ * Compute a fidelity score for the graph: percentage of density nodes
+ * with full (accurate) evaluation status.
+ */
+export function computeFidelityScore(nodes: Node[]): number {
+  let faithful = 0;
+  let total = 0;
+  for (const node of nodes) {
+    const type = getNodeType(node);
+    if (!type) continue;
+    total++;
+    if (getEvalStatus(type) === EvalStatus.Full) faithful++;
+  }
+  return total === 0 ? 100 : Math.round((faithful / total) * 100);
 }

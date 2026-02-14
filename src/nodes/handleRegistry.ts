@@ -16,6 +16,7 @@ import {
   directionalityInput,
   directionalityOutput,
 } from "./shared/handles";
+import { getSchemaHandles } from "@/schema/schemaLoader";
 
 /**
  * Static mapping from node type key (as registered in nodeTypes) to HandleDef[].
@@ -133,13 +134,14 @@ export const HANDLE_REGISTRY: Record<string, HandleDef[]> = {
   SmoothCeiling: [densityInput("Input", "Input"), densityOutput()],
   Gradient: [densityOutput()],
   Amplitude: [densityInput("Input", "Input"), densityInput("Amplitude", "Amplitude"), densityOutput()],
-  YSampled: [densityInput("Input", "Input"), densityInput("YProvider", "Y Provider"), densityOutput()],
+  YSampled: [densityInput("Input", "Input"), densityOutput()],
   SwitchState: [densityOutput()],
   Positions3D: [densityOutput()],
   PositionsPinch: [densityInput("Input", "Input"), densityOutput()],
   PositionsTwist: [densityInput("Input", "Input"), densityOutput()],
   GradientWarp: [densityInput("Input", "Input"), densityInput("WarpSource", "Warp Source"), densityOutput()],
-  VectorWarp: [densityInput("Input", "Input"), vectorInput("WarpVector", "Warp Vector"), densityOutput()],
+  FastGradientWarp: [densityInput("Input", "Input"), densityOutput()],
+  VectorWarp: [densityInput("Input", "Input"), densityInput("Magnitude", "Magnitude"), vectorInput("Direction", "Direction"), densityOutput()],
   Terrain: [densityOutput()],
   CellWallDistance: [densityOutput()],
   DistanceToBiomeEdge: [densityOutput()],
@@ -150,13 +152,16 @@ export const HANDLE_REGISTRY: Record<string, HandleDef[]> = {
   Cuboid: [densityOutput()],
   Cylinder: [densityOutput()],
   Plane: [densityOutput()],
-  Shell: [densityOutput()],
+  Shell: [curveInput("AngleCurve", "Angle Curve"), curveInput("DistanceCurve", "Distance Curve"), densityOutput()],
   Cube: [curveInput("Curve", "Curve"), densityOutput()],
   Axis: [curveInput("Curve", "Curve"), densityOutput()],
   Angle: [vectorInput("VectorProvider", "Vector"), densityOutput()],
   Cache2D: [densityInput("Input", "Input"), densityOutput()],
   OffsetConstant: [densityInput("Input", "Input"), densityOutput()],
   Exported: [densityInput("Input", "Input"), densityOutput()],
+
+  // Multi-input blending
+  MultiMix: [densityInput("Selector", "Selector"), densityInput("Densities[0]", "Density 0"), densityInput("Densities[1]", "Density 1"), densityInput("Densities[2]", "Density 2"), densityInput("Densities[3]", "Density 3"), densityOutput()],
 
   // Cross-category density nodes
   CurveFunction: [densityInput("Input", "Input"), curveInput("Curve", "Curve"), densityOutput()],
@@ -386,6 +391,14 @@ export const HANDLE_REGISTRY: Record<string, HandleDef[]> = {
 };
 
 /**
+ * Get handles for a node type. Local overrides take precedence,
+ * falls back to schema bundle, then default density output.
+ */
+export function getHandles(nodeType: string): HandleDef[] {
+  return HANDLE_REGISTRY[nodeType] ?? getSchemaHandles(nodeType) ?? [densityOutput()];
+}
+
+/**
  * Look up the HandleDef for a specific handle ID on a node type.
  * Returns undefined if not found (e.g. GenericNode or dynamic handles).
  */
@@ -393,7 +406,7 @@ export function findHandleDef(
   nodeType: string,
   handleId: string,
 ): HandleDef | undefined {
-  const defs = HANDLE_REGISTRY[nodeType];
+  const defs = HANDLE_REGISTRY[nodeType] ?? getSchemaHandles(nodeType);
   if (!defs) return undefined;
   return defs.find((h) => h.id === handleId);
 }

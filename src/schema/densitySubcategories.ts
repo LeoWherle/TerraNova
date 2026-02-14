@@ -51,6 +51,7 @@ export const DENSITY_NODE_SUBCATEGORY: Record<DensityType, DensitySubcategory> =
   Floor: DensitySubcategory.FilterTransform,
   Ceiling: DensitySubcategory.FilterTransform,
   GradientWarp: DensitySubcategory.FilterTransform,
+  FastGradientWarp: DensitySubcategory.FilterTransform,
   VectorWarp: DensitySubcategory.FilterTransform,
   Passthrough: DensitySubcategory.FilterTransform,
   Debug: DensitySubcategory.FilterTransform,
@@ -85,6 +86,7 @@ export const DENSITY_NODE_SUBCATEGORY: Record<DensityType, DensitySubcategory> =
   AverageFunction: DensitySubcategory.ArithmeticCombinator,
   SmoothMin: DensitySubcategory.ArithmeticCombinator,
   SmoothMax: DensitySubcategory.ArithmeticCombinator,
+  MultiMix: DensitySubcategory.ArithmeticCombinator,
   OffsetConstant: DensitySubcategory.ArithmeticCombinator,
 
   // Position / Coordinate (24)

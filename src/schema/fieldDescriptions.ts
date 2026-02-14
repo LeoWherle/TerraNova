@@ -26,6 +26,22 @@ export function getExtendedDescription(entry: string | FieldDescription): string
   return entry.extended || entry.short;
 }
 
+import { getSchemaDescriptions } from "./schemaLoader";
+
+/**
+ * Get field descriptions for a node type.
+ * Local overrides take precedence, schema fills gaps.
+ */
+export function getFieldDescriptions(nodeType: string): Record<string, string | FieldDescription> | undefined {
+  const local = FIELD_DESCRIPTIONS[nodeType];
+  const schema = getSchemaDescriptions(nodeType);
+  if (local && schema) {
+    // Merge: local wins, schema fills gaps
+    return { ...schema, ...local };
+  }
+  return local ?? (schema as Record<string, string | FieldDescription> | undefined) ?? undefined;
+}
+
 export const FIELD_DESCRIPTIONS: Record<string, Record<string, string | FieldDescription>> = {
   // ═══════════════════════════════════════════════════════════════════════════
   // DENSITY — Core Noise

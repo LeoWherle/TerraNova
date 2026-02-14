@@ -1,6 +1,11 @@
 import type { Node, Edge } from "@xyflow/react";
-import { createNoise2D, createNoise3D } from "simplex-noise";
 import { getCurveEvaluator, normalizePoints, catmullRomInterpolate } from "./curveEvaluators";
+import { evaluateVectorProvider, vec3Normalize, vec3Length } from "./vectorEvaluator";
+import {
+  createHytaleNoise2D, createHytaleNoise3D,
+  createHytaleNoise2DWithGradient, createHytaleNoise3DWithGradient,
+  seedToInt,
+} from "./hytaleNoise";
 import { EvalStatus } from "@/schema/types";
 import { HASH_PRIME_A, HASH_PRIME_B, HASH_PRIME_C, DEFAULT_WORLD_HEIGHT } from "@/constants";
 
@@ -30,14 +35,7 @@ function mulberry32(seed: number): () => number {
 }
 
 function hashSeed(seed: number | string | undefined): number {
-  if (seed === undefined || seed === null) return 0;
-  if (typeof seed === "number") return seed;
-  // Simple string hash
-  let h = 0;
-  for (let i = 0; i < seed.length; i++) {
-    h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
-  }
-  return h;
+  return seedToInt(seed);
 }
 
 /* ── Voronoi noise ────────────────────────────────────────────────── */
@@ -117,6 +115,104 @@ function smoothMax(a: number, b: number, k: number): number {
   return -smoothMin(-a, -b, k);
 }
 
+/* ── Rotation helpers (Rodrigues' formula) ────────────────────────── */
+
+type Mat3 = [number, number, number, number, number, number, number, number, number];
+
+const IDENTITY_MAT3: Mat3 = [1,0,0, 0,1,0, 0,0,1];
+
+/**
+ * Build a rotation matrix that maps the Y axis [0,1,0] to `newYAxis`
+ * and then applies a spin rotation around the new Y axis.
+ * Uses Rodrigues' rotation formula.
+ * Reference: WorldGenV2/docs/math/coordinate-transforms.md
+ */
+function buildRotationMatrix(
+  newYAxis: { x?: number; y?: number; z?: number } | undefined,
+  spinAngle: number,
+): Mat3 {
+  // Default: no rotation
+  if (!newYAxis) return IDENTITY_MAT3;
+
+  let nx = Number(newYAxis.x ?? 0);
+  let ny = Number(newYAxis.y ?? 1);
+  let nz = Number(newYAxis.z ?? 0);
+
+  // Normalize the target Y axis
+  const len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+  if (len < 1e-10) return IDENTITY_MAT3;
+  nx /= len; ny /= len; nz /= len;
+
+  // Step 1: Rotate standard Y [0,1,0] to newYAxis
+  // Rotation axis = cross(up, newY) = (-nz, 0, nx)
+  const ax = -nz;
+  const ay = 0;
+  const az = nx;
+  const axisLen = Math.sqrt(ax * ax + ay * ay + az * az);
+
+  let r1: Mat3;
+  if (axisLen < 1e-10) {
+    // newY is parallel to Y
+    if (ny > 0) {
+      r1 = IDENTITY_MAT3;
+    } else {
+      // 180-degree rotation around X axis
+      r1 = [1,0,0, 0,-1,0, 0,0,-1];
+    }
+  } else {
+    // Normalize rotation axis
+    const kx = ax / axisLen;
+    const ky = ay / axisLen;
+    const kz = az / axisLen;
+    const cosT = ny; // dot(up, newY)
+    const sinT = axisLen;
+    r1 = rodriguesMatrix(kx, ky, kz, cosT, sinT);
+  }
+
+  // Step 2: Apply spin rotation around newYAxis
+  if (Math.abs(spinAngle) < 1e-10) return r1;
+
+  const cosS = Math.cos(spinAngle);
+  const sinS = Math.sin(spinAngle);
+  const r2 = rodriguesMatrix(nx, ny, nz, cosS, sinS);
+
+  // Combined: r2 * r1
+  return mat3Multiply(r2, r1);
+}
+
+/**
+ * Rodrigues' rotation formula as a 3x3 matrix.
+ * Given unit axis (kx,ky,kz) and angle with known cos and sin.
+ */
+function rodriguesMatrix(
+  kx: number, ky: number, kz: number,
+  cosT: number, sinT: number,
+): Mat3 {
+  const oneMinusCos = 1.0 - cosT;
+  return [
+    cosT + kx * kx * oneMinusCos,         kx * ky * oneMinusCos - kz * sinT,   kx * kz * oneMinusCos + ky * sinT,
+    ky * kx * oneMinusCos + kz * sinT,     cosT + ky * ky * oneMinusCos,         ky * kz * oneMinusCos - kx * sinT,
+    kz * kx * oneMinusCos - ky * sinT,     kz * ky * oneMinusCos + kx * sinT,   cosT + kz * kz * oneMinusCos,
+  ];
+}
+
+function mat3Multiply(a: Mat3, b: Mat3): Mat3 {
+  return [
+    a[0]*b[0]+a[1]*b[3]+a[2]*b[6], a[0]*b[1]+a[1]*b[4]+a[2]*b[7], a[0]*b[2]+a[1]*b[5]+a[2]*b[8],
+    a[3]*b[0]+a[4]*b[3]+a[5]*b[6], a[3]*b[1]+a[4]*b[4]+a[5]*b[7], a[3]*b[2]+a[4]*b[5]+a[5]*b[8],
+    a[6]*b[0]+a[7]*b[3]+a[8]*b[6], a[6]*b[1]+a[7]*b[4]+a[8]*b[7], a[6]*b[2]+a[7]*b[5]+a[8]*b[8],
+  ];
+}
+
+/** Apply rotation matrix to a vector. */
+function mat3Apply(m: Mat3, x: number, y: number, z: number): [number, number, number] {
+  return [
+    m[0] * x + m[1] * y + m[2] * z,
+    m[3] * x + m[4] * y + m[5] * z,
+    m[6] * x + m[7] * y + m[8] * z,
+  ];
+}
+
 /* ── Density type constants ───────────────────────────────────────── */
 
 const UNSUPPORTED_TYPES = new Set([
@@ -129,20 +225,17 @@ const UNSUPPORTED_TYPES = new Set([
   "CaveDensity",
   // Context-dependent types (require server data)
   "Terrain",
-  "CellWallDistance",
+  // CellWallDistance is now implemented
   "DistanceToBiomeEdge",
   "Pipeline",
 ]);
 
 /** Types with approximate or stub evaluators (yellow badge) */
 const APPROXIMATED_TYPES = new Set([
-  "VectorWarp",         // Uses vector provider — approximated as passthrough
   "PositionsCellNoise", // Approximated as voronoi
   "Positions3D",        // Approximated as voronoi
   "PositionsPinch",     // Simplified pinch transform
   "PositionsTwist",     // Simplified twist transform
-  "GradientWarp",       // Numerical gradient approximation
-  "Shell",              // Simplified shell SDF
 ]);
 
 /**
@@ -185,9 +278,9 @@ const DENSITY_TYPES = new Set([
   "PositionsCellNoise",
   "AmplitudeConstant", "Pow",
   "XOverride", "ZOverride", "SmoothCeiling", "Gradient",
-  "Amplitude", "YSampled", "SwitchState",
+  "Amplitude", "YSampled", "SwitchState", "MultiMix",
   "Positions3D", "PositionsPinch", "PositionsTwist",
-  "GradientWarp", "VectorWarp",
+  "GradientWarp", "FastGradientWarp", "VectorWarp",
   "Terrain", "CellWallDistance", "DistanceToBiomeEdge", "Pipeline",
   // Shape SDFs
   "Ellipsoid", "Cuboid", "Cylinder", "Plane", "Shell",
@@ -275,8 +368,7 @@ export function createEvaluationContext(
   function getNoise2D(seed: number): (x: number, y: number) => number {
     let fn = noise2DCache.get(seed);
     if (!fn) {
-      const rng = mulberry32(seed);
-      fn = createNoise2D(rng);
+      fn = createHytaleNoise2D(seed);
       noise2DCache.set(seed, fn);
     }
     return fn;
@@ -285,8 +377,7 @@ export function createEvaluationContext(
   function getNoise3D(seed: number): (x: number, y: number, z: number) => number {
     let fn = noise3DCache.get(seed);
     if (!fn) {
-      const rng = mulberry32(seed);
-      fn = createNoise3D(rng);
+      fn = createHytaleNoise3D(seed);
       noise3DCache.set(seed, fn);
     }
     return fn;
@@ -319,6 +410,15 @@ export function createEvaluationContext(
 
   // Cycle detection per evaluation path
   const visiting = new Set<string>();
+
+  // Evaluation context state (mutable, propagated through the graph)
+  // densityAnchor: set by position providers / Anchor nodes
+  let ctxAnchorX = 0, ctxAnchorY = 0, ctxAnchorZ = 0;
+  let ctxAnchorSet = false;
+  // switchState: set by SwitchState nodes, read by Switch nodes
+  let ctxSwitchState = 0;
+  // distanceFromCellWall: set by PositionsCellNoise, read by CellWallDistance
+  let ctxCellWallDist = Infinity;
 
   /** Apply a curve node to an input value. Shared by CurveFunction, BlendCurve, SplineFunction. */
   function applyCurve(curveHandleName: string, inputVal: number, inputs: Map<string, string>): number {
@@ -401,7 +501,7 @@ export function createEvaluationContext(
     const fields = (data.fields as Record<string, unknown>) ?? {};
     const inputs = inputEdges.get(nodeId) ?? new Map<string, string>();
 
-    let result: number;
+    let result = 0;
 
     switch (type) {
       // ── Noise ──────────────────────────────────────────────────────
@@ -806,9 +906,22 @@ export function createEvaluationContext(
         break;
       }
 
-      case "Anchor":
-        result = getInput(inputs, "Input", 0, 0, 0);
+      case "Anchor": {
+        const isReversed = fields.Reversed === true;
+        if (ctxAnchorSet) {
+          if (isReversed) {
+            // Reversed: local-to-world — add anchor to position
+            result = getInput(inputs, "Input", x + ctxAnchorX, y + ctxAnchorY, z + ctxAnchorZ);
+          } else {
+            // Normal: world-to-local — subtract anchor from position
+            result = getInput(inputs, "Input", x - ctxAnchorX, y - ctxAnchorY, z - ctxAnchorZ);
+          }
+        } else {
+          // No anchor set — passthrough
+          result = getInput(inputs, "Input", x, y, z);
+        }
         break;
+      }
 
       // ── Passthrough / tagging ──────────────────────────────────────
 
@@ -845,6 +958,21 @@ export function createEvaluationContext(
           raw = Math.abs(raw);
         }
         result = raw;
+        break;
+      }
+
+      case "CellWallDistance": {
+        // Distance to nearest Voronoi cell wall: (F2 - F1) / 2
+        // If context has it set, use that. Otherwise compute from voronoi.
+        if (ctxCellWallDist < Infinity) {
+          result = ctxCellWallDist;
+        } else {
+          // Compute directly — approximate with voronoi Distance2Sub
+          const freq = Number(fields.Frequency ?? 0.01);
+          const seed = hashSeed(fields.Seed as string | number | undefined);
+          const noise = getVoronoi2D(seed, "Distance2Sub", 1.0);
+          result = Math.max(0, noise(x * freq, z * freq));
+        }
         break;
       }
 
@@ -886,14 +1014,23 @@ export function createEvaluationContext(
       }
 
       case "YSampled": {
-        const yProvider = getInput(inputs, "YProvider", x, y, z);
-        result = getInput(inputs, "Input", x, yProvider, z);
+        const sampleDist = Number(fields.SampleDistance ?? 4.0);
+        const sampleOffset = Number(fields.SampleOffset ?? 0.0);
+        const snappedY = sampleDist > 0
+          ? Math.round((y - sampleOffset) / sampleDist) * sampleDist + sampleOffset
+          : y;
+        result = getInput(inputs, "Input", x, snappedY, z);
         break;
       }
 
-      case "SwitchState":
-        result = Number(fields.State ?? 0);
+      case "SwitchState": {
+        // Set the context switchState and evaluate child
+        const prevState = ctxSwitchState;
+        ctxSwitchState = hashSeed(fields.State as string | number | undefined);
+        result = getInput(inputs, "Input", x, y, z);
+        ctxSwitchState = prevState; // restore
         break;
+      }
 
       case "Positions3D": {
         const freq = Number(fields.Frequency ?? 0.01);
@@ -921,57 +1058,164 @@ export function createEvaluationContext(
       }
 
       case "GradientWarp": {
-        const warpScale = Number(fields.WarpScale ?? 1.0);
-        const eps = 0.5;
-        const warpVal = getInput(inputs, "WarpSource", x, y, z);
-        const dfdx = (getInput(inputs, "WarpSource", x + eps, y, z) - warpVal) / eps;
-        const dfdz = (getInput(inputs, "WarpSource", x, y, z + eps) - warpVal) / eps;
-        result = getInput(inputs, "Input", x + dfdx * warpScale, y, z + dfdz * warpScale);
+        const warpFactor = Number(fields.WarpFactor ?? fields.WarpScale ?? 1.0);
+        const eps = Number(fields.SampleRange ?? 1.0);
+        const is2D = fields.Is2D === true;
+        const yFor2D = Number(fields.YFor2D ?? 0.0);
+        const inv2e = 1.0 / (2.0 * eps);
+        const sampleY = is2D ? yFor2D : y;
+
+        // Central finite differences for gradient estimation
+        const dfdx = (getInput(inputs, "WarpSource", x + eps, sampleY, z)
+                    - getInput(inputs, "WarpSource", x - eps, sampleY, z)) * inv2e;
+        const dfdz = (getInput(inputs, "WarpSource", x, sampleY, z + eps)
+                    - getInput(inputs, "WarpSource", x, sampleY, z - eps)) * inv2e;
+
+        let wx = x + warpFactor * dfdx;
+        let wy = y;
+        let wz = z + warpFactor * dfdz;
+
+        if (!is2D) {
+          // 3D mode: also warp Y
+          const dfdy = (getInput(inputs, "WarpSource", x, sampleY + eps, z)
+                      - getInput(inputs, "WarpSource", x, sampleY - eps, z)) * inv2e;
+          wy = y + warpFactor * dfdy;
+        }
+
+        result = getInput(inputs, "Input", wx, wy, wz);
         break;
       }
 
       case "VectorWarp": {
-        // VectorWarp uses a vector provider for displacement — approximate as passthrough
-        result = getInput(inputs, "Input", x, y, z);
+        const warpFactor = Number(fields.WarpFactor ?? 1.0);
+        // Get direction vector from the connected vector provider
+        const dirNodeId = inputs.get("Direction") ?? inputs.get("WarpVector");
+        const dir = dirNodeId
+          ? evaluateVectorProvider(dirNodeId, x, y, z, nodeById, inputEdges, evaluate)
+          : { x: 0, y: 0, z: 0 };
+        const dirNorm = vec3Normalize(dir);
+        const dirLen = vec3Length(dir);
+
+        if (dirLen < 1e-10) {
+          // Zero direction: no warp
+          result = getInput(inputs, "Input", x, y, z);
+        } else {
+          // Get magnitude from connected density
+          const magnitude = getInput(inputs, "Magnitude", x, y, z);
+          const displacement = magnitude * warpFactor;
+          result = getInput(inputs, "Input",
+            x + dirNorm.x * displacement,
+            y + dirNorm.y * displacement,
+            z + dirNorm.z * displacement,
+          );
+        }
+        break;
+      }
+
+      case "FastGradientWarp": {
+        const warpFactor = Number(fields.WarpFactor ?? 1.0);
+        const warpSeed = hashSeed(fields.WarpSeed as string | number | undefined);
+        const warpScale = Number(fields.WarpScale ?? 0.01);
+        const warpOctaves = Math.max(1, Number(fields.WarpOctaves ?? 3));
+        const warpLacunarity = Number(fields.WarpLacunarity ?? 2.0);
+        const warpPersistence = Number(fields.WarpPersistence ?? 0.5);
+        const is2D = fields.Is2D === true;
+
+        // Accumulate analytic gradient across octaves
+        let gx = 0, gy = 0, gz = 0;
+
+        if (is2D) {
+          let amp = 1.0;
+          let freq = warpScale;
+          for (let i = 0; i < warpOctaves; i++) {
+            const noiseFn = createHytaleNoise2DWithGradient(warpSeed + i);
+            const r = noiseFn(x * freq, z * freq);
+            gx += amp * r.dx * freq;
+            gz += amp * r.dy * freq; // dy in 2D noise maps to the z component
+            amp *= warpPersistence;
+            freq *= warpLacunarity;
+          }
+          result = getInput(inputs, "Input",
+            x + warpFactor * gx,
+            y,
+            z + warpFactor * gz,
+          );
+        } else {
+          let amp = 1.0;
+          let freq = warpScale;
+          for (let i = 0; i < warpOctaves; i++) {
+            const noiseFn = createHytaleNoise3DWithGradient(warpSeed + i);
+            const r = noiseFn(x * freq, y * freq, z * freq);
+            gx += amp * r.dx * freq;
+            gy += amp * r.dy * freq;
+            gz += amp * r.dz * freq;
+            amp *= warpPersistence;
+            freq *= warpLacunarity;
+          }
+          result = getInput(inputs, "Input",
+            x + warpFactor * gx,
+            y + warpFactor * gy,
+            z + warpFactor * gz,
+          );
+        }
         break;
       }
 
       // ── Shape SDFs ────────────────────────────────────────────────
 
       case "Ellipsoid": {
-        const r = fields.Radius as { x?: number; y?: number; z?: number } | undefined;
-        const rx = Number(r?.x ?? 1) || 1;
-        const ry = Number(r?.y ?? 1) || 1;
-        const rz = Number(r?.z ?? 1) || 1;
-        // SDF: sqrt((x/rx)^2 + (y/ry)^2 + (z/rz)^2) - 1
-        result = Math.sqrt((x / rx) ** 2 + (y / ry) ** 2 + (z / rz) ** 2) - 1;
+        const scale = fields.Scale as { x?: number; y?: number; z?: number } | undefined
+                   ?? fields.Radius as { x?: number; y?: number; z?: number } | undefined;
+        const sx = Number(scale?.x ?? 1) || 1;
+        const sy = Number(scale?.y ?? 1) || 1;
+        const sz = Number(scale?.z ?? 1) || 1;
+        const rot = buildRotationMatrix(
+          fields.NewYAxis as { x?: number; y?: number; z?: number } | undefined,
+          Number(fields.SpinAngle ?? 0),
+        );
+        // Apply rotation to query point, then scale to unit sphere
+        const [erx, ery, erz] = mat3Apply(rot, x, y, z);
+        const esx = erx / sx, esy = ery / sy, esz = erz / sz;
+        result = Math.sqrt(esx * esx + esy * esy + esz * esz) - 1;
         break;
       }
 
       case "Cuboid": {
-        const s = fields.Size as { x?: number; y?: number; z?: number } | undefined;
-        const sx = Number(s?.x ?? 1) || 1;
-        const sy = Number(s?.y ?? 1) || 1;
-        const sz = Number(s?.z ?? 1) || 1;
-        // Axis-aligned box SDF
-        const dx = Math.abs(x) - sx;
-        const dy = Math.abs(y) - sy;
-        const dz = Math.abs(z) - sz;
-        const outside = Math.sqrt(
-          Math.max(dx, 0) ** 2 + Math.max(dy, 0) ** 2 + Math.max(dz, 0) ** 2,
+        const scale = fields.Scale as { x?: number; y?: number; z?: number } | undefined
+                   ?? fields.Size as { x?: number; y?: number; z?: number } | undefined;
+        const sx = Number(scale?.x ?? 1) || 1;
+        const sy = Number(scale?.y ?? 1) || 1;
+        const sz = Number(scale?.z ?? 1) || 1;
+        const rot = buildRotationMatrix(
+          fields.NewYAxis as { x?: number; y?: number; z?: number } | undefined,
+          Number(fields.SpinAngle ?? 0),
         );
-        const inside = Math.min(Math.max(dx, dy, dz), 0);
+        const [crx, cry, crz] = mat3Apply(rot, x, y, z);
+        // Scale to unit box, then standard box SDF
+        const csx = crx / sx, csy = cry / sy, csz = crz / sz;
+        const qx = Math.abs(csx) - 1.0;
+        const qy = Math.abs(csy) - 1.0;
+        const qz = Math.abs(csz) - 1.0;
+        const outside = Math.sqrt(
+          Math.max(qx, 0) ** 2 + Math.max(qy, 0) ** 2 + Math.max(qz, 0) ** 2,
+        );
+        const inside = Math.min(Math.max(qx, qy, qz), 0);
         result = outside + inside;
         break;
       }
 
       case "Cylinder": {
+        const rot = buildRotationMatrix(
+          fields.NewYAxis as { x?: number; y?: number; z?: number } | undefined,
+          Number(fields.SpinAngle ?? 0),
+        );
+        const [cylrx, cylry, cylrz] = mat3Apply(rot, x, y, z);
+        // Cylinder SDF along local Y axis
         const radius = Number(fields.Radius ?? 1) || 1;
         const height = Number(fields.Height ?? 2);
         const halfH = height / 2;
-        // Cylinder SDF along Y axis
-        const dRadial = Math.sqrt(x * x + z * z) - radius;
-        const dVertical = Math.abs(y) - halfH;
+        const dRadial = Math.sqrt(cylrx * cylrx + cylrz * cylrz) - radius;
+        const dVertical = Math.abs(cylry) - halfH;
         const outsideR = Math.max(dRadial, 0);
         const outsideV = Math.max(dVertical, 0);
         result = Math.sqrt(outsideR ** 2 + outsideV ** 2) + Math.min(Math.max(dRadial, dVertical), 0);
@@ -992,13 +1236,35 @@ export function createEvaluationContext(
       }
 
       case "Shell": {
-        const inner = Number(fields.InnerRadius ?? 0.5);
-        const outer = Number(fields.OuterRadius ?? 1.0);
-        const dist = Math.sqrt(x * x + y * y + z * z);
-        const mid = (inner + outer) / 2;
-        const thickness = (outer - inner) / 2;
-        // Hollow sphere shell SDF: negative inside the shell wall, positive outside
-        result = Math.abs(dist - mid) - thickness;
+        // Shell uses angle × distance curve multiplication (ShellDensity.java)
+        const shellAxis = fields.Axis as { x?: number; y?: number; z?: number } | undefined;
+        let sax = Number(shellAxis?.x ?? 0);
+        let say = Number(shellAxis?.y ?? 1);
+        let saz = Number(shellAxis?.z ?? 0);
+        const saLen = Math.sqrt(sax * sax + say * say + saz * saz);
+        if (saLen > 1e-9) { sax /= saLen; say /= saLen; saz /= saLen; }
+        const shellMirror = fields.Mirror === true;
+
+        const shellDist = Math.sqrt(x * x + y * y + z * z);
+        // Evaluate DistanceCurve on distance
+        const distAmplitude = applyCurve("DistanceCurve", shellDist, inputs);
+        if (Math.abs(distAmplitude) < 1e-12) { result = 0; break; }
+
+        if (shellDist <= 1e-9) {
+          // At origin, angle is undefined — return amplitude directly
+          result = distAmplitude;
+          break;
+        }
+
+        // Angle between position vector and axis (in degrees, 0-180)
+        const posLen = shellDist;
+        const dotP = (x * sax + y * say + z * saz) / posLen;
+        let angleDeg = Math.acos(Math.max(-1, Math.min(1, dotP))) * (180 / Math.PI);
+        if (shellMirror && angleDeg > 90) angleDeg = 180 - angleDeg;
+
+        // Evaluate AngleCurve on angle
+        const angleVal = applyCurve("AngleCurve", angleDeg, inputs);
+        result = distAmplitude * angleVal;
         break;
       }
 
@@ -1041,9 +1307,25 @@ export function createEvaluationContext(
       }
 
       case "Switch": {
-        const selector = Math.max(0, Math.floor(Number(fields.Selector ?? 0)));
-        const src = inputs.get(`Inputs[${selector}]`);
-        result = src ? evaluate(src, x, y, z) : 0;
+        // Try matching against context switchState first
+        const switchStates = fields.SwitchStates as (string | number)[] | undefined;
+        if (switchStates && switchStates.length > 0) {
+          let matched = false;
+          for (let i = 0; i < switchStates.length; i++) {
+            if (hashSeed(switchStates[i] as string | number | undefined) === ctxSwitchState) {
+              const src = inputs.get(`Inputs[${i}]`);
+              result = src ? evaluate(src, x, y, z) : 0;
+              matched = true;
+              break;
+            }
+          }
+          if (!matched) result = 0;
+        } else {
+          // Fallback: use Selector field as index
+          const selector = Math.max(0, Math.floor(Number(fields.Selector ?? 0)));
+          const src = inputs.get(`Inputs[${selector}]`);
+          result = src ? evaluate(src, x, y, z) : 0;
+        }
         break;
       }
 
@@ -1053,6 +1335,27 @@ export function createEvaluationContext(
         const rawFactor = getInput(inputs, "Factor", x, y, z);
         const curvedFactor = applyCurve("Curve", rawFactor, inputs);
         result = a + (b - a) * curvedFactor;
+        break;
+      }
+
+      case "MultiMix": {
+        const keys = (fields.Keys as number[]) ?? [];
+        if (keys.length === 0) { result = 0; break; }
+        const selector = getInput(inputs, "Selector", x, y, z);
+        // Find the bracketing key indices
+        let lo = 0;
+        for (let i = 1; i < keys.length; i++) {
+          if (keys[i] <= selector) lo = i;
+        }
+        const hi = Math.min(lo + 1, keys.length - 1);
+        if (lo === hi) {
+          result = getInput(inputs, `Densities[${lo}]`, x, y, z);
+        } else {
+          const t = Math.max(0, Math.min(1, (selector - keys[lo]) / (keys[hi] - keys[lo])));
+          const a = getInput(inputs, `Densities[${lo}]`, x, y, z);
+          const b = getInput(inputs, `Densities[${hi}]`, x, y, z);
+          result = a + (b - a) * t;
+        }
         break;
       }
 

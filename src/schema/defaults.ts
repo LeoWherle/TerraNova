@@ -110,8 +110,9 @@ export const DENSITY_DEFAULTS: Record<DensityType, DefaultFields> = {
   SmoothCeiling: { Threshold: 1.0, Smoothness: 0.1 },
   Gradient: { FromY: 0, ToY: 256 },
   Amplitude: {},
-  YSampled: {},
+  YSampled: { SampleDistance: 4.0, SampleOffset: 0.0 },
   SwitchState: { State: 0 },
+  MultiMix: { Keys: [0, 1] },
   Positions3D: { Frequency: 0.01, Seed: "A" },
   PositionsPinch: { Strength: 1.0 },
   PositionsTwist: { Angle: 0.0 },
@@ -119,8 +120,9 @@ export const DENSITY_DEFAULTS: Record<DensityType, DefaultFields> = {
   XOverride: { OverrideX: 0 },
   ZOverride: { OverrideZ: 0 },
   // Warp types
-  GradientWarp: { WarpScale: 1.0 },
-  VectorWarp: {},
+  GradientWarp: { WarpFactor: 1.0, SampleRange: 1.0, Is2D: false, YFor2D: 0.0 },
+  FastGradientWarp: { WarpFactor: 1.0, WarpSeed: "A", WarpScale: 0.01, WarpOctaves: 3, WarpLacunarity: 2.0, WarpPersistence: 0.5, Is2D: false },
+  VectorWarp: { WarpFactor: 1.0 },
   // Context-dependent
   Terrain: {},
   CellWallDistance: { Frequency: 0.01, Seed: "A" },
@@ -134,11 +136,11 @@ export const DENSITY_DEFAULTS: Record<DensityType, DefaultFields> = {
   // Shape SDFs
   Cube: {},
   Axis: { Axis: { x: 0, y: 1, z: 0 }, IsAnchored: false },
-  Ellipsoid: { Radius: { x: 1, y: 1, z: 1 } },
-  Cuboid: { Size: { x: 1, y: 1, z: 1 } },
-  Cylinder: { Radius: 1.0, Height: 2.0 },
+  Ellipsoid: { Scale: { x: 1, y: 1, z: 1 }, NewYAxis: { x: 0, y: 1, z: 0 }, SpinAngle: 0 },
+  Cuboid: { Scale: { x: 1, y: 1, z: 1 }, NewYAxis: { x: 0, y: 1, z: 0 }, SpinAngle: 0 },
+  Cylinder: { Radius: 1.0, Height: 2.0, NewYAxis: { x: 0, y: 1, z: 0 }, SpinAngle: 0 },
   Plane: { Normal: { x: 0, y: 1, z: 0 }, Distance: 0.0 },
-  Shell: { InnerRadius: 0.5, OuterRadius: 1.0 },
+  Shell: { Axis: { x: 0, y: 1, z: 0 }, Mirror: false },
   // Special
   Debug: { Label: "" },
   YGradient: { FromY: 0, ToY: 256 },
@@ -392,6 +394,7 @@ export const DIRECTIONALITY_DEFAULTS: Record<DirectionalityType, DefaultFields> 
 // ---------------------------------------------------------------------------
 
 import { AssetCategory } from "./types";
+import { getAllSchemaTypes, getSchemaDefaults, getSchemaCategory } from "./schemaLoader";
 
 export interface CategoryDefaultsEntry {
   type: string;
@@ -410,7 +413,7 @@ function buildEntries(
   }));
 }
 
-export const ALL_DEFAULTS: CategoryDefaultsEntry[] = [
+const LOCAL_DEFAULTS: CategoryDefaultsEntry[] = [
   ...buildEntries(DENSITY_DEFAULTS, AssetCategory.Density),
   ...buildEntries(CURVE_DEFAULTS, AssetCategory.Curve),
   ...buildEntries(MATERIAL_DEFAULTS, AssetCategory.MaterialProvider),
@@ -424,4 +427,46 @@ export const ALL_DEFAULTS: CategoryDefaultsEntry[] = [
   ...buildEntries(TINT_DEFAULTS, AssetCategory.TintProvider),
   ...buildEntries(BLOCK_MASK_DEFAULTS, AssetCategory.BlockMask),
   ...buildEntries(DIRECTIONALITY_DEFAULTS, AssetCategory.Directionality),
+];
+
+// Build set of locally-registered types (including prefixed curve/material/etc.)
+const localTypeSet = new Set(LOCAL_DEFAULTS.map((e) => {
+  if (e.category === AssetCategory.Density) return e.type;
+  // Map category to prefix
+  const prefix: Record<string, string> = {
+    [AssetCategory.Curve]: "Curve",
+    [AssetCategory.MaterialProvider]: "Material",
+    [AssetCategory.Pattern]: "Pattern",
+    [AssetCategory.PositionProvider]: "Position",
+    [AssetCategory.Prop]: "Prop",
+    [AssetCategory.Scanner]: "Scanner",
+    [AssetCategory.Assignment]: "Assignment",
+    [AssetCategory.VectorProvider]: "Vector",
+    [AssetCategory.EnvironmentProvider]: "Environment",
+    [AssetCategory.TintProvider]: "Tint",
+    [AssetCategory.BlockMask]: "BlockMask",
+    [AssetCategory.Directionality]: "Directionality",
+  };
+  return `${prefix[e.category] ?? ""}:${e.type}`;
+}));
+
+// Add schema-derived entries for types not locally registered
+function buildSchemaEntries(): CategoryDefaultsEntry[] {
+  const entries: CategoryDefaultsEntry[] = [];
+  for (const nodeType of getAllSchemaTypes()) {
+    // Skip types that are already locally registered
+    if (localTypeSet.has(nodeType)) continue;
+
+    const category = getSchemaCategory(nodeType);
+    if (!category) continue;
+
+    const defaults = getSchemaDefaults(nodeType) ?? {};
+    entries.push({ type: nodeType, category, defaults });
+  }
+  return entries;
+}
+
+export const ALL_DEFAULTS: CategoryDefaultsEntry[] = [
+  ...LOCAL_DEFAULTS,
+  ...buildSchemaEntries(),
 ];

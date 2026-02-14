@@ -103,11 +103,13 @@ export type DensityType =
   | "Amplitude"
   | "YSampled"
   | "SwitchState"
+  | "MultiMix"
   | "Positions3D"
   | "PositionsPinch"
   | "PositionsTwist"
   // Warp types
   | "GradientWarp"
+  | "FastGradientWarp"
   | "VectorWarp"
   // Context-dependent
   | "Terrain"

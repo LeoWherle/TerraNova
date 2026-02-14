@@ -14,6 +14,7 @@ import {
   DENSITY_NODE_SUBCATEGORY,
 } from "@/schema/densitySubcategories";
 import type { DensityType } from "@/schema/density";
+import { isBridgeNode } from "@/data/bridgeRegistry";
 
 const SNIPPET_COLOR = "#a78bfa";
 const ROOT_PALETTE_COLOR = "#8B4450";
@@ -385,6 +386,9 @@ export function NodePalette() {
                                       style={{ backgroundColor: subColor }}
                                     />
                                     <span className="truncate">{getTypeDisplayName(entry.type)}</span>
+                                    {isBridgeNode(entry.type) && (
+                                      <span className="text-[9px] text-tn-text-muted opacity-60 shrink-0">⇄</span>
+                                    )}
                                   </button>
                                 );
                               })}
@@ -414,6 +418,9 @@ export function NodePalette() {
                           style={{ backgroundColor: color }}
                         />
                         <span className="truncate">{getTypeDisplayName(entry.type)}</span>
+                        {isBridgeNode(entry.type) && (
+                          <span className="text-[9px] text-tn-text-muted opacity-60 shrink-0">⇄</span>
+                        )}
                       </button>
                     );
                   })}

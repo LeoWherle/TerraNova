@@ -1,0 +1,5767 @@
+{
+  "version": "1.0.0",
+  "buildDate": "2026-02-14",
+  "sourceBuild": "2026.02.11-255364b8e",
+  "format": "terranova-bundle",
+  "nodes": {
+    "Abs": {
+      "nodeType": "Abs",
+      "displayName": "Abs",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Returns the absolute value of the input density.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Amplitude": {
+      "nodeType": "Amplitude",
+      "displayName": "Amplitude",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Legacy Y-dependent multiplicative amplitude.",
+      "fields": {
+        "FunctionForY": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Y-dependent function defining the amplitude curve."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "AmplitudeConstant": {
+      "nodeType": "AmplitudeConstant",
+      "displayName": "AmplitudeConstant",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Legacy constant amplitude node.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Anchor": {
+      "nodeType": "Anchor",
+      "displayName": "Anchor",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Anchors positions to a surface.",
+      "fields": {
+        "Reversed": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to reverse the anchor direction."
+        },
+        "Positions": {
+          "type": "PositionProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The source position provider."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Positions",
+          "handleType": "PositionProvider",
+          "label": "Positions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "AnchorType": {
+      "nodeType": "AnchorType",
+      "displayName": "AnchorType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Enum discriminator for anchor evaluation types.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "The anchor evaluation type."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "Angle": {
+      "nodeType": "Angle",
+      "displayName": "Angle",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Outputs the angle between the sample direction and a reference vector.",
+      "fields": {
+        "VectorProvider": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Optional dynamic vector provider asset."
+        },
+        "Vector": {
+          "type": "vector3d",
+          "required": false,
+          "default": null,
+          "description": "Static reference vector for angle computation."
+        },
+        "IsAxis": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether the reference is treated as an axis."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Axis": {
+      "nodeType": "Axis",
+      "displayName": "Axis",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Axial signed-distance field with curve-based falloff.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Falloff curve mapping distance to density."
+        },
+        "IsAnchored": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether the axis passes through the anchor position."
+        },
+        "Axis": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            0,
+            1,
+            0
+          ],
+          "description": "Direction vector of the axis."
+        }
+      },
+      "inputs": [
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "BaseHeight": {
+      "nodeType": "BaseHeight",
+      "displayName": "BaseHeight",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Adjusts positions to the terrain base height.",
+      "fields": {
+        "MinYRead": {
+          "type": "number",
+          "required": false,
+          "default": -1.0,
+          "description": "Minimum Y read value."
+        },
+        "MaxYRead": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Maximum Y read value."
+        },
+        "BedName": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Optional named bed reference."
+        },
+        "Positions": {
+          "type": "PositionProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The source position provider."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Positions",
+          "handleType": "PositionProvider",
+          "label": "Positions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Cache": {
+      "nodeType": "Cache",
+      "displayName": "Cache",
+      "category": "VectorProvider",
+      "subcategory": "",
+      "description": "Caches vector values from a child provider.",
+      "fields": {
+        "VectorProvider": {
+          "type": "VectorProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The vector provider to cache."
+        }
+      },
+      "inputs": [
+        {
+          "id": "VectorProvider",
+          "handleType": "VectorProvider",
+          "label": "VectorProvider"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "VectorProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Cache2D": {
+      "nodeType": "Cache2D",
+      "displayName": "Cache2D",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Deprecated 2D-specific density cache.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Ceiling": {
+      "nodeType": "Ceiling",
+      "displayName": "Ceiling",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions on a ceiling surface.",
+      "fields": {
+        "Ceiling": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Sub-pattern to match on the ceiling."
+        },
+        "Origin": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for the origin position."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Ceiling",
+          "handleType": "Pattern",
+          "label": "Ceiling"
+        },
+        {
+          "id": "Origin",
+          "handleType": "Pattern",
+          "label": "Origin"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Cell": {
+      "nodeType": "Cell",
+      "displayName": "Cell",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "CellNoise implementation variant for internal cell-based noise generation.",
+      "fields": {
+        "ScaleX": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Horizontal X sampling frequency."
+        },
+        "ScaleZ": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Horizontal Z sampling frequency."
+        },
+        "Jitter": {
+          "type": "number",
+          "required": false,
+          "default": 0.5,
+          "description": "Cell point randomization factor."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "CellNoise2D": {
+      "nodeType": "CellNoise2D",
+      "displayName": "CellNoise2D",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "2D Worley/cellular noise generator.",
+      "fields": {
+        "ScaleX": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Horizontal X sampling frequency."
+        },
+        "ScaleZ": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Horizontal Z sampling frequency."
+        },
+        "Jitter": {
+          "type": "number",
+          "required": false,
+          "default": 0.5,
+          "description": "Cell point randomization factor."
+        },
+        "Octaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of cell noise layers."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        },
+        "ReturnType": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Specifies which distance value to return (F1, F2, F2-F1, etc.)."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "CellNoise3D": {
+      "nodeType": "CellNoise3D",
+      "displayName": "CellNoise3D",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "3D Worley/cellular noise generator.",
+      "fields": {
+        "ScaleX": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "X-axis sampling frequency."
+        },
+        "ScaleY": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Y-axis sampling frequency."
+        },
+        "ScaleZ": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Z-axis sampling frequency."
+        },
+        "Jitter": {
+          "type": "number",
+          "required": false,
+          "default": 0.5,
+          "description": "Cell point randomization factor."
+        },
+        "Octaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of cell noise layers."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        },
+        "ReturnType": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Specifies which distance value to return (F1, F2, F2-F1, etc.)."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "CellType": {
+      "nodeType": "CellType",
+      "displayName": "CellType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Enum discriminator for CellNoise cell computation types.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "Distance",
+          "description": "The cell computation type."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "CellValue": {
+      "nodeType": "CellValue",
+      "displayName": "CellValue",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Returns a hash value associated with the nearest cell point.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "CellWallDistance": {
+      "nodeType": "CellWallDistance",
+      "displayName": "CellWallDistance",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Returns the distance to the nearest biome cell wall.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Clamp": {
+      "nodeType": "Clamp",
+      "displayName": "Clamp",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Clamps a curve between two wall values.",
+      "fields": {
+        "Curve": {
+          "type": "CurveAsset",
+          "required": false,
+          "default": null,
+          "description": "The curve to clamp."
+        },
+        "WallA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Upper clamp boundary."
+        },
+        "WallB": {
+          "type": "number",
+          "required": false,
+          "default": -1.0,
+          "description": "Lower clamp boundary."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curve",
+          "handleType": "Curve",
+          "label": "Curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Constant": {
+      "nodeType": "Constant",
+      "displayName": "Constant",
+      "category": "TintProvider",
+      "subcategory": "",
+      "description": "Provides a constant tint color.",
+      "fields": {
+        "Tint": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The constant tint color."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "TintProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Cube": {
+      "nodeType": "Cube",
+      "displayName": "Cube",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Axis-aligned cube signed-distance field shaped by a curve.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Falloff curve mapping distance to density."
+        }
+      },
+      "inputs": [
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Cuboid": {
+      "nodeType": "Cuboid",
+      "displayName": "Cuboid",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions within a cuboid region with an optional sub-pattern.",
+      "fields": {
+        "SubPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Optional sub-pattern to apply within the cuboid."
+        },
+        "Min": {
+          "type": "vector3i",
+          "required": true,
+          "default": [
+            0,
+            0,
+            0
+          ],
+          "description": "Minimum corner of the cuboid."
+        },
+        "Max": {
+          "type": "vector3i",
+          "required": true,
+          "default": [
+            0,
+            0,
+            0
+          ],
+          "description": "Maximum corner of the cuboid."
+        }
+      },
+      "inputs": [
+        {
+          "id": "SubPattern",
+          "handleType": "Pattern",
+          "label": "SubPattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "CurveMapper": {
+      "nodeType": "CurveMapper",
+      "displayName": "CurveMapper",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Remaps input density through a curve asset lookup.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Reference to the CurveAsset used for remapping."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        },
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Cylinder": {
+      "nodeType": "Cylinder",
+      "displayName": "Cylinder",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Cylindrical signed-distance field with independent radial and axial curves.",
+      "fields": {
+        "RadialCurve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Curve controlling the radial (cross-section) falloff."
+        },
+        "AxialCurve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Curve controlling the axial (along-axis) falloff."
+        },
+        "NewYAxis": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            0,
+            1,
+            0
+          ],
+          "description": "Direction of the cylinder axis."
+        },
+        "Spin": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Rotation angle around the cylinder axis in degrees."
+        }
+      },
+      "inputs": [
+        {
+          "id": "radialCurve",
+          "handleType": "Curve",
+          "label": "radialCurve"
+        },
+        {
+          "id": "axialCurve",
+          "handleType": "Curve",
+          "label": "axialCurve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "DecimalConstants": {
+      "nodeType": "DecimalConstants",
+      "displayName": "DecimalConstants",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Provides a collection of named constant decimal values.",
+      "fields": {
+        "Values": {
+          "type": "object",
+          "required": true,
+          "default": {},
+          "description": "Map of named decimal constant values."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance": {
+      "nodeType": "Distance",
+      "displayName": "Distance",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Spherical signed-distance field shaped by a curve.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Falloff curve mapping distance to density."
+        }
+      },
+      "inputs": [
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance2": {
+      "nodeType": "Distance2",
+      "displayName": "Distance2",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Two-distance computation base for cell noise return types.",
+      "fields": {
+        "DistanceFunction": {
+          "type": "string",
+          "required": false,
+          "default": "Euclidean",
+          "description": "The distance metric to use."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance2Add": {
+      "nodeType": "Distance2Add",
+      "displayName": "Distance2Add",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Returns the sum of F1 and F2 cell distances.",
+      "fields": {
+        "DistanceFunction": {
+          "type": "string",
+          "required": false,
+          "default": "Euclidean",
+          "description": "The distance metric to use."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance2Div": {
+      "nodeType": "Distance2Div",
+      "displayName": "Distance2Div",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Returns the quotient of F1 and F2 cell distances.",
+      "fields": {
+        "DistanceFunction": {
+          "type": "string",
+          "required": false,
+          "default": "Euclidean",
+          "description": "The distance metric to use."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance2Mul": {
+      "nodeType": "Distance2Mul",
+      "displayName": "Distance2Mul",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Returns the product of F1 and F2 cell distances.",
+      "fields": {
+        "DistanceFunction": {
+          "type": "string",
+          "required": false,
+          "default": "Euclidean",
+          "description": "The distance metric to use."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Distance2Sub": {
+      "nodeType": "Distance2Sub",
+      "displayName": "Distance2Sub",
+      "category": "Density",
+      "subcategory": "CellNoiseReturnType",
+      "description": "Returns the difference of F2 and F1 cell distances.",
+      "fields": {
+        "DistanceFunction": {
+          "type": "string",
+          "required": false,
+          "default": "Euclidean",
+          "description": "The distance metric to use."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "DistanceToBiomeEdge": {
+      "nodeType": "DistanceToBiomeEdge",
+      "displayName": "DistanceToBiomeEdge",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Returns the distance to the nearest biome edge.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Ellipsoid": {
+      "nodeType": "Ellipsoid",
+      "displayName": "Ellipsoid",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Ellipsoidal signed-distance field with configurable orientation and scale.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Falloff curve mapping normalized distance to density."
+        },
+        "Scale": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            1,
+            1,
+            1
+          ],
+          "description": "Radius scale along each axis."
+        },
+        "NewYAxis": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            0,
+            1,
+            0
+          ],
+          "description": "The new Y (up) axis for orientation."
+        },
+        "Spin": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Rotation angle around the new Y axis in degrees."
+        }
+      },
+      "inputs": [
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Euclidean": {
+      "nodeType": "Euclidean",
+      "displayName": "Euclidean",
+      "category": "Density",
+      "subcategory": "DistanceFunction",
+      "description": "Euclidean (straight-line) distance function for cell noise.",
+      "fields": {},
+      "inputs": [],
+      "outputs": []
+    },
+    "Exported": {
+      "nodeType": "Exported",
+      "displayName": "Exported",
+      "category": "VectorProvider",
+      "subcategory": "",
+      "description": "Exports a vector provider for external use.",
+      "fields": {
+        "SingleInstance": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether only one instance is allowed."
+        },
+        "VectorProvider": {
+          "type": "VectorProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The vector provider to export."
+        }
+      },
+      "inputs": [
+        {
+          "id": "VectorProvider",
+          "handleType": "VectorProvider",
+          "label": "VectorProvider"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "VectorProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "FastGradientWarp": {
+      "nodeType": "FastGradientWarp",
+      "displayName": "FastGradientWarp",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "High-performance domain warping using built-in noise derivatives.",
+      "fields": {
+        "WarpScale": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Base frequency of the warp noise."
+        },
+        "WarpOctaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of octaves for the warp noise."
+        },
+        "WarpLacunarity": {
+          "type": "number",
+          "required": false,
+          "default": 2.0,
+          "description": "Frequency multiplier per warp octave."
+        },
+        "WarpPersistence": {
+          "type": "number",
+          "required": false,
+          "default": 0.5,
+          "description": "Amplitude decay per warp octave."
+        },
+        "WarpFactor": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Displacement magnitude multiplier."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Seed for the warp noise."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Floor": {
+      "nodeType": "Floor",
+      "displayName": "Floor",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions on a floor surface.",
+      "fields": {
+        "Floor": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Sub-pattern to match on the floor."
+        },
+        "Origin": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for the origin position."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Floor",
+          "handleType": "Pattern",
+          "label": "Floor"
+        },
+        {
+          "id": "Origin",
+          "handleType": "Pattern",
+          "label": "Origin"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Gradient": {
+      "nodeType": "Gradient",
+      "displayName": "Gradient",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Computes the gradient magnitude of the input density along a specified axis.",
+      "fields": {
+        "Axis": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            0,
+            1,
+            0
+          ],
+          "description": "Direction along which to compute the gradient."
+        },
+        "SampleRange": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Finite-difference step size."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "GradientWarp": {
+      "nodeType": "GradientWarp",
+      "displayName": "GradientWarp",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Warps a density field along its own gradient direction.",
+      "fields": {
+        "SampleRange": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Finite-difference step size for gradient estimation."
+        },
+        "WarpFactor": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Displacement magnitude multiplier."
+        },
+        "2D": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to restrict warping to the XZ plane."
+        },
+        "YFor2D": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Fixed Y level for 2D gradient sampling."
+        }
+      },
+      "inputs": [
+        {
+          "id": "target",
+          "handleType": "Density",
+          "label": "target"
+        },
+        {
+          "id": "warp",
+          "handleType": "Density",
+          "label": "warp"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Imported": {
+      "nodeType": "Imported",
+      "displayName": "Imported",
+      "category": "VectorProvider",
+      "subcategory": "",
+      "description": "References an externally defined vector provider by name.",
+      "fields": {
+        "Name": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "Name of the imported vector provider asset."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "VectorProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Inverter": {
+      "nodeType": "Inverter",
+      "displayName": "Inverter",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Inverts a curve (1 - value).",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "Curve",
+          "handleType": "Curve",
+          "label": "Curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "LineType": {
+      "nodeType": "LineType",
+      "displayName": "LineType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Enum discriminator for line distance computation types.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "PERPENDICULAR",
+          "description": "The line distance computation mode."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "Manhattan": {
+      "nodeType": "Manhattan",
+      "displayName": "Manhattan",
+      "category": "Density",
+      "subcategory": "DistanceFunction",
+      "description": "Manhattan (axis-aligned) distance function for cell noise.",
+      "fields": {},
+      "inputs": [],
+      "outputs": []
+    },
+    "Max": {
+      "nodeType": "Max",
+      "displayName": "Max",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Returns the maximum of multiple curves.",
+      "fields": {
+        "Curves": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of curves to take the maximum of."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curves",
+          "handleType": "Curve",
+          "label": "Curves"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Min": {
+      "nodeType": "Min",
+      "displayName": "Min",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Returns the minimum of multiple curves.",
+      "fields": {
+        "Curves": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of curves to take the minimum of."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curves",
+          "handleType": "Curve",
+          "label": "Curves"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Mix": {
+      "nodeType": "Mix",
+      "displayName": "Mix",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Linearly interpolates between two density inputs using a factor.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "a",
+          "handleType": "Density",
+          "label": "a"
+        },
+        {
+          "id": "b",
+          "handleType": "Density",
+          "label": "b"
+        },
+        {
+          "id": "factor",
+          "handleType": "Density",
+          "label": "factor"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "MultiMix": {
+      "nodeType": "MultiMix",
+      "displayName": "MultiMix",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Blends between multiple density inputs using keyed interpolation.",
+      "fields": {
+        "Keys": {
+          "type": "array",
+          "required": true,
+          "default": null,
+          "description": "Key values for each input density."
+        }
+      },
+      "inputs": [
+        {
+          "id": "densities",
+          "handleType": "Density",
+          "label": "densities"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Multiplier": {
+      "nodeType": "Multiplier",
+      "displayName": "Multiplier",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Multiplies multiple curves together.",
+      "fields": {
+        "Curves": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of curve assets to multiply."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curves",
+          "handleType": "Curve",
+          "label": "Curves"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "NoiseType": {
+      "nodeType": "NoiseType",
+      "displayName": "NoiseType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Base noise type discriminator for noise function selection.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "Simplex",
+          "description": "The noise algorithm type."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "Normalizer": {
+      "nodeType": "Normalizer",
+      "displayName": "Normalizer",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Linearly remaps input density from one range to another.",
+      "fields": {
+        "FromMin": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Source range minimum."
+        },
+        "FromMax": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Source range maximum."
+        },
+        "ToMin": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Target range minimum."
+        },
+        "ToMax": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Target range maximum."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Offset": {
+      "nodeType": "Offset",
+      "displayName": "Offset",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Offsets a prop by a fixed amount.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "Prop",
+          "handleType": "Prop",
+          "label": "Prop"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "OffsetConstant": {
+      "nodeType": "OffsetConstant",
+      "displayName": "OffsetConstant",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Legacy constant offset node.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "ParentDistanceType": {
+      "nodeType": "ParentDistanceType",
+      "displayName": "ParentDistanceType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Parent distance computation type for branch noise.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "EUCLIDEAN",
+          "description": "The parent distance computation mode."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "ParentType": {
+      "nodeType": "ParentType",
+      "displayName": "ParentType",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Parent cell type enum for branch noise configurations.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "BRANCH",
+          "description": "The parent element type."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "Pipeline": {
+      "nodeType": "Pipeline",
+      "displayName": "Pipeline",
+      "category": "Density",
+      "subcategory": "Pipeline",
+      "description": "Composes multiple density stages into a sequential processing pipeline.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "stages",
+          "handleType": "Density",
+          "label": "stages"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Plane": {
+      "nodeType": "Plane",
+      "displayName": "Plane",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Planar signed-distance field with curve-based falloff.",
+      "fields": {
+        "Curve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Falloff curve mapping signed distance to density."
+        },
+        "IsAnchored": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether the plane passes through the anchor position."
+        },
+        "PlaneNormal": {
+          "type": "vector3d",
+          "required": false,
+          "default": [
+            0,
+            1,
+            0
+          ],
+          "description": "Normal vector of the plane."
+        }
+      },
+      "inputs": [
+        {
+          "id": "curve",
+          "handleType": "Curve",
+          "label": "curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Positions3D": {
+      "nodeType": "Positions3D",
+      "displayName": "Positions3D",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "3D positions-based density function.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "PositionsCellNoise": {
+      "nodeType": "PositionsCellNoise",
+      "displayName": "PositionsCellNoise",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Cell-noise-based positions density function.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "PositionsPinch": {
+      "nodeType": "PositionsPinch",
+      "displayName": "PositionsPinch",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Applies a pinch transform to positions-based density sampling.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "PositionsTwist": {
+      "nodeType": "PositionsTwist",
+      "displayName": "PositionsTwist",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Applies a twist transform to positions-based density sampling.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Pow": {
+      "nodeType": "Pow",
+      "displayName": "Pow",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Raises the input density to a given exponent.",
+      "fields": {
+        "Exponent": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "The power to raise the input to."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Rotator": {
+      "nodeType": "Rotator",
+      "displayName": "Rotator",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Rotates sampling coordinates by redefining the Y axis and applying a spin angle.",
+      "fields": {
+        "NewYAxis": {
+          "type": "vector3d",
+          "required": true,
+          "default": null,
+          "description": "The new Y (up) axis direction vector."
+        },
+        "SpinAngle": {
+          "type": "number",
+          "required": true,
+          "default": null,
+          "description": "Rotation angle around the new Y axis in degrees."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Scale": {
+      "nodeType": "Scale",
+      "displayName": "Scale",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Scales the sampling coordinates before evaluating the child density.",
+      "fields": {
+        "ScaleX": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "X-axis coordinate scale factor."
+        },
+        "ScaleY": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Y-axis coordinate scale factor."
+        },
+        "ScaleZ": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Z-axis coordinate scale factor."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Shell": {
+      "nodeType": "Shell",
+      "displayName": "Shell",
+      "category": "Density",
+      "subcategory": "ShapeSDF",
+      "description": "Shell-shaped SDF defined by angle and distance curves.",
+      "fields": {
+        "Axis": {
+          "type": "vector3d",
+          "required": true,
+          "default": null,
+          "description": "Reference axis direction for angle computation."
+        },
+        "Mirror": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to mirror the shell across the axis plane."
+        },
+        "AngleCurve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Curve mapping angle to radius."
+        },
+        "DistanceCurve": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "Curve mapping distance to density."
+        }
+      },
+      "inputs": [
+        {
+          "id": "angleCurve",
+          "handleType": "Curve",
+          "label": "angleCurve"
+        },
+        {
+          "id": "distanceCurve",
+          "handleType": "Curve",
+          "label": "distanceCurve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Simplex": {
+      "nodeType": "Simplex",
+      "displayName": "Simplex",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "SimplexNoise implementation variant for internal simplex-based noise generation.",
+      "fields": {
+        "Scale": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Base sampling frequency."
+        },
+        "Octaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of noise layers to sum."
+        },
+        "Lacunarity": {
+          "type": "number",
+          "required": false,
+          "default": 2.0,
+          "description": "Frequency multiplier per octave."
+        },
+        "Persistence": {
+          "type": "number",
+          "required": false,
+          "default": 0.5,
+          "description": "Amplitude multiplier per octave."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "SimplexNoise2D": {
+      "nodeType": "SimplexNoise2D",
+      "displayName": "SimplexNoise2D",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "2D simplex noise with fractal Brownian motion (fBm) octave stacking.",
+      "fields": {
+        "Lacunarity": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Frequency multiplier per octave."
+        },
+        "Persistence": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Amplitude multiplier per octave."
+        },
+        "Scale": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Base sampling frequency."
+        },
+        "Octaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of noise layers to sum."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "SimplexNoise3D": {
+      "nodeType": "SimplexNoise3D",
+      "displayName": "SimplexNoise3D",
+      "category": "Density",
+      "subcategory": "Generative",
+      "description": "3D simplex noise with fractal Brownian motion (fBm) octave stacking.",
+      "fields": {
+        "Lacunarity": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Frequency multiplier per octave."
+        },
+        "Persistence": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Amplitude multiplier per octave."
+        },
+        "ScaleXZ": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Horizontal (X/Z) sampling frequency."
+        },
+        "ScaleY": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Vertical (Y) sampling frequency."
+        },
+        "Octaves": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Number of noise layers to sum."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Noise seed string."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Slider": {
+      "nodeType": "Slider",
+      "displayName": "Slider",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Translates the sampling coordinates before evaluating the child density.",
+      "fields": {
+        "SlideX": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "X-axis translation offset."
+        },
+        "SlideY": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Y-axis translation offset."
+        },
+        "SlideZ": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Z-axis translation offset."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "SmoothCeiling": {
+      "nodeType": "SmoothCeiling",
+      "displayName": "SmoothCeiling",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Smoothly caps a curve at a maximum value.",
+      "fields": {
+        "Curve": {
+          "type": "CurveAsset",
+          "required": false,
+          "default": null,
+          "description": "The curve to smooth-cap."
+        },
+        "WallA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Smooth ceiling boundary."
+        },
+        "WallB": {
+          "type": "number",
+          "required": false,
+          "default": -1.0,
+          "description": "Lower boundary."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curve",
+          "handleType": "Curve",
+          "label": "Curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "SmoothClamp": {
+      "nodeType": "SmoothClamp",
+      "displayName": "SmoothClamp",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Smoothly clamps a curve between two wall values.",
+      "fields": {
+        "Curve": {
+          "type": "CurveAsset",
+          "required": false,
+          "default": null,
+          "description": "The curve to smooth-clamp."
+        },
+        "WallA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Upper clamp boundary."
+        },
+        "WallB": {
+          "type": "number",
+          "required": false,
+          "default": -1.0,
+          "description": "Lower clamp boundary."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curve",
+          "handleType": "Curve",
+          "label": "Curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "SmoothFloor": {
+      "nodeType": "SmoothFloor",
+      "displayName": "SmoothFloor",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Smoothly floors a curve at a minimum value.",
+      "fields": {
+        "Curve": {
+          "type": "CurveAsset",
+          "required": false,
+          "default": null,
+          "description": "The curve to smooth-floor."
+        },
+        "WallA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Upper boundary."
+        },
+        "WallB": {
+          "type": "number",
+          "required": false,
+          "default": -1.0,
+          "description": "Smooth floor boundary."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curve",
+          "handleType": "Curve",
+          "label": "Curve"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "SmoothMax": {
+      "nodeType": "SmoothMax",
+      "displayName": "SmoothMax",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Returns the smooth maximum of two curves.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "CurveA",
+          "handleType": "Curve",
+          "label": "CurveA"
+        },
+        {
+          "id": "CurveB",
+          "handleType": "Curve",
+          "label": "CurveB"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "SmoothMin": {
+      "nodeType": "SmoothMin",
+      "displayName": "SmoothMin",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Returns the smooth minimum of two curves.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "CurveA",
+          "handleType": "Curve",
+          "label": "CurveA"
+        },
+        {
+          "id": "CurveB",
+          "handleType": "Curve",
+          "label": "CurveB"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Sqrt": {
+      "nodeType": "Sqrt",
+      "displayName": "Sqrt",
+      "category": "Density",
+      "subcategory": "ArithmeticCombinator",
+      "description": "Computes the square root of the input density.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Sum": {
+      "nodeType": "Sum",
+      "displayName": "Sum",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "Sums multiple curves together.",
+      "fields": {
+        "Curves": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of curve assets to sum."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Curves",
+          "handleType": "Curve",
+          "label": "Curves"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Switch": {
+      "nodeType": "Switch",
+      "displayName": "Switch",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Selects between density inputs based on switch cases.",
+      "fields": {
+        "SwitchCases": {
+          "type": "array",
+          "required": true,
+          "default": null,
+          "description": "Array of case definitions mapping conditions to inputs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "densities",
+          "handleType": "Density",
+          "label": "densities"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "SwitchState": {
+      "nodeType": "SwitchState",
+      "displayName": "SwitchState",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Provides a state value for use with Switch nodes.",
+      "fields": {
+        "SwitchState": {
+          "type": "string",
+          "required": true,
+          "default": null,
+          "description": "The state string to match against."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Terrain": {
+      "nodeType": "Terrain",
+      "displayName": "Terrain",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Accesses the current terrain density from the worldgen context.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "Type": {
+      "nodeType": "Type",
+      "displayName": "Type",
+      "category": "Density",
+      "subcategory": "Enum",
+      "description": "Generic type discriminator for polymorphic configuration blocks.",
+      "fields": {
+        "Value": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "The type identifier string."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "VectorWarp": {
+      "nodeType": "VectorWarp",
+      "displayName": "VectorWarp",
+      "category": "Density",
+      "subcategory": "FilterTransform",
+      "description": "Warps a density field along a specified vector direction.",
+      "fields": {
+        "WarpFactor": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Displacement magnitude multiplier."
+        },
+        "WarpVector": {
+          "type": "vector3d",
+          "required": true,
+          "default": null,
+          "description": "Direction and base magnitude of the warp displacement."
+        }
+      },
+      "inputs": [
+        {
+          "id": "target",
+          "handleType": "Density",
+          "label": "target"
+        },
+        {
+          "id": "warp",
+          "handleType": "Density",
+          "label": "warp"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "XOverride": {
+      "nodeType": "XOverride",
+      "displayName": "XOverride",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Overrides the X coordinate with a fixed value before sampling the child density.",
+      "fields": {
+        "Value": {
+          "type": "number",
+          "required": true,
+          "default": null,
+          "description": "The constant X coordinate to use."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "XValue": {
+      "nodeType": "XValue",
+      "displayName": "XValue",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Outputs the X coordinate of the sample position as a density value.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "YOverride": {
+      "nodeType": "YOverride",
+      "displayName": "YOverride",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Overrides the Y coordinate with a fixed value before sampling the child density.",
+      "fields": {
+        "Value": {
+          "type": "number",
+          "required": true,
+          "default": null,
+          "description": "The constant Y coordinate to use."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "YSampled": {
+      "nodeType": "YSampled",
+      "displayName": "YSampled",
+      "category": "Density",
+      "subcategory": "Terrain",
+      "description": "Samples the child density at discrete Y intervals and interpolates.",
+      "fields": {
+        "SampleDistance": {
+          "type": "number",
+          "required": false,
+          "default": 4.0,
+          "description": "Vertical distance between sample levels."
+        },
+        "SampleOffset": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Vertical offset for the sample grid."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "YValue": {
+      "nodeType": "YValue",
+      "displayName": "YValue",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Outputs the Y coordinate of the sample position as a density value.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "ZOverride": {
+      "nodeType": "ZOverride",
+      "displayName": "ZOverride",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Overrides the Z coordinate with a fixed value before sampling the child density.",
+      "fields": {
+        "Value": {
+          "type": "number",
+          "required": true,
+          "default": null,
+          "description": "The constant Z coordinate to use."
+        }
+      },
+      "inputs": [
+        {
+          "id": "input",
+          "handleType": "Density",
+          "label": "input"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "ZValue": {
+      "nodeType": "ZValue",
+      "displayName": "ZValue",
+      "category": "Density",
+      "subcategory": "PositionCoordinate",
+      "description": "Outputs the Z coordinate of the sample position as a density value.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Density",
+          "label": "output"
+        }
+      ]
+    },
+    "DistanceExponential": {
+      "nodeType": "DistanceExponential",
+      "displayName": "DistanceExponential",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "An exponential distance falloff curve.",
+      "fields": {
+        "Range": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "The effective range of the distance falloff."
+        },
+        "ExponentA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "The exponent controlling the falloff rate."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "DistanceS": {
+      "nodeType": "DistanceS",
+      "displayName": "DistanceS",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "An S-shaped distance curve with configurable transition.",
+      "fields": {
+        "ExponentA": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "First exponent parameter."
+        },
+        "ExponentB": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Second exponent parameter."
+        },
+        "Range": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "The effective range of the curve."
+        },
+        "Transition": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Transition point of the S-curve."
+        },
+        "TransitionSmooth": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Smoothness of the transition."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Manual": {
+      "nodeType": "Manual",
+      "displayName": "Manual",
+      "category": "Curve",
+      "subcategory": "",
+      "description": "A manually defined curve using explicit control points.",
+      "fields": {
+        "Points": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of X,Y control points defining the curve."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Curve",
+          "label": "output"
+        }
+      ]
+    },
+    "Not": {
+      "nodeType": "Not",
+      "displayName": "Not",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Logical NOT of a pattern.",
+      "fields": {
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": true,
+          "default": null,
+          "description": "The pattern to negate."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "AlwaysTrueCondition": {
+      "nodeType": "AlwaysTrueCondition",
+      "displayName": "AlwaysTrueCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "A condition that always evaluates to true.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "AndCondition": {
+      "nodeType": "AndCondition",
+      "displayName": "AndCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Logical AND of multiple conditions.",
+      "fields": {
+        "Conditions": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of conditions to AND together."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Conditions",
+          "handleType": "Condition",
+          "label": "Conditions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "ConstantThickness": {
+      "nodeType": "ConstantThickness",
+      "displayName": "ConstantThickness",
+      "category": "Layer",
+      "subcategory": "MaterialProvider",
+      "description": "A layer with a constant thickness.",
+      "fields": {
+        "Thickness": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "The constant thickness of the layer in blocks."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider for this layer."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Layer",
+          "label": "output"
+        }
+      ]
+    },
+    "DownwardDepth": {
+      "nodeType": "DownwardDepth",
+      "displayName": "DownwardDepth",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Applies material based on downward depth.",
+      "fields": {
+        "Depth": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "The downward depth in blocks."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider to apply."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "DownwardSpace": {
+      "nodeType": "DownwardSpace",
+      "displayName": "DownwardSpace",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Applies material based on downward air space.",
+      "fields": {
+        "Space": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "The downward air space in blocks."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider to apply."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "EqualsCondition": {
+      "nodeType": "EqualsCondition",
+      "displayName": "EqualsCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Checks if a context value equals a target.",
+      "fields": {
+        "ContextToCheck": {
+          "type": "enum",
+          "required": true,
+          "default": null,
+          "description": "The context metric to check."
+        },
+        "Value": {
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "The target value for equality comparison."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "FieldFunction": {
+      "nodeType": "FieldFunction",
+      "displayName": "FieldFunction",
+      "category": "Assignment",
+      "subcategory": "",
+      "description": "Assigns props based on a density field function.",
+      "fields": {
+        "FieldFunction": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function to sample."
+        },
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of threshold-assignment delimiter pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "FieldFunction",
+          "handleType": "Density",
+          "label": "FieldFunction"
+        },
+        {
+          "id": "Delimiters",
+          "handleType": "Assignment",
+          "label": "Delimiters"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Assignment",
+          "label": "output"
+        }
+      ]
+    },
+    "GreaterThanCondition": {
+      "nodeType": "GreaterThanCondition",
+      "displayName": "GreaterThanCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Checks if a context value is greater than a threshold.",
+      "fields": {
+        "ContextToCheck": {
+          "type": "enum",
+          "required": true,
+          "default": null,
+          "description": "The context metric to check."
+        },
+        "Threshold": {
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "The threshold for greater-than comparison."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "NoiseThickness": {
+      "nodeType": "NoiseThickness",
+      "displayName": "NoiseThickness",
+      "category": "Layer",
+      "subcategory": "MaterialProvider",
+      "description": "A layer with noise-driven thickness.",
+      "fields": {
+        "ThicknessFunctionXZ": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "Density function controlling thickness in XZ."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider for this layer."
+        }
+      },
+      "inputs": [
+        {
+          "id": "ThicknessFunctionXZ",
+          "handleType": "Density",
+          "label": "ThicknessFunctionXZ"
+        },
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Layer",
+          "label": "output"
+        }
+      ]
+    },
+    "NotCondition": {
+      "nodeType": "NotCondition",
+      "displayName": "NotCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Logical NOT of a condition.",
+      "fields": {
+        "Condition": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The condition to negate."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Condition",
+          "handleType": "Condition",
+          "label": "Condition"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "OrCondition": {
+      "nodeType": "OrCondition",
+      "displayName": "OrCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Logical OR of multiple conditions.",
+      "fields": {
+        "Conditions": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of conditions to OR together."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Conditions",
+          "handleType": "Condition",
+          "label": "Conditions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "Queue": {
+      "nodeType": "Queue",
+      "displayName": "Queue",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Queues multiple props in order.",
+      "fields": {},
+      "inputs": [
+        {
+          "id": "Props",
+          "handleType": "Prop",
+          "label": "Props"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "RangeThickness": {
+      "nodeType": "RangeThickness",
+      "displayName": "RangeThickness",
+      "category": "Layer",
+      "subcategory": "MaterialProvider",
+      "description": "A layer with random thickness within a range.",
+      "fields": {
+        "RangeMin": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "Minimum thickness in blocks."
+        },
+        "RangeMax": {
+          "type": "integer",
+          "required": true,
+          "default": 3,
+          "description": "Maximum thickness in blocks."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Random seed for reproducibility."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider for this layer."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Layer",
+          "label": "output"
+        }
+      ]
+    },
+    "SimpleHorizontal": {
+      "nodeType": "SimpleHorizontal",
+      "displayName": "SimpleHorizontal",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Filters positions to a horizontal Y range.",
+      "fields": {
+        "RangeY": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The Y range to constrain positions to."
+        },
+        "Positions": {
+          "type": "PositionProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The source position provider."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Positions",
+          "handleType": "PositionProvider",
+          "label": "Positions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "SmallerThanCondition": {
+      "nodeType": "SmallerThanCondition",
+      "displayName": "SmallerThanCondition",
+      "category": "Condition",
+      "subcategory": "MaterialProvider",
+      "description": "Checks if a context value is smaller than a threshold.",
+      "fields": {
+        "ContextToCheck": {
+          "type": "enum",
+          "required": true,
+          "default": null,
+          "description": "The context metric to check."
+        },
+        "Threshold": {
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "The threshold for smaller-than comparison."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Condition",
+          "label": "output"
+        }
+      ]
+    },
+    "Solidity": {
+      "nodeType": "Solidity",
+      "displayName": "Solidity",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Selects material based on solidity.",
+      "fields": {
+        "Solid": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "Material provider for solid voxels."
+        },
+        "Empty": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "Material provider for empty voxels."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Solid",
+          "handleType": "MaterialProvider",
+          "label": "Solid"
+        },
+        {
+          "id": "Empty",
+          "handleType": "MaterialProvider",
+          "label": "Empty"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "SpaceAndDepth": {
+      "nodeType": "SpaceAndDepth",
+      "displayName": "SpaceAndDepth",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Assigns materials using layered space and depth logic.",
+      "fields": {
+        "LayerContext": {
+          "type": "enum",
+          "required": true,
+          "default": null,
+          "description": "Direction context for layer evaluation."
+        },
+        "MaxExpectedDepth": {
+          "type": "integer",
+          "required": false,
+          "default": 16,
+          "description": "Maximum expected depth for optimization."
+        },
+        "Condition": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Optional condition for applying this provider."
+        },
+        "Layers": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of layer definitions."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Layers",
+          "handleType": "MaterialProvider",
+          "label": "Layers"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Striped": {
+      "nodeType": "Striped",
+      "displayName": "Striped",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Applies material in horizontal stripes.",
+      "fields": {
+        "Stripes": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of stripe definitions."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "TerrainDensity": {
+      "nodeType": "TerrainDensity",
+      "displayName": "TerrainDensity",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Selects material based on the terrain density context.",
+      "fields": {
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of threshold-material delimiter pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Delimiters",
+          "handleType": "MaterialProvider",
+          "label": "Delimiters"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "UpwardDepth": {
+      "nodeType": "UpwardDepth",
+      "displayName": "UpwardDepth",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Applies material based on upward depth.",
+      "fields": {
+        "Depth": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "The upward depth in blocks."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider to apply."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "UpwardSpace": {
+      "nodeType": "UpwardSpace",
+      "displayName": "UpwardSpace",
+      "category": "MaterialProvider",
+      "subcategory": "",
+      "description": "Applies material based on upward air space.",
+      "fields": {
+        "Space": {
+          "type": "integer",
+          "required": true,
+          "default": 1,
+          "description": "The upward air space in blocks."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider to apply."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "MaterialProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Weighted": {
+      "nodeType": "Weighted",
+      "displayName": "Weighted",
+      "category": "Assignment",
+      "subcategory": "",
+      "description": "Selects an assignment via weighted random selection.",
+      "fields": {
+        "SkipChance": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Probability of skipping assignment."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Random seed for reproducibility."
+        },
+        "WeightedAssignments": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of weighted assignment entries."
+        }
+      },
+      "inputs": [
+        {
+          "id": "WeightedAssignments",
+          "handleType": "Assignment",
+          "label": "WeightedAssignments"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Assignment",
+          "label": "output"
+        }
+      ]
+    },
+    "WeightedThickness": {
+      "nodeType": "WeightedThickness",
+      "displayName": "WeightedThickness",
+      "category": "Layer",
+      "subcategory": "MaterialProvider",
+      "description": "A layer with weighted random thickness selection.",
+      "fields": {
+        "PossibleThicknesses": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Weighted array of possible thicknesses."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Random seed for reproducibility."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The material provider for this layer."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Layer",
+          "label": "output"
+        }
+      ]
+    },
+    "And": {
+      "nodeType": "And",
+      "displayName": "And",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Logical AND of multiple patterns.",
+      "fields": {
+        "Patterns": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of patterns to AND together."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Patterns",
+          "handleType": "Pattern",
+          "label": "Patterns"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "BlockSet": {
+      "nodeType": "BlockSet",
+      "displayName": "BlockSet",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches any block in a defined block set.",
+      "fields": {
+        "BlockSet": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The block set to match against."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "BlockType": {
+      "nodeType": "BlockType",
+      "displayName": "BlockType",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches a specific block material type.",
+      "fields": {
+        "Material": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The material to match."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Gap": {
+      "nodeType": "Gap",
+      "displayName": "Gap",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions within a gap between two anchor regions.",
+      "fields": {
+        "GapPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern defining the gap region."
+        },
+        "AnchorPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern defining the anchor region."
+        },
+        "GapSize": {
+          "type": "number",
+          "required": true,
+          "default": 1.0,
+          "description": "Size of the gap in blocks."
+        },
+        "AnchorSize": {
+          "type": "number",
+          "required": true,
+          "default": 1.0,
+          "description": "Size of the anchor region in blocks."
+        },
+        "AnchorRoughness": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Roughness tolerance for anchor detection."
+        },
+        "DepthDown": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Downward search depth in blocks."
+        },
+        "DepthUp": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Upward search depth in blocks."
+        },
+        "Angles": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Angular constraints for gap detection."
+        }
+      },
+      "inputs": [
+        {
+          "id": "GapPattern",
+          "handleType": "Pattern",
+          "label": "GapPattern"
+        },
+        {
+          "id": "AnchorPattern",
+          "handleType": "Pattern",
+          "label": "AnchorPattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Or": {
+      "nodeType": "Or",
+      "displayName": "Or",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Logical OR of multiple patterns.",
+      "fields": {
+        "Patterns": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of patterns to OR together."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Patterns",
+          "handleType": "Pattern",
+          "label": "Patterns"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Surface": {
+      "nodeType": "Surface",
+      "displayName": "Surface",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions on a surface boundary.",
+      "fields": {
+        "Surface": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Sub-pattern to match on the surface."
+        },
+        "Medium": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern defining the medium around the surface."
+        },
+        "SurfaceRadius": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Radius of the surface detection zone."
+        },
+        "MediumRadius": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Radius of the medium detection zone."
+        },
+        "SurfaceGap": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Gap between surface and match region."
+        },
+        "MediumGap": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Gap between medium and match region."
+        },
+        "RequireAllFacings": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether all specified facings must match."
+        },
+        "Facings": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Directional facings to check for surfaces."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Surface",
+          "handleType": "Pattern",
+          "label": "Surface"
+        },
+        {
+          "id": "Medium",
+          "handleType": "Pattern",
+          "label": "Medium"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Wall": {
+      "nodeType": "Wall",
+      "displayName": "Wall",
+      "category": "Pattern",
+      "subcategory": "",
+      "description": "Matches positions on a wall surface.",
+      "fields": {
+        "Wall": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Sub-pattern to match on the wall."
+        },
+        "Origin": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for the origin position."
+        },
+        "RequireAllDirections": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether all specified directions must match."
+        },
+        "Directions": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Cardinal directions to check for walls."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Wall",
+          "handleType": "Pattern",
+          "label": "Wall"
+        },
+        {
+          "id": "Origin",
+          "handleType": "Pattern",
+          "label": "Origin"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Pattern",
+          "label": "output"
+        }
+      ]
+    },
+    "Bound": {
+      "nodeType": "Bound",
+      "displayName": "Bound",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Constrains positions to specified bounds.",
+      "fields": {
+        "Bounds": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The bounding box to constrain positions to."
+        },
+        "Positions": {
+          "type": "PositionProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The source position provider."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Positions",
+          "handleType": "PositionProvider",
+          "label": "Positions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Framework": {
+      "nodeType": "Framework",
+      "displayName": "Framework",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Provides positions from a named framework.",
+      "fields": {
+        "Name": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "Name of the framework to reference."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "List": {
+      "nodeType": "List",
+      "displayName": "List",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Provides positions from an explicit list.",
+      "fields": {
+        "Positions": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of explicit positions."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Mesh": {
+      "nodeType": "Mesh",
+      "displayName": "Mesh",
+      "category": "PositionProvider",
+      "subcategory": "PointGenerator",
+      "description": "Mesh point generator for position providers.",
+      "fields": {
+        "SpacingX": {
+          "type": "integer",
+          "required": true,
+          "default": 16,
+          "description": "Horizontal X spacing between mesh points."
+        },
+        "SpacingZ": {
+          "type": "integer",
+          "required": true,
+          "default": 16,
+          "description": "Horizontal Z spacing between mesh points."
+        },
+        "SpacingY": {
+          "type": "integer",
+          "required": false,
+          "default": 16,
+          "description": "Vertical Y spacing between mesh points."
+        },
+        "JitterX": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Maximum random X displacement."
+        },
+        "JitterZ": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Maximum random Z displacement."
+        },
+        "JitterY": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Maximum random Y displacement."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Seed for jitter randomization."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PointGenerator",
+          "label": "output"
+        }
+      ]
+    },
+    "Mesh2D": {
+      "nodeType": "Mesh2D",
+      "displayName": "Mesh2D",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Generates positions on a 2D mesh grid.",
+      "fields": {
+        "PointGenerator": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The point generator configuration."
+        },
+        "PointsY": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Fixed Y coordinate for all generated points."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Mesh3D": {
+      "nodeType": "Mesh3D",
+      "displayName": "Mesh3D",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Generates positions on a 3D mesh grid.",
+      "fields": {
+        "PointGenerator": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The point generator configuration."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Occurrence": {
+      "nodeType": "Occurrence",
+      "displayName": "Occurrence",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Filters positions based on density-driven occurrence.",
+      "fields": {
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Random seed for reproducibility."
+        },
+        "FieldFunction": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function controlling occurrence."
+        },
+        "Positions": {
+          "type": "PositionProviderAsset",
+          "required": true,
+          "default": null,
+          "description": "The source position provider."
+        }
+      },
+      "inputs": [
+        {
+          "id": "FieldFunction",
+          "handleType": "Density",
+          "label": "FieldFunction"
+        },
+        {
+          "id": "Positions",
+          "handleType": "PositionProvider",
+          "label": "Positions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Positions": {
+      "nodeType": "Positions",
+      "displayName": "Positions",
+      "category": "PositionProvider",
+      "subcategory": "",
+      "description": "Position collection type for aggregating position providers.",
+      "fields": {
+        "PositionProvider": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The underlying position provider."
+        },
+        "Condition": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Optional condition for filtering positions."
+        },
+        "Occurrence": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Probability of each position being used."
+        }
+      },
+      "inputs": [
+        {
+          "id": "PositionProvider",
+          "handleType": "PositionProvider",
+          "label": "PositionProvider"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "PositionProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "Union": {
+      "nodeType": "Union",
+      "displayName": "Union",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Combines multiple props into a single prop.",
+      "fields": {
+        "Props": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of props to combine."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Props",
+          "handleType": "Prop",
+          "label": "Props"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Box": {
+      "nodeType": "Box",
+      "displayName": "Box",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Fills a box region with blocks.",
+      "fields": {
+        "Range": {
+          "type": "vector3i",
+          "required": true,
+          "default": [
+            1,
+            1,
+            1
+          ],
+          "description": "Dimensions of the box."
+        },
+        "Material": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Material to fill the box with."
+        },
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern filter for block placement."
+        },
+        "Scanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner for position detection."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        },
+        {
+          "id": "Scanner",
+          "handleType": "Scanner",
+          "label": "Scanner"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Cluster": {
+      "nodeType": "Cluster",
+      "displayName": "Cluster",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Places a cluster of weighted props around a center point.",
+      "fields": {
+        "Range": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Spread range of the cluster."
+        },
+        "DistanceCurve": {
+          "type": "CurveAsset",
+          "required": false,
+          "default": null,
+          "description": "Curve controlling density falloff with distance."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Random seed for cluster placement."
+        },
+        "WeightedProps": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of weighted prop entries."
+        },
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern filter for placement."
+        },
+        "Scanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner for position detection."
+        }
+      },
+      "inputs": [
+        {
+          "id": "DistanceCurve",
+          "handleType": "Curve",
+          "label": "DistanceCurve"
+        },
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        },
+        {
+          "id": "Scanner",
+          "handleType": "Scanner",
+          "label": "Scanner"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Column": {
+      "nodeType": "Column",
+      "displayName": "Column",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Places a vertical column of blocks.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Curve": {
+      "nodeType": "Curve",
+      "displayName": "Curve",
+      "category": "Prop",
+      "subcategory": "Selection",
+      "description": "Curve-mapped prop selection based on density values.",
+      "fields": {
+        "CurveAsset": {
+          "type": "curveRef",
+          "required": true,
+          "default": null,
+          "description": "The curve function for mapping density to prop selection."
+        },
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density function providing input values."
+        },
+        "Props": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of curve-range prop entries."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        },
+        {
+          "id": "CurveAsset",
+          "handleType": "Curve",
+          "label": "CurveAsset"
+        },
+        {
+          "id": "Props",
+          "handleType": "Prop",
+          "label": "Props"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Density": {
+      "nodeType": "Density",
+      "displayName": "Density",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Places blocks using a density field function within a range.",
+      "fields": {
+        "Range": {
+          "type": "vector3i",
+          "required": true,
+          "default": [
+            1,
+            1,
+            1
+          ],
+          "description": "Dimensions of the density sampling region."
+        },
+        "PlacementMask": {
+          "type": "BlockMaskAsset",
+          "required": false,
+          "default": null,
+          "description": "Block mask controlling where placement occurs."
+        },
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern filter for block placement."
+        },
+        "Scanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner for position detection."
+        },
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function."
+        },
+        "Material": {
+          "type": "MaterialProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "Material provider for placed blocks."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        },
+        {
+          "id": "Material",
+          "handleType": "MaterialProvider",
+          "label": "Material"
+        },
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        },
+        {
+          "id": "Scanner",
+          "handleType": "Scanner",
+          "label": "Scanner"
+        },
+        {
+          "id": "PlacementMask",
+          "handleType": "BlockMask",
+          "label": "PlacementMask"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Pattern": {
+      "nodeType": "Pattern",
+      "displayName": "Pattern",
+      "category": "Directionality",
+      "subcategory": "Prop",
+      "description": "Selects direction based on pattern matches in each cardinal direction.",
+      "fields": {
+        "InitialDirection": {
+          "type": "enum",
+          "required": false,
+          "default": "NORTH",
+          "description": "The initial direction to start evaluation."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Random seed for tiebreaking."
+        },
+        "NorthPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for northward placement."
+        },
+        "SouthPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for southward placement."
+        },
+        "EastPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for eastward placement."
+        },
+        "WestPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern for westward placement."
+        }
+      },
+      "inputs": [
+        {
+          "id": "NorthPattern",
+          "handleType": "Pattern",
+          "label": "NorthPattern"
+        },
+        {
+          "id": "SouthPattern",
+          "handleType": "Pattern",
+          "label": "SouthPattern"
+        },
+        {
+          "id": "EastPattern",
+          "handleType": "Pattern",
+          "label": "EastPattern"
+        },
+        {
+          "id": "WestPattern",
+          "handleType": "Pattern",
+          "label": "WestPattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Directionality",
+          "label": "output"
+        }
+      ]
+    },
+    "Random": {
+      "nodeType": "Random",
+      "displayName": "Random",
+      "category": "Directionality",
+      "subcategory": "Prop",
+      "description": "Randomly selects a directional rotation.",
+      "fields": {
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Random seed for reproducibility."
+        },
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern filter for placement."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Directionality",
+          "label": "output"
+        }
+      ]
+    },
+    "Static": {
+      "nodeType": "Static",
+      "displayName": "Static",
+      "category": "Directionality",
+      "subcategory": "Prop",
+      "description": "A static directional rotation.",
+      "fields": {
+        "Rotation": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Fixed rotation value (0-3)."
+        },
+        "Pattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern filter for placement."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Pattern",
+          "handleType": "Pattern",
+          "label": "Pattern"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Directionality",
+          "label": "output"
+        }
+      ]
+    },
+    "PondFiller": {
+      "nodeType": "PondFiller",
+      "displayName": "PondFiller",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Fills pond depressions with fluid material.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Prefab": {
+      "nodeType": "Prefab",
+      "displayName": "Prefab",
+      "category": "Prop",
+      "subcategory": "",
+      "description": "Places a predefined prefab structure.",
+      "fields": {
+        "WeightedPrefabPaths": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of weighted prefab path entries."
+        },
+        "LegacyPath": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to use legacy path resolution."
+        },
+        "Directionality": {
+          "type": "DirectionalityAsset",
+          "required": false,
+          "default": null,
+          "description": "Directionality configuration for the prefab."
+        },
+        "Scanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner for position detection."
+        },
+        "BlockMask": {
+          "type": "BlockMaskAsset",
+          "required": false,
+          "default": null,
+          "description": "Block mask controlling which blocks can be replaced."
+        },
+        "MoldingDirection": {
+          "type": "enum",
+          "required": false,
+          "default": null,
+          "description": "Direction for molding the prefab."
+        },
+        "MoldingPattern": {
+          "type": "PatternAsset",
+          "required": false,
+          "default": null,
+          "description": "Pattern used for molding."
+        },
+        "MoldingScanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner used for molding position detection."
+        },
+        "MoldingChildren": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to mold child entities."
+        },
+        "LoadEntities": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Whether to load entities from the prefab."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Scanner",
+          "handleType": "Scanner",
+          "label": "Scanner"
+        },
+        {
+          "id": "MoldingPattern",
+          "handleType": "Pattern",
+          "label": "MoldingPattern"
+        },
+        {
+          "id": "MoldingScanner",
+          "handleType": "Scanner",
+          "label": "MoldingScanner"
+        },
+        {
+          "id": "BlockMask",
+          "handleType": "BlockMask",
+          "label": "BlockMask"
+        },
+        {
+          "id": "Directionality",
+          "handleType": "Directionality",
+          "label": "Directionality"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "UniquePrefab": {
+      "nodeType": "UniquePrefab",
+      "displayName": "UniquePrefab",
+      "category": "Prop",
+      "subcategory": "Placement",
+      "description": "Unique (non-repeating) prefab prop that prevents duplicate placement.",
+      "fields": {
+        "WeightedPrefabPaths": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of weighted prefab path entries."
+        },
+        "LegacyPath": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether to use legacy path resolution."
+        },
+        "Directionality": {
+          "type": "DirectionalityAsset",
+          "required": false,
+          "default": null,
+          "description": "Directionality configuration for the prefab."
+        },
+        "Scanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Scanner for position detection."
+        },
+        "BlockMask": {
+          "type": "BlockMaskAsset",
+          "required": false,
+          "default": null,
+          "description": "Block mask controlling which blocks can be replaced."
+        },
+        "UniqueScope": {
+          "type": "string",
+          "required": false,
+          "default": "WORLD",
+          "description": "The scope within which uniqueness is enforced."
+        },
+        "LoadEntities": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Whether to load entities from the prefab."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Scanner",
+          "handleType": "Scanner",
+          "label": "Scanner"
+        },
+        {
+          "id": "BlockMask",
+          "handleType": "BlockMask",
+          "label": "BlockMask"
+        },
+        {
+          "id": "Directionality",
+          "handleType": "Directionality",
+          "label": "Directionality"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Prop",
+          "label": "output"
+        }
+      ]
+    },
+    "Area": {
+      "nodeType": "Area",
+      "displayName": "Area",
+      "category": "Scanner",
+      "subcategory": "",
+      "description": "Scans a 2D area and delegates to a child scanner.",
+      "fields": {
+        "ResultCap": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Maximum number of results to return."
+        },
+        "ScanShape": {
+          "type": "string",
+          "required": false,
+          "default": "CIRCLE",
+          "description": "Shape of the scan area."
+        },
+        "ScanRange": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Radius or half-width of the scan area."
+        },
+        "ChildScanner": {
+          "type": "ScannerAsset",
+          "required": false,
+          "default": null,
+          "description": "Child scanner for vertical evaluation."
+        }
+      },
+      "inputs": [
+        {
+          "id": "ChildScanner",
+          "handleType": "Scanner",
+          "label": "ChildScanner"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Scanner",
+          "label": "output"
+        }
+      ]
+    },
+    "ColumnLinear": {
+      "nodeType": "ColumnLinear",
+      "displayName": "ColumnLinear",
+      "category": "Scanner",
+      "subcategory": "",
+      "description": "Scans a vertical column linearly.",
+      "fields": {
+        "MinY": {
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Minimum Y coordinate of the scan column."
+        },
+        "MaxY": {
+          "type": "integer",
+          "required": true,
+          "default": 255,
+          "description": "Maximum Y coordinate of the scan column."
+        },
+        "ResultCap": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Maximum number of results to return."
+        },
+        "TopDownOrder": {
+          "type": "boolean",
+          "required": false,
+          "default": true,
+          "description": "Whether to scan top-to-bottom."
+        },
+        "RelativeToPosition": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether Y values are relative to the input position."
+        },
+        "BaseHeightName": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Optional named base height reference."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Scanner",
+          "label": "output"
+        }
+      ]
+    },
+    "ColumnRandom": {
+      "nodeType": "ColumnRandom",
+      "displayName": "ColumnRandom",
+      "category": "Scanner",
+      "subcategory": "",
+      "description": "Scans a vertical column in random order.",
+      "fields": {
+        "MinY": {
+          "type": "integer",
+          "required": true,
+          "default": 0,
+          "description": "Minimum Y coordinate of the scan column."
+        },
+        "MaxY": {
+          "type": "integer",
+          "required": true,
+          "default": 255,
+          "description": "Maximum Y coordinate of the scan column."
+        },
+        "ResultCap": {
+          "type": "integer",
+          "required": false,
+          "default": 1,
+          "description": "Maximum number of results to return."
+        },
+        "Seed": {
+          "type": "string",
+          "required": false,
+          "default": "A",
+          "description": "Random seed for scan order."
+        },
+        "Strategy": {
+          "type": "string",
+          "required": false,
+          "default": "DART_THROW",
+          "description": "Random sampling strategy."
+        },
+        "RelativeToPosition": {
+          "type": "boolean",
+          "required": false,
+          "default": false,
+          "description": "Whether Y values are relative to the input position."
+        },
+        "BaseHeightName": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Optional named base height reference."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Scanner",
+          "label": "output"
+        }
+      ]
+    },
+    "Origin": {
+      "nodeType": "Origin",
+      "displayName": "Origin",
+      "category": "Scanner",
+      "subcategory": "",
+      "description": "Scans only the origin position.",
+      "fields": {},
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Scanner",
+          "label": "output"
+        }
+      ]
+    },
+    "Sandwich": {
+      "nodeType": "Sandwich",
+      "displayName": "Sandwich",
+      "category": "Assignment",
+      "subcategory": "",
+      "description": "Assigns props in vertical layers with delimiter thresholds.",
+      "fields": {
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of delimiter-assignment pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Delimiters",
+          "handleType": "Assignment",
+          "label": "Delimiters"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Assignment",
+          "label": "output"
+        }
+      ]
+    },
+    "DensityGradient": {
+      "nodeType": "DensityGradient",
+      "displayName": "DensityGradient",
+      "category": "VectorProvider",
+      "subcategory": "",
+      "description": "Provides the gradient vector of a density field.",
+      "fields": {
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field to compute the gradient of."
+        },
+        "SampleDistance": {
+          "type": "number",
+          "required": false,
+          "default": 1.0,
+          "description": "Distance between gradient sample points."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "VectorProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "DensityDelimited": {
+      "nodeType": "DensityDelimited",
+      "displayName": "DensityDelimited",
+      "category": "TintProvider",
+      "subcategory": "",
+      "description": "Selects tint color based on density delimiters.",
+      "fields": {
+        "FieldFunction": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function to sample."
+        },
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of threshold-tint delimiter pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "FieldFunction",
+          "handleType": "Density",
+          "label": "FieldFunction"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "TintProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "EnvironmentConstant": {
+      "nodeType": "EnvironmentConstant",
+      "displayName": "EnvironmentConstant",
+      "category": "EnvironmentProvider",
+      "subcategory": "",
+      "description": "Provides a constant environment type.",
+      "fields": {
+        "Environment": {
+          "type": "string",
+          "required": false,
+          "default": "Unknown",
+          "description": "The constant environment type name."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "EnvironmentProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "EnvironmentDensityDelimited": {
+      "nodeType": "EnvironmentDensityDelimited",
+      "displayName": "EnvironmentDensityDelimited",
+      "category": "EnvironmentProvider",
+      "subcategory": "",
+      "description": "Selects environment type based on density delimiters.",
+      "fields": {
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function to sample."
+        },
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of threshold-environment delimiter pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "EnvironmentProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "TintConstant": {
+      "nodeType": "TintConstant",
+      "displayName": "TintConstant",
+      "category": "TintProvider",
+      "subcategory": "",
+      "description": "Provides a constant tint color.",
+      "fields": {
+        "Color": {
+          "type": "string",
+          "required": false,
+          "default": "#FF0000",
+          "description": "The constant tint color in hex format."
+        }
+      },
+      "inputs": [],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "TintProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "TintDensityDelimited": {
+      "nodeType": "TintDensityDelimited",
+      "displayName": "TintDensityDelimited",
+      "category": "TintProvider",
+      "subcategory": "",
+      "description": "Selects tint color based on density delimiters.",
+      "fields": {
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density field function to sample."
+        },
+        "Delimiters": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of threshold-color delimiter pairs."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "TintProvider",
+          "label": "output"
+        }
+      ]
+    },
+    "BiomeAsset": {
+      "nodeType": "BiomeAsset",
+      "displayName": "BiomeAsset",
+      "category": "Biome",
+      "subcategory": "",
+      "description": "Defines a complete biome configuration.",
+      "fields": {
+        "Name": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "The unique name of the biome."
+        },
+        "Terrain": {
+          "type": "object",
+          "required": true,
+          "default": null,
+          "description": "The terrain configuration for this biome."
+        },
+        "FloatingFunctionNodes": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Array of floating density function nodes."
+        },
+        "MaterialProvider": {
+          "type": "MaterialProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "The material provider for this biome."
+        },
+        "Props": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Array of prop placement definitions."
+        },
+        "EnvironmentProvider": {
+          "type": "EnvironmentProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "The environment provider for this biome."
+        },
+        "TintProvider": {
+          "type": "TintProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "The tint provider for this biome."
+        }
+      },
+      "inputs": [
+        {
+          "id": "MaterialProvider",
+          "handleType": "MaterialProvider",
+          "label": "MaterialProvider"
+        },
+        {
+          "id": "EnvironmentProvider",
+          "handleType": "EnvironmentProvider",
+          "label": "EnvironmentProvider"
+        },
+        {
+          "id": "TintProvider",
+          "handleType": "TintProvider",
+          "label": "TintProvider"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Biome",
+          "label": "output"
+        }
+      ]
+    },
+    "DAOTerrain": {
+      "nodeType": "DAOTerrain",
+      "displayName": "DAOTerrain",
+      "category": "Biome",
+      "subcategory": "Framework",
+      "description": "Data-Access-Object terrain bridge for density-to-terrain conversion.",
+      "fields": {
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The primary density function for terrain shape."
+        },
+        "Threshold": {
+          "type": "number",
+          "required": false,
+          "default": 0.0,
+          "description": "Density threshold for terrain solidity."
+        },
+        "Beds": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Array of terrain bed definitions."
+        },
+        "MaterialProvider": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Material provider for block assignment."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        },
+        {
+          "id": "MaterialProvider",
+          "handleType": "MaterialProvider",
+          "label": "MaterialProvider"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Terrain",
+          "label": "output"
+        }
+      ]
+    },
+    "HytaleGenerator": {
+      "nodeType": "HytaleGenerator",
+      "displayName": "HytaleGenerator",
+      "category": "Biome",
+      "subcategory": "Framework",
+      "description": "Main world generator entry point for Hytale world generation.",
+      "fields": {
+        "WorldStructures": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of world structure definitions."
+        },
+        "GlobalDensityFunctions": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Global density functions shared across all biomes."
+        },
+        "SeaLevel": {
+          "type": "integer",
+          "required": false,
+          "default": 64,
+          "description": "The world sea level height."
+        },
+        "CaveGenerator": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Cave generation configuration."
+        },
+        "Climate": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Climate system configuration."
+        },
+        "Settings": {
+          "type": "object",
+          "required": false,
+          "default": null,
+          "description": "Global generator settings."
+        }
+      },
+      "inputs": [
+        {
+          "id": "WorldStructures",
+          "handleType": "WorldStructure",
+          "label": "WorldStructures"
+        },
+        {
+          "id": "CaveGenerator",
+          "handleType": "CaveGenerator",
+          "label": "CaveGenerator"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "Generator",
+          "label": "output"
+        }
+      ]
+    },
+    "NoiseRange": {
+      "nodeType": "NoiseRange",
+      "displayName": "NoiseRange",
+      "category": "Biome",
+      "subcategory": "Selection",
+      "description": "Noise-range biome selection entry.",
+      "fields": {
+        "Biome": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "The biome identifier to select."
+        },
+        "Min": {
+          "type": "number",
+          "required": true,
+          "default": 0.0,
+          "description": "Minimum noise value for this range."
+        },
+        "Max": {
+          "type": "number",
+          "required": true,
+          "default": 1.0,
+          "description": "Maximum noise value for this range."
+        },
+        "TransitionDistance": {
+          "type": "integer",
+          "required": false,
+          "default": 32,
+          "description": "Blending distance at range boundaries."
+        }
+      },
+      "inputs": [],
+      "outputs": []
+    },
+    "WorldStructureAsset": {
+      "nodeType": "WorldStructureAsset",
+      "displayName": "WorldStructureAsset",
+      "category": "Biome",
+      "subcategory": "",
+      "description": "Defines the world structure with biome layout.",
+      "fields": {
+        "Biomes": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of biome range definitions."
+        },
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The world-level density function."
+        },
+        "DefaultBiome": {
+          "type": "string",
+          "required": false,
+          "default": "",
+          "description": "Name of the default biome."
+        },
+        "DefaultTransitionDistance": {
+          "type": "integer",
+          "required": false,
+          "default": 32,
+          "description": "Default transition distance between biomes."
+        },
+        "MaxBiomeEdgeDistance": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Maximum biome edge detection distance."
+        },
+        "Framework": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Array of framework definitions."
+        },
+        "SpawnPositions": {
+          "type": "PositionProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "Position provider for spawn locations."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        },
+        {
+          "id": "SpawnPositions",
+          "handleType": "PositionProvider",
+          "label": "SpawnPositions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "WorldStructure",
+          "label": "output"
+        }
+      ]
+    },
+    "WorldStructureNoiseRange": {
+      "nodeType": "WorldStructureNoiseRange",
+      "displayName": "WorldStructureNoiseRange",
+      "category": "Biome",
+      "subcategory": "",
+      "description": "Defines world structure using noise-based biome ranges.",
+      "fields": {
+        "Biomes": {
+          "type": "array",
+          "required": true,
+          "default": [],
+          "description": "Array of biome range definitions."
+        },
+        "Density": {
+          "type": "DensityAsset",
+          "required": true,
+          "default": null,
+          "description": "The density function driving biome distribution."
+        },
+        "DefaultBiome": {
+          "type": "string",
+          "required": true,
+          "default": "",
+          "description": "The fallback biome name."
+        },
+        "DefaultTransitionDistance": {
+          "type": "integer",
+          "required": false,
+          "default": 32,
+          "description": "Default transition distance between biomes."
+        },
+        "MaxBiomeEdgeDistance": {
+          "type": "integer",
+          "required": false,
+          "default": 0,
+          "description": "Maximum distance to compute biome edge effects."
+        },
+        "Framework": {
+          "type": "array",
+          "required": false,
+          "default": [],
+          "description": "Array of framework definitions."
+        },
+        "SpawnPositions": {
+          "type": "PositionProviderAsset",
+          "required": false,
+          "default": null,
+          "description": "Position provider for spawn points."
+        }
+      },
+      "inputs": [
+        {
+          "id": "Density",
+          "handleType": "Density",
+          "label": "Density"
+        },
+        {
+          "id": "SpawnPositions",
+          "handleType": "PositionProvider",
+          "label": "SpawnPositions"
+        }
+      ],
+      "outputs": [
+        {
+          "id": "output",
+          "handleType": "WorldStructure",
+          "label": "output"
+        }
+      ]
+    }
+  },
+  "handleTypes": {
+    "handleTypes": [
+      {
+        "category": "Density",
+        "color": "#5B8DBF",
+        "inputFactory": "densityInput",
+        "outputFactory": "densityOutput",
+        "description": "Scalar density value at (x, y, z)"
+      },
+      {
+        "category": "Curve",
+        "color": "#A67EB8",
+        "inputFactory": "curveInput",
+        "outputFactory": "curveOutput",
+        "description": "1D function mapping distance to scalar"
+      },
+      {
+        "category": "MaterialProvider",
+        "color": "#C87D3A",
+        "inputFactory": "materialInput",
+        "outputFactory": "materialOutput",
+        "description": "Block material selection logic"
+      },
+      {
+        "category": "Pattern",
+        "color": "#D4A843",
+        "inputFactory": "patternInput",
+        "outputFactory": "patternOutput",
+        "description": "Boolean block position predicate"
+      },
+      {
+        "category": "PositionProvider",
+        "color": "#6B9E5A",
+        "inputFactory": "positionInput",
+        "outputFactory": "positionOutput",
+        "description": "Set of (x, y, z) placement positions"
+      },
+      {
+        "category": "Prop",
+        "color": "#C76B6B",
+        "inputFactory": "propInput",
+        "outputFactory": "propOutput",
+        "description": "Structure/block placement operation"
+      },
+      {
+        "category": "Scanner",
+        "color": "#5AACA6",
+        "inputFactory": "scannerInput",
+        "outputFactory": "scannerOutput",
+        "description": "Vertical/areal position search"
+      },
+      {
+        "category": "Assignment",
+        "color": "#8B7355",
+        "inputFactory": "assignmentInput",
+        "outputFactory": "assignmentOutput",
+        "description": "Position-to-prop mapping"
+      },
+      {
+        "category": "VectorProvider",
+        "color": "#7B8E92",
+        "inputFactory": "vectorInput",
+        "outputFactory": "vectorOutput",
+        "description": "3D direction vector"
+      },
+      {
+        "category": "EnvironmentProvider",
+        "color": "#7DB350",
+        "inputFactory": "environmentInput",
+        "outputFactory": "environmentOutput",
+        "description": "Environment settings (tint, weather, spawn)"
+      },
+      {
+        "category": "TintProvider",
+        "color": "#D46A4A",
+        "inputFactory": "tintInput",
+        "outputFactory": "tintOutput",
+        "description": "Block tint color"
+      },
+      {
+        "category": "BlockMask",
+        "color": "#8C8878",
+        "inputFactory": "blockMaskInput",
+        "outputFactory": "blockMaskOutput",
+        "description": "Block placement/replacement filter"
+      },
+      {
+        "category": "Directionality",
+        "color": "#B8648B",
+        "inputFactory": "directionalityInput",
+        "outputFactory": "directionalityOutput",
+        "description": "Prefab rotation/facing"
+      }
+    ],
+    "connectionRules": {
+      "sameCategory": "Outputs can only connect to inputs of the same AssetCategory",
+      "inputColor": "#8C8878",
+      "outputColor": "Category-specific color from handleTypes"
+    }
+  },
+  "categories": {
+    "Density": {
+      "color": "#5B8DBF",
+      "description": "Functions that evaluate a scalar value at any (x, y, z) position. The backbone of terrain shape.",
+      "typeCount": 68,
+      "schemaDir": "density",
+      "subcategories": {
+        "Generative": {
+          "color": "#4A90D9",
+          "description": "Noise sources"
+        },
+        "FilterTransform": {
+          "color": "#7B68AE",
+          "description": "Processing / filters"
+        },
+        "ArithmeticCombinator": {
+          "color": "#2D9B83",
+          "description": "Math operations and combinators"
+        },
+        "PositionCoordinate": {
+          "color": "#3D8B37",
+          "description": "Spatial / coordinate operations"
+        },
+        "Terrain": {
+          "color": "#B8763C",
+          "description": "Terrain-specific operations"
+        },
+        "ShapeSDF": {
+          "color": "#C45B84",
+          "description": "Geometric shape SDFs"
+        }
+      }
+    },
+    "Curve": {
+      "color": "#A67EB8",
+      "description": "1D functions mapping distance/parameter to a scalar. Used by shape primitives and material providers.",
+      "typeCount": 19,
+      "schemaDir": "curves"
+    },
+    "MaterialProvider": {
+      "color": "#C87D3A",
+      "description": "Determine which block material to place at each position. Converts density into blocks.",
+      "typeCount": 14,
+      "schemaDir": "materials",
+      "subTypes": {
+        "layers": [
+          "ConstantThickness",
+          "NoiseThickness",
+          "RangeThickness",
+          "WeightedThickness"
+        ],
+        "conditions": [
+          "AlwaysTrueCondition",
+          "AndCondition",
+          "OrCondition",
+          "NotCondition",
+          "EqualsCondition",
+          "GreaterThanCondition",
+          "SmallerThanCondition"
+        ]
+      }
+    },
+    "Pattern": {
+      "color": "#D4A843",
+      "description": "Boolean predicates that test block positions for surface/adjacency/material conditions.",
+      "typeCount": 15,
+      "schemaDir": "patterns"
+    },
+    "PositionProvider": {
+      "color": "#6B9E5A",
+      "description": "Generate sets of (x, y, z) positions for prop placement within chunks.",
+      "typeCount": 14,
+      "schemaDir": "positions"
+    },
+    "PropProvider": {
+      "color": "#C76B6B",
+      "description": "Place structures, blocks, and prefabs at positions determined by the placement pipeline.",
+      "typeCount": 11,
+      "schemaDir": "props",
+      "subTypes": {
+        "directionality": [
+          "Static",
+          "Random",
+          "Pattern",
+          "Imported"
+        ]
+      }
+    },
+    "Scanner": {
+      "color": "#5AACA6",
+      "description": "Search vertically or areally for valid placement positions within a column or region.",
+      "typeCount": 5,
+      "schemaDir": "scanners"
+    },
+    "Assignment": {
+      "color": "#8B7355",
+      "description": "Map scanned positions to props. The final step in the placement pipeline.",
+      "typeCount": 5,
+      "schemaDir": "assignments"
+    },
+    "VectorProvider": {
+      "color": "#7B8E92",
+      "description": "Produce 3D direction vectors, used by warping and angle density functions.",
+      "typeCount": 5,
+      "schemaDir": "vectors"
+    },
+    "EnvironmentProvider": {
+      "color": "#7DB350",
+      "description": "Assign environment settings (water tint, spawn density, weather) per region.",
+      "typeCount": 2,
+      "schemaDir": "environment"
+    },
+    "TintProvider": {
+      "color": "#D46A4A",
+      "description": "Assign block tint colors per region for foliage/water coloring.",
+      "typeCount": 2,
+      "schemaDir": "environment"
+    },
+    "BlockMask": {
+      "color": "#8C8878",
+      "description": "Filter which blocks can be placed or replaced during prop placement.",
+      "typeCount": 0,
+      "schemaDir": "environment"
+    },
+    "Directionality": {
+      "color": "#B8648B",
+      "description": "Determine rotation/facing for placed prefabs and props.",
+      "typeCount": 4,
+      "schemaDir": "props"
+    },
+    "Framework": {
+      "color": "#8C8878",
+      "description": "Named constant pools and position providers shared across the biome.",
+      "typeCount": 2,
+      "schemaDir": "biome"
+    },
+    "Biome": {
+      "color": "#4E9E8F",
+      "description": "Top-level biome definition combining terrain, materials, props, and environment.",
+      "typeCount": 1,
+      "schemaDir": "biome"
+    },
+    "WorldStructure": {
+      "color": "#5A6FA0",
+      "description": "Defines biome layout and distribution across the world.",
+      "typeCount": 1,
+      "schemaDir": "biome"
+    }
+  },
+  "stats": {
+    "totalNodes": 210,
+    "categoryCount": 15
+  }
+}

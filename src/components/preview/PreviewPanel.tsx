@@ -56,6 +56,7 @@ export function PreviewPanel() {
     canvasRef.current = el;
   }, []);
 
+  const fidelityScore = usePreviewStore((s) => s.fidelityScore);
   const anyLoading = isLoading || isVoxelLoading || isWorldLoading;
   const anyError = previewError || voxelError || worldError;
   const hasData = mode === "world"
@@ -106,6 +107,18 @@ export function PreviewPanel() {
             <div className="absolute top-2 right-2 z-10 flex items-center gap-1.5 px-2 py-1 bg-tn-panel/90 rounded text-xs text-tn-text-muted">
               <span className="inline-block w-3 h-3 border-2 border-tn-accent border-t-transparent rounded-full animate-spin" />
               Evaluating...
+            </div>
+          )}
+          {fidelityScore < 100 && hasData && (
+            <div
+              className="absolute top-2 left-2 z-10 px-2 py-0.5 rounded text-[10px] font-medium"
+              style={{
+                backgroundColor: fidelityScore >= 90 ? "#4ade8033" : fidelityScore >= 70 ? "#facc1533" : "#f8717133",
+                color: fidelityScore >= 90 ? "#4ade80" : fidelityScore >= 70 ? "#facc15" : "#f87171",
+              }}
+              title="Percentage of nodes with fully accurate evaluation"
+            >
+              Fidelity: {fidelityScore}%
             </div>
           )}
 
