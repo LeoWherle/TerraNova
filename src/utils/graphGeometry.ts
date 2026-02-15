@@ -1,4 +1,5 @@
 import type { Node, Edge } from "@xyflow/react";
+import type { Point } from "./lineIntersection";
 
 /** Approximate node center for edge intersection checks */
 export const NODE_CENTER_OFFSET_X = 110;
@@ -152,4 +153,42 @@ export function findNearestEdge(
   }
 
   return bestEdge;
+}
+
+/**
+ * Sample all ReactFlow edge SVG paths into flow-space polylines.
+ * Returns a Map of edge ID → array of flow-space points.
+ *
+ * Edge paths use flow coordinates in their `d` attribute. We sample via
+ * getPointAtLength() which returns values in SVG user-space (= flow-space).
+ * The caller is responsible for converting comparison points (e.g. knife
+ * positions) into the same flow coordinate system.
+ */
+export function sampleAllEdgePaths(
+  containerEl: HTMLElement,
+  numSamples = 30,
+): Map<string, Point[]> {
+  const result = new Map<string, Point[]>();
+  const edgeEls = containerEl.querySelectorAll<SVGGElement>(".react-flow__edge");
+
+  for (const edgeEl of edgeEls) {
+    const edgeId = edgeEl.dataset.id;
+    if (!edgeId) continue;
+
+    const pathEl = edgeEl.querySelector<SVGPathElement>(".react-flow__edge-path");
+    if (!pathEl) continue;
+
+    const totalLength = pathEl.getTotalLength();
+    if (totalLength === 0) continue;
+
+    const points: Point[] = [];
+    for (let i = 0; i <= numSamples; i++) {
+      const len = (i / numSamples) * totalLength;
+      const pt = pathEl.getPointAtLength(len);
+      points.push({ x: pt.x, y: pt.y });
+    }
+    result.set(edgeId, points);
+  }
+
+  return result;
 }

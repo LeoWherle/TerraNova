@@ -152,6 +152,37 @@ export const createGraphSlice: SliceCreator<GraphSliceState> = (set, get) => {
       }), "Delete nodes");
     },
 
+    removeEdges: (ids, label = "Delete edges") => {
+      if (ids.length === 0) return;
+      const mutateAndCommit = getMutateAndCommit();
+      const idSet = new Set(ids);
+      mutateAndCommit((state) => {
+        const newEdges = state.edges.filter((e) => !idSet.has(e.id));
+
+        // Check if any removed edge targeted a Root node — clear outputNode
+        const rootNodeIds = new Set(state.nodes.filter((n) => n.type === "Root").map((n) => n.id));
+        const removedRootEdge = state.edges.some(
+          (e) => idSet.has(e.id) && rootNodeIds.has(e.target),
+        );
+
+        const updates: Partial<typeof state> = { edges: newEdges };
+        if (removedRootEdge) {
+          updates.outputNodeId = null;
+          // Clear _outputNode from all nodes
+          updates.nodes = state.nodes.map((n) => {
+            const d = n.data as Record<string, unknown>;
+            if (d._outputNode) {
+              const { _outputNode: _, ...rest } = d;
+              return { ...n, data: rest };
+            }
+            return n;
+          });
+        }
+        return updates;
+      }, label);
+      markDirty();
+    },
+
     updateNodeField: (nodeId, fieldName, value) => {
       set((state) => ({
         nodes: state.nodes.map((node) => {

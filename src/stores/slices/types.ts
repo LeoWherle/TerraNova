@@ -105,6 +105,8 @@ export interface GraphSliceState {
   createGroup: (nodeIds: string[], name: string) => void;
   expandGroup: (groupId: string) => void;
 
+  removeEdges: (ids: string[], label?: string) => void;
+
   // Material layer stack actions
   reorderMaterialLayers: (sadNodeId: string, fromIndex: number, toIndex: number) => void;
   addMaterialLayer: (sadNodeId: string, layerType: string) => void;

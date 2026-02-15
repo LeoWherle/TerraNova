@@ -85,3 +85,20 @@ body,
   background: transparent !important;
   border: none !important;
 }
+
+/* Knife tool overlay */
+.knife-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Knife tool cut-edge highlight */
+.react-flow__edge.knife-cut-edge .react-flow__edge-path {
+  stroke: #ff4444 !important;
+  stroke-width: 3 !important;
+  filter: drop-shadow(0 0 4px rgba(255, 68, 68, 0.6));
+}
