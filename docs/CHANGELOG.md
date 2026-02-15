@@ -16,6 +16,10 @@ All notable changes to [TerraNova](https://github.com/HyperSystemsDev/TerraNova)
 
 ### Fixed
 
+- **Compound Inputs Evaluator** — Fixed density preview producing incorrect terrain values after the compound inputs refactor. The evaluator was hardcoded to read only 2 inputs (`Inputs[0]` and `Inputs[1]`) for Sum, Product, WeightedSum, SmoothMin, SmoothMax, MinFunction, MaxFunction, and AverageFunction nodes — any inputs beyond the first two were silently ignored. All eight compound types now dynamically iterate over all connected inputs
+- **CubeMath Type Mismatch** — Fixed the evaluator's `Cube` case targeting the wrong node type; the math cube operation is `CubeMath` in the schema (`Cube` is a shape SDF)
+- **Sum Export Path** — Fixed Hytale JSON export producing malformed output for Sum nodes using the new compound handles `Inputs[]` format. The export path now correctly handles both legacy `InputA`/`InputB` and new `Inputs[]` array formats
+- **Evaluator Type Coverage** — Added `VectorWarp` and `Shell` to the approximated types set so `getEvalStatus` correctly reports their fidelity instead of claiming full support
 - **Windows Preview Worker Compatibility** — Fixed density/volume preview showing flat terrain on Windows and production builds. Configured Vite to emit ES module workers matching the `{ type: "module" }` constructor, added `blob:` and `worker-src` CSP directives for WebView2 compatibility, and added worker error handling with automatic main-thread fallback and 30-second timeout
 - **Auto-Updater Relaunch** — Overhauled platform-specific relaunch logic with macOS bundle re-signing, Linux execute permission fix, and update loop prevention via localStorage version check
 - **SVG 1.1 Compliance** — Replaced rgba(), feDropShadow, 8-digit hex colors, and duplicate XML attributes in exported SVGs for strict parser compatibility (macOS Preview, Inkscape)

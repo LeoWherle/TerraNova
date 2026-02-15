@@ -142,8 +142,8 @@ describe("Sum", () => {
       makeNode("sum", "Sum"),
     ];
     const edges = [
-      makeEdge("a", "sum", "InputA"),
-      makeEdge("b", "sum", "InputB"),
+      makeEdge("a", "sum", "Inputs[0]"),
+      makeEdge("b", "sum", "Inputs[1]"),
     ];
     const result = evalSingle(nodes, edges, "sum");
     for (let i = 0; i < result.values.length; i++) {
@@ -590,8 +590,8 @@ describe("Complex graph", () => {
       makeNode("clamp", "Clamp", { Min: -0.5, Max: 0.5 }),
     ];
     const edges = [
-      makeEdge("n1", "sum", "InputA"),
-      makeEdge("n2", "sum", "InputB"),
+      makeEdge("n1", "sum", "Inputs[0]"),
+      makeEdge("n2", "sum", "Inputs[1]"),
       makeEdge("sum", "clamp", "Input"),
     ];
     const result = evalSingle(nodes, edges, "clamp");
@@ -1426,7 +1426,7 @@ describe("DENSITY_NAMED_TO_ARRAY completeness", () => {
    * Inputs[0] → "Input".
    */
   const SINGLE_INPUT_TYPES = [
-    "Negate", "CurveFunction", "CacheOnce", "Abs", "SquareRoot", "Cube",
+    "Negate", "CurveFunction", "CacheOnce", "Abs", "SquareRoot", "CubeMath",
     "CubeRoot", "Inverse", "Modulo", "Clamp", "SmoothClamp", "Normalizer",
     "LinearTransform", "FlatCache", "DomainWarp2D", "DomainWarp3D",
     "ScaledPosition", "TranslatedPosition", "RotatedPosition",
@@ -1448,7 +1448,6 @@ describe("DENSITY_NAMED_TO_ARRAY completeness", () => {
   }
 
   const MULTI_INPUT_TYPES: [string, string[]][] = [
-    ["Sum", ["InputA", "InputB"]],
     ["Offset", ["Input", "Offset"]],
     ["GradientWarp", ["Input", "WarpSource"]],
     ["VectorWarp", ["Input", "WarpVector"]],
@@ -1481,8 +1480,8 @@ describe("Imported biome chain evaluation", () => {
     ];
     const edges = [
       makeEdge("noise", "clamp", "Input"),
-      makeEdge("clamp", "sum", "InputA"),
-      makeEdge("const", "sum", "InputB"),
+      makeEdge("clamp", "sum", "Inputs[0]"),
+      makeEdge("const", "sum", "Inputs[1]"),
       makeEdge("sum", "exported", "Input"),
     ];
     const result = evalSingle(nodes, edges, "exported");

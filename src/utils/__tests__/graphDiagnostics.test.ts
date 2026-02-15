@@ -94,8 +94,8 @@ describe("analyzeGraph — parallel edges (no false cycle)", () => {
     const edges = [
       makeEdge("a", "b", "Input"),
       makeEdge("a", "c", "Input"),
-      makeEdge("b", "d", "InputA"),
-      makeEdge("c", "d", "InputB"),
+      makeEdge("b", "d", "Inputs[0]"),
+      makeEdge("c", "d", "Inputs[1]"),
     ];
     const diagnostics = analyzeGraph(nodes, edges);
     const cycleErrors = diagnostics.filter((d) => d.severity === "error" && d.message.includes("cycle"));
@@ -112,7 +112,7 @@ describe("analyzeGraph — dead nodes", () => {
       makeNode("sum", "Sum"),
     ];
     const edges = [
-      makeEdge("c1", "sum", "InputA"),
+      makeEdge("c1", "sum", "Inputs[0]"),
     ];
     const diagnostics = analyzeGraph(nodes, edges);
     const deadWarnings = diagnostics.filter((d) => d.severity === "warning" && d.message.includes("unreachable"));
@@ -129,8 +129,8 @@ describe("analyzeGraph — fully connected graph", () => {
       makeNode("sum", "Sum"),
     ];
     const edges = [
-      makeEdge("a", "sum", "InputA"),
-      makeEdge("b", "sum", "InputB"),
+      makeEdge("a", "sum", "Inputs[0]"),
+      makeEdge("b", "sum", "Inputs[1]"),
     ];
     const diagnostics = analyzeGraph(nodes, edges);
     const disconnected = diagnostics.filter((d) => d.message.includes("disconnected"));

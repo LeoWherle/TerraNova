@@ -60,9 +60,9 @@ describe("jsonToGraph", () => {
     expect(nodes).toHaveLength(3);
     expect(edges).toHaveLength(2);
 
-    // Check named target handles (Sum maps Inputs[0]→InputA, Inputs[1]→InputB)
+    // Sum now uses Inputs[0]/Inputs[1] natively (compound handles)
     const handles = edges.map((e) => e.targetHandle).sort();
-    expect(handles).toEqual(["InputA", "InputB"]);
+    expect(handles).toEqual(["Inputs[0]", "Inputs[1]"]);
   });
 
   it("applies category prefix mapping correctly", () => {

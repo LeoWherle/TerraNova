@@ -1824,7 +1824,7 @@ describe("density Conditional → Mix export", () => {
 // ---------------------------------------------------------------------------
 
 describe("N-ary Sum nesting and flattening", () => {
-  it("imports 4-input Sum as balanced binary tree", () => {
+  it("imports 4-input Sum as flat Inputs[] array", () => {
     const { asset } = hytaleToInternal({
       $NodeId: "SumDensityNode-123",
       Type: "Sum",
@@ -1837,23 +1837,17 @@ describe("N-ary Sum nesting and flattening", () => {
       Skip: false,
     });
     expect(asset.Type).toBe("Sum");
-    // Should have InputA and InputB (not a flat Inputs[])
-    expect(asset.Inputs).toBeUndefined();
-    expect(asset.InputA).toBeDefined();
-    expect(asset.InputB).toBeDefined();
-    // InputA = Sum(Constant(10), Constant(20))
-    const left = asset.InputA as Record<string, unknown>;
-    expect(left.Type).toBe("Sum");
-    expect((left.InputA as Record<string, unknown>).Value).toBe(10);
-    expect((left.InputB as Record<string, unknown>).Value).toBe(20);
-    // InputB = Sum(Constant(30), Constant(40))
-    const right = asset.InputB as Record<string, unknown>;
-    expect(right.Type).toBe("Sum");
-    expect((right.InputA as Record<string, unknown>).Value).toBe(30);
-    expect((right.InputB as Record<string, unknown>).Value).toBe(40);
+    // Sum now uses Inputs[] natively via compound handles (no binary tree nesting)
+    const inputs = asset.Inputs as Record<string, unknown>[];
+    expect(inputs).toBeDefined();
+    expect(inputs).toHaveLength(4);
+    expect(inputs[0].Value).toBe(10);
+    expect(inputs[1].Value).toBe(20);
+    expect(inputs[2].Value).toBe(30);
+    expect(inputs[3].Value).toBe(40);
   });
 
-  it("imports 3-input Sum as nested binary tree", () => {
+  it("imports 3-input Sum as flat Inputs[] array", () => {
     const { asset } = hytaleToInternal({
       $NodeId: "SumDensityNode-456",
       Type: "Sum",
@@ -1865,18 +1859,15 @@ describe("N-ary Sum nesting and flattening", () => {
       Skip: false,
     });
     expect(asset.Type).toBe("Sum");
-    // InputA = Sum(Constant(1), Constant(2))
-    const left = asset.InputA as Record<string, unknown>;
-    expect(left.Type).toBe("Sum");
-    expect((left.InputA as Record<string, unknown>).Value).toBe(1);
-    expect((left.InputB as Record<string, unknown>).Value).toBe(2);
-    // InputB = Constant(3) (no wrapping needed for single element)
-    const right = asset.InputB as Record<string, unknown>;
-    expect(right.Type).toBe("Constant");
-    expect(right.Value).toBe(3);
+    const inputs = asset.Inputs as Record<string, unknown>[];
+    expect(inputs).toBeDefined();
+    expect(inputs).toHaveLength(3);
+    expect(inputs[0].Value).toBe(1);
+    expect(inputs[1].Value).toBe(2);
+    expect(inputs[2].Value).toBe(3);
   });
 
-  it("leaves 2-input Sum unchanged (InputA/InputB)", () => {
+  it("imports 2-input Sum as flat Inputs[] array", () => {
     const { asset } = hytaleToInternal({
       $NodeId: "SumDensityNode-789",
       Type: "Sum",
@@ -1887,10 +1878,11 @@ describe("N-ary Sum nesting and flattening", () => {
       Skip: false,
     });
     expect(asset.Type).toBe("Sum");
-    expect(asset.InputA).toBeDefined();
-    expect(asset.InputB).toBeDefined();
-    expect((asset.InputA as Record<string, unknown>).Value).toBe(5);
-    expect((asset.InputB as Record<string, unknown>).Value).toBe(10);
+    const inputs = asset.Inputs as Record<string, unknown>[];
+    expect(inputs).toBeDefined();
+    expect(inputs).toHaveLength(2);
+    expect(inputs[0].Value).toBe(5);
+    expect(inputs[1].Value).toBe(10);
   });
 
   it("exports nested binary Sum tree as flat Inputs[] array", () => {

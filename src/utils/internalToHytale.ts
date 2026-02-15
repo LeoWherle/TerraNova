@@ -1350,13 +1350,26 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
   // Convert named density inputs → Inputs[] array
   if (category === "density") {
     if (internalType === "Sum" && "InputA" in transformedFields) {
-      // Flatten nested binary Sum trees back to a flat Inputs[] array
+      // Flatten nested binary Sum trees back to a flat Inputs[] array (legacy format)
       const flatInputs = flattenSumInputs(transformedFields, ctx);
       if (flatInputs.length > 0) {
         output.Inputs = flatInputs;
       }
       delete transformedFields.InputA;
       delete transformedFields.InputB;
+    } else if (internalType === "Sum" && "Inputs" in transformedFields && Array.isArray(transformedFields.Inputs)) {
+      // New compound handles format: Inputs[] is already an array, just transform children
+      const rawInputs = transformedFields.Inputs as unknown[];
+      const transformed = rawInputs.map((input) => {
+        if (input && typeof input === "object" && "Type" in (input as Record<string, unknown>)) {
+          return transformNode(input as V2Asset, { ...ctx, parentField: "Input", category: "density" });
+        }
+        return input;
+      });
+      if (transformed.length > 0) {
+        output.Inputs = transformed;
+      }
+      delete transformedFields.Inputs;
     } else {
       const { inputs, remainingFields } = collectNamedInputs(transformedFields, internalType, ctx);
       transformedFields = remainingFields;

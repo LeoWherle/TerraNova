@@ -236,6 +236,8 @@ const APPROXIMATED_TYPES = new Set([
   "Positions3D",        // Approximated as voronoi
   "PositionsPinch",     // Simplified pinch transform
   "PositionsTwist",     // Simplified twist transform
+  "VectorWarp",         // Simplified vector warp
+  "Shell",              // Simplified shell SDF
 ]);
 
 /**
@@ -257,7 +259,7 @@ const DENSITY_TYPES = new Set([
   "VoronoiNoise2D", "VoronoiNoise3D", "FractalNoise2D", "FractalNoise3D",
   "DomainWarp2D", "DomainWarp3D",
   "Sum", "SumSelf", "WeightedSum", "Product",
-  "Negate", "Abs", "SquareRoot", "CubeRoot", "Square", "Cube", "Inverse", "Modulo",
+  "Negate", "Abs", "SquareRoot", "CubeRoot", "Square", "CubeMath", "Inverse", "Modulo",
   "Constant", "ImportedValue", "Zero", "One",
   "Clamp", "ClampToIndex", "Normalizer", "DoubleNormalizer", "RangeChoice",
   "LinearTransform", "Interpolate",
@@ -640,7 +642,7 @@ export function createEvaluationContext(
         break;
       }
 
-      case "Cube": {
+      case "CubeMath": {
         const v = getInput(inputs, "Input", x, y, z);
         result = v * v * v;
         break;
@@ -681,21 +683,33 @@ export function createEvaluationContext(
 
       // ── Arithmetic (dual input) ───────────────────────────────────
 
-      case "Sum":
-        result = getInput(inputs, "InputA", x, y, z) + getInput(inputs, "InputB", x, y, z);
-        break;
-
-      case "WeightedSum": {
-        const a = getInput(inputs, "Inputs[0]", x, y, z);
-        const b = getInput(inputs, "Inputs[1]", x, y, z);
-        const weights = (fields.Weights as number[]) ?? [1, 1];
-        result = a * (weights[0] ?? 1) + b * (weights[1] ?? 1);
+      case "Sum": {
+        let sum = 0;
+        for (let i = 0; inputs.has(`Inputs[${i}]`); i++) {
+          sum += getInput(inputs, `Inputs[${i}]`, x, y, z);
+        }
+        result = sum;
         break;
       }
 
-      case "Product":
-        result = getInput(inputs, "Inputs[0]", x, y, z) * getInput(inputs, "Inputs[1]", x, y, z);
+      case "WeightedSum": {
+        const weights = (fields.Weights as number[]) ?? [];
+        let wsum = 0;
+        for (let i = 0; inputs.has(`Inputs[${i}]`); i++) {
+          wsum += getInput(inputs, `Inputs[${i}]`, x, y, z) * (weights[i] ?? 1);
+        }
+        result = wsum;
         break;
+      }
+
+      case "Product": {
+        let prod = 1;
+        for (let i = 0; inputs.has(`Inputs[${i}]`); i++) {
+          prod *= getInput(inputs, `Inputs[${i}]`, x, y, z);
+        }
+        result = prod;
+        break;
+      }
 
       // ── Clamping & range ──────────────────────────────────────────
 
@@ -883,18 +897,20 @@ export function createEvaluationContext(
       }
 
       case "SmoothMin": {
-        const a = getInput(inputs, "Inputs[0]", x, y, z);
-        const b = getInput(inputs, "Inputs[1]", x, y, z);
         const k = Number(fields.Smoothness ?? 0.1);
-        result = smoothMin(a, b, k);
+        result = getInput(inputs, "Inputs[0]", x, y, z);
+        for (let i = 1; inputs.has(`Inputs[${i}]`); i++) {
+          result = smoothMin(result, getInput(inputs, `Inputs[${i}]`, x, y, z), k);
+        }
         break;
       }
 
       case "SmoothMax": {
-        const a = getInput(inputs, "Inputs[0]", x, y, z);
-        const b = getInput(inputs, "Inputs[1]", x, y, z);
         const k = Number(fields.Smoothness ?? 0.1);
-        result = smoothMax(a, b, k);
+        result = getInput(inputs, "Inputs[0]", x, y, z);
+        for (let i = 1; inputs.has(`Inputs[${i}]`); i++) {
+          result = smoothMax(result, getInput(inputs, `Inputs[${i}]`, x, y, z), k);
+        }
         break;
       }
 
@@ -1279,23 +1295,32 @@ export function createEvaluationContext(
         break;
       }
 
-      case "MinFunction":
-        result = Math.min(
-          getInput(inputs, "Inputs[0]", x, y, z),
-          getInput(inputs, "Inputs[1]", x, y, z),
-        );
+      case "MinFunction": {
+        result = getInput(inputs, "Inputs[0]", x, y, z);
+        for (let i = 1; inputs.has(`Inputs[${i}]`); i++) {
+          result = Math.min(result, getInput(inputs, `Inputs[${i}]`, x, y, z));
+        }
         break;
+      }
 
-      case "MaxFunction":
-        result = Math.max(
-          getInput(inputs, "Inputs[0]", x, y, z),
-          getInput(inputs, "Inputs[1]", x, y, z),
-        );
+      case "MaxFunction": {
+        result = getInput(inputs, "Inputs[0]", x, y, z);
+        for (let i = 1; inputs.has(`Inputs[${i}]`); i++) {
+          result = Math.max(result, getInput(inputs, `Inputs[${i}]`, x, y, z));
+        }
         break;
+      }
 
-      case "AverageFunction":
-        result = (getInput(inputs, "Inputs[0]", x, y, z) + getInput(inputs, "Inputs[1]", x, y, z)) / 2;
+      case "AverageFunction": {
+        let avgSum = 0;
+        let avgCount = 0;
+        for (let i = 0; inputs.has(`Inputs[${i}]`); i++) {
+          avgSum += getInput(inputs, `Inputs[${i}]`, x, y, z);
+          avgCount++;
+        }
+        result = avgCount > 0 ? avgSum / avgCount : 0;
         break;
+      }
 
       case "Blend": {
         const a = getInput(inputs, "InputA", x, y, z);

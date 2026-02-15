@@ -90,8 +90,9 @@ describe("round-trip: jsonToGraph → graphToJson", () => {
   });
 
   it("preserves array-of-assets fields", () => {
-    // Sum in internal format uses named handles (InputA, InputB) as standalone fields.
-    // Hytale Inputs[] → named handle conversion is tested in jsonToGraph.test.ts.
+    // Sum now uses Inputs[] natively via compound handles.
+    // InputA/InputB in source JSON gets migrated to Inputs[0]/Inputs[1] by jsonToGraph,
+    // and graphToJson serializes them as Inputs: [...] array.
     const original = {
       Type: "Sum",
       InputA: { Type: "Constant", Value: 1 },
@@ -101,7 +102,14 @@ describe("round-trip: jsonToGraph → graphToJson", () => {
     const { nodes, edges } = jsonToGraph(original);
     const result = graphToJson(nodes, edges);
 
-    expect(result).toEqual(original);
+    // After migration, the round-trip produces Inputs[] format
+    expect(result).toEqual({
+      Type: "Sum",
+      Inputs: [
+        { Type: "Constant", Value: 1 },
+        { Type: "Constant", Value: 2 },
+      ],
+    });
   });
 
   it("preserves mixed scalar and array-of-assets fields", () => {
