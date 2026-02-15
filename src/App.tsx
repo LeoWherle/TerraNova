@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { ReactFlowProvider } from "@xyflow/react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getVersion } from "@tauri-apps/api/app";
 import { useProjectStore } from "@/stores/projectStore";
 import { Toolbar } from "@/components/layout/Toolbar";
 import { StatusBar } from "@/components/layout/StatusBar";
@@ -13,6 +14,7 @@ import { ConfirmDialog } from "@/components/dialogs/ConfirmDialog";
 import { saveRef } from "@/utils/saveRef";
 import { checkForUpdates } from "@/utils/updater";
 import { useSettingsStore } from "@/stores/settingsStore";
+import { useToastStore } from "@/stores/toastStore";
 
 type PendingAction = "window-close" | "close-project";
 
@@ -45,8 +47,24 @@ export default function App() {
     setShowDialog(false);
   }, []);
 
-  // ---- Auto-check for updates on launch (if enabled in settings) ----
+  // ---- Post-update verification + auto-check for updates ----
   useEffect(() => {
+    const updateTarget = localStorage.getItem("tn-update-target");
+    if (updateTarget) {
+      localStorage.removeItem("tn-update-target");
+      getVersion().then((currentVersion) => {
+        if (currentVersion === updateTarget) {
+          useToastStore.getState().addToast(`Updated to v${currentVersion}`, "success");
+        } else {
+          useToastStore.getState().addToast(
+            `Update to v${updateTarget} may not have applied (running v${currentVersion})`,
+            "error",
+          );
+        }
+      });
+      return; // Skip auto-update check this launch
+    }
+
     if (!useSettingsStore.getState().autoCheckUpdates) return;
     const timer = setTimeout(checkForUpdates, 3000);
     return () => clearTimeout(timer);

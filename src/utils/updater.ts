@@ -38,6 +38,7 @@ export async function downloadAndInstall(): Promise<void> {
   if (!pendingUpdate) return;
 
   const store = useUpdateStore.getState();
+  const targetVersion = pendingUpdate.version;
   store.setStatus("downloading");
   store.setProgress(0);
 
@@ -62,13 +63,25 @@ export async function downloadAndInstall(): Promise<void> {
 
     pendingUpdate = null;
     useUpdateStore.getState().setStatus("restarting");
-    try {
-      await invoke("relaunch_app");
-    } catch {
+
+    // Record target version so the next launch can verify the update applied
+    localStorage.setItem("tn-update-target", targetVersion);
+
+    // Brief delay for filesystem flush, then relaunch.
+    // Don't await — relaunch_app calls app.exit(0) which kills the process,
+    // so the promise will never resolve. The catch handles the unlikely case
+    // where the command fails before the process exits.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    invoke("relaunch_app").catch((err) => {
+      console.error("Relaunch failed:", err);
       useUpdateStore.getState().setStatus("ready");
-      useToastStore.getState().addToast("Update installed — please restart the app manually", "info");
-    }
+      useToastStore.getState().addToast(
+        "Restart failed — please close and reopen the app",
+        "error",
+      );
+    });
   } catch (err) {
+    console.error("Update download/install failed:", err);
     useUpdateStore.getState().setError(String(err));
     useUpdateStore.getState().setStatus("idle");
     useToastStore.getState().addToast("Update download failed", "error");
@@ -78,10 +91,20 @@ export async function downloadAndInstall(): Promise<void> {
 
 export async function restartToUpdate(): Promise<void> {
   useUpdateStore.getState().setStatus("restarting");
-  try {
-    await invoke("relaunch_app");
-  } catch {
-    useUpdateStore.getState().setStatus("ready");
-    useToastStore.getState().addToast("Update installed — please restart the app manually", "info");
+
+  // Record target version for post-update verification
+  const targetVersion = useUpdateStore.getState().version;
+  if (targetVersion) {
+    localStorage.setItem("tn-update-target", targetVersion);
   }
+
+  // Fire-and-forget — the process will exit
+  invoke("relaunch_app").catch((err) => {
+    console.error("Relaunch failed:", err);
+    useUpdateStore.getState().setStatus("ready");
+    useToastStore.getState().addToast(
+      "Restart failed — please close and reopen the app",
+      "error",
+    );
+  });
 }
