@@ -35,7 +35,7 @@ function getStoredFlowDirection(): FlowDirection {
 function getStoredAutoLayoutOnOpen(): boolean {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return true;
+    if (!raw) return false;
     const parsed = JSON.parse(raw);
     if (typeof parsed.autoLayoutOnOpen === "boolean") {
       return parsed.autoLayoutOnOpen;
@@ -43,7 +43,7 @@ function getStoredAutoLayoutOnOpen(): boolean {
   } catch {
     // ignore
   }
-  return true;
+  return false;
 }
 
 function getStoredExportPath(): string | null {

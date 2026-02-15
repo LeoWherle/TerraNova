@@ -118,7 +118,6 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               }`}
             >
               <span className="font-medium">Enabled</span>
-              <span className="ml-2 text-[10px] text-tn-accent font-medium">Default</span>
               <p className="text-xs text-tn-text-muted mt-0.5">Automatically arrange nodes when opening a file</p>
             </button>
             <button
@@ -130,6 +129,7 @@ export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
               }`}
             >
               <span className="font-medium">Disabled</span>
+              <span className="ml-2 text-[10px] text-tn-accent font-medium">Default</span>
               <p className="text-xs text-tn-text-muted mt-0.5">Preserve original node positions from the JSON file</p>
             </button>
           </div>
