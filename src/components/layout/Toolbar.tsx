@@ -96,6 +96,7 @@ export function Toolbar({ onCloseProject }: ToolbarProps) {
   const leftPanelVisible = useUIStore((s) => s.leftPanelVisible);
   const rightPanelVisible = useUIStore((s) => s.rightPanelVisible);
   const helpMode = useUIStore((s) => s.helpMode);
+  const useAccordionSidebar = useUIStore((s) => s.useAccordionSidebar);
   const flowDirection = useSettingsStore((s) => s.flowDirection);
 
   // Register saveRef so App.tsx can call saveFile from outside ReactFlowProvider
@@ -584,6 +585,11 @@ export function Toolbar({ onCloseProject }: ToolbarProps) {
             label={helpMode ? "Disable Help Mode" : "Enable Help Mode"}
             onClick={() => useUIStore.getState().toggleHelpMode()}
             shortcut={resolveKeybinding("toggleHelpMode")}
+          />
+          <MenuSeparator />
+          <MenuItem
+            label={useAccordionSidebar ? "Sidebar: Accordion" : "Sidebar: Tabs"}
+            onClick={() => useUIStore.getState().toggleAccordionSidebar()}
           />
         </MenuDropdown>
 

@@ -32,38 +32,23 @@ export const createGraphSlice: SliceCreator<GraphSliceState> = (set, get) => {
     ...graphInitialState,
 
     onNodesChange: (changes) => {
-      const mutateAndCommit = getMutateAndCommit();
-      const positionChanges = changes.filter(
-        (c) => c.type === "position" && c.dragging === false,
-      );
-      const hasPositionChange = positionChanges.length > 0;
       const hasRemove = changes.some((c) => c.type === "remove");
 
-      if (hasPositionChange || hasRemove) {
-        let label: string;
-        if (hasRemove) {
-          label = "Edit nodes";
-        } else {
-          const movedIds = new Set(positionChanges.map((c) => (c as { id: string }).id));
-          const movedNodes = get().nodes.filter((n) => movedIds.has(n.id));
-          const names = movedNodes.map(
-            (n) => (n.data as Record<string, unknown>)?.type as string ?? n.type ?? "node",
-          );
-          if (names.length === 1) {
-            label = `Move ${names[0]}`;
-          } else if (names.length <= 3) {
-            label = `Move ${names.join(", ")}`;
-          } else {
-            label = `Move ${names.length} nodes`;
-          }
-        }
-
+      if (hasRemove) {
+        // Deletions are undoable
+        const mutateAndCommit = getMutateAndCommit();
         mutateAndCommit((state) => ({
           nodes: applyNodeChanges(changes, state.nodes),
-        }), label);
+        }), "Edit nodes");
         markDirty();
       } else {
+        // Position changes (moves) and other non-destructive changes:
+        // apply without creating a history entry
+        const hasDragEnd = changes.some(
+          (c) => c.type === "position" && c.dragging === false,
+        );
         set({ nodes: applyNodeChanges(changes, get().nodes) });
+        if (hasDragEnd) markDirty();
       }
     },
 

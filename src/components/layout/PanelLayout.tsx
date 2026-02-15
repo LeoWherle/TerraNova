@@ -8,7 +8,8 @@ import { PropertyPanel } from "@/components/properties/PropertyPanel";
 import { HistoryPanel } from "@/components/editor/HistoryPanel";
 import { ValidationPanel } from "@/components/editor/ValidationPanel";
 import { useGraphDiagnostics } from "@/hooks/useGraphDiagnostics";
-import { useUIStore } from "@/stores/uiStore";
+import { useUIStore, type SidebarSectionId } from "@/stores/uiStore";
+import { useDiagnosticsStore } from "@/stores/diagnosticsStore";
 
 const MIN_PANEL_WIDTH = 180;
 const DEFAULT_LEFT = 240;
@@ -30,6 +31,42 @@ function loadPersistedWidths(): { left: number; right: number } {
   }
   return { left: DEFAULT_LEFT, right: DEFAULT_RIGHT };
 }
+
+// ---------------------------------------------------------------------------
+// Section configuration
+// ---------------------------------------------------------------------------
+
+const SECTION_CONFIG: Record<SidebarSectionId, { title: string; icon: string }> = {
+  nodes: { title: "Nodes", icon: "\u25A6" },
+  files: { title: "Files", icon: "\u2630" },
+  history: { title: "History", icon: "\u21BA" },
+  validation: { title: "Issues", icon: "\u26A0" },
+  bookmarks: { title: "Bookmarks", icon: "\u2606" },
+};
+
+function SectionContent({ id }: { id: SidebarSectionId }) {
+  switch (id) {
+    case "nodes":
+      return <NodePalette />;
+    case "files":
+      return (
+        <>
+          <FileActions />
+          <AssetTree />
+        </>
+      );
+    case "history":
+      return <HistoryPanel />;
+    case "validation":
+      return <ValidationPanel />;
+    case "bookmarks":
+      return <BookmarkPanel />;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Classic tab sidebar (original behavior)
+// ---------------------------------------------------------------------------
 
 type LeftTab = "files" | "nodes" | "history" | "validation";
 
@@ -58,15 +95,176 @@ function BookmarkSection() {
   );
 }
 
+function TabSidebar() {
+  const [leftTab, setLeftTab] = useState<LeftTab>("nodes");
+
+  return (
+    <>
+      {/* Tab bar */}
+      <div className="flex border-b border-tn-border shrink-0">
+        <button
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "nodes"
+              ? "text-tn-accent border-b-2 border-tn-accent"
+              : "text-tn-text-muted hover:text-tn-text"
+          }`}
+          onClick={() => setLeftTab("nodes")}
+        >
+          Nodes
+        </button>
+        <button
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "files"
+              ? "text-tn-accent border-b-2 border-tn-accent"
+              : "text-tn-text-muted hover:text-tn-text"
+          }`}
+          onClick={() => setLeftTab("files")}
+        >
+          Files
+        </button>
+        <button
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "history"
+              ? "text-tn-accent border-b-2 border-tn-accent"
+              : "text-tn-text-muted hover:text-tn-text"
+          }`}
+          onClick={() => setLeftTab("history")}
+        >
+          History
+        </button>
+        <button
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "validation"
+              ? "text-tn-accent border-b-2 border-tn-accent"
+              : "text-tn-text-muted hover:text-tn-text"
+          }`}
+          onClick={() => setLeftTab("validation")}
+        >
+          Issues
+        </button>
+      </div>
+
+      {/* Tab content — both rendered always; inactive hidden via CSS to preserve state */}
+      <div className="flex-1 overflow-y-auto">
+        <div className={leftTab === "nodes" ? "flex flex-col h-full" : "hidden"}>
+          <div className="flex-1 overflow-y-auto">
+            <NodePalette />
+          </div>
+          <BookmarkSection />
+        </div>
+        <div className={leftTab === "files" ? "" : "hidden"}>
+          <FileActions />
+          <AssetTree />
+        </div>
+        <div className={leftTab === "history" ? "h-full" : "hidden"}>
+          <HistoryPanel />
+        </div>
+        <div className={leftTab === "validation" ? "h-full" : "hidden"}>
+          <ValidationPanel />
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Accordion sidebar
+// ---------------------------------------------------------------------------
+
+function AccordionSidebar() {
+  const sectionOrder = useUIStore((s) => s.sidebarSectionOrder);
+  const expanded = useUIStore((s) => s.sidebarExpanded);
+  const toggleSection = useUIStore((s) => s.toggleSection);
+  const reorderSections = useUIStore((s) => s.reorderSections);
+  const bookmarkCount = useUIStore((s) => s.bookmarks.size);
+  const issueCount = useDiagnosticsStore((s) => s.diagnostics.length);
+
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
+
+  function getBadge(id: SidebarSectionId): React.ReactNode {
+    if (id === "bookmarks" && bookmarkCount > 0) {
+      return <span className="text-[9px] text-tn-accent">{bookmarkCount}</span>;
+    }
+    if (id === "validation" && issueCount > 0) {
+      return <span className="text-[9px] text-amber-400">{issueCount}</span>;
+    }
+    return null;
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      {sectionOrder.map((id, index) => {
+        const config = SECTION_CONFIG[id];
+        const isExpanded = expanded[id];
+        const isDropTarget = dragOverIndex === index && draggedIndex !== null && draggedIndex !== index;
+
+        return (
+          <div
+            key={id}
+            className={isDropTarget ? "border-t-2 border-tn-accent" : ""}
+          >
+            {/* Accordion header */}
+            <button
+              className="w-full flex items-center gap-1.5 px-2 py-1.5 text-[11px] font-medium text-tn-text-muted hover:text-tn-text hover:bg-tn-accent/10 border-b border-tn-border shrink-0 select-none"
+              onClick={() => toggleSection(id)}
+              draggable
+              onDragStart={(e) => {
+                setDraggedIndex(index);
+                e.dataTransfer.effectAllowed = "move";
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = "move";
+                setDragOverIndex(index);
+              }}
+              onDragLeave={() => {
+                setDragOverIndex((prev) => (prev === index ? null : prev));
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                if (draggedIndex !== null && draggedIndex !== index) {
+                  reorderSections(draggedIndex, index);
+                }
+                setDraggedIndex(null);
+                setDragOverIndex(null);
+              }}
+              onDragEnd={() => {
+                setDraggedIndex(null);
+                setDragOverIndex(null);
+              }}
+            >
+              <span className="text-[9px] w-3 text-center cursor-grab active:cursor-grabbing opacity-40">{"\u2261"}</span>
+              <span className="text-[10px] w-4 text-center">{config.icon}</span>
+              <span>{config.title}</span>
+              {getBadge(id)}
+              <span className="ml-auto text-[9px] opacity-60">{isExpanded ? "\u25BC" : "\u25B6"}</span>
+            </button>
+
+            {/* Section content */}
+            {isExpanded && (
+              <SectionContent id={id} />
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main layout
+// ---------------------------------------------------------------------------
+
 export function PanelLayout() {
   const initial = loadPersistedWidths();
   const [leftWidth, setLeftWidth] = useState(initial.left);
   const [rightWidth, setRightWidth] = useState(initial.right);
-  const [leftTab, setLeftTab] = useState<LeftTab>("nodes");
   const containerRef = useRef<HTMLDivElement>(null);
 
   const leftPanelVisible = useUIStore((s) => s.leftPanelVisible);
   const rightPanelVisible = useUIStore((s) => s.rightPanelVisible);
+  const useAccordion = useUIStore((s) => s.useAccordionSidebar);
 
   // Drive diagnostics computation (debounced, pushes to diagnosticsStore)
   useGraphDiagnostics();
@@ -114,69 +312,7 @@ export function PanelLayout() {
             className="flex flex-col bg-tn-surface border-r border-tn-border shrink-0 transition-all duration-150"
             style={{ width: leftWidth }}
           >
-            {/* Tab bar */}
-            <div className="flex border-b border-tn-border shrink-0">
-              <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium ${
-                  leftTab === "nodes"
-                    ? "text-tn-accent border-b-2 border-tn-accent"
-                    : "text-tn-text-muted hover:text-tn-text"
-                }`}
-                onClick={() => setLeftTab("nodes")}
-              >
-                Nodes
-              </button>
-              <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium ${
-                  leftTab === "files"
-                    ? "text-tn-accent border-b-2 border-tn-accent"
-                    : "text-tn-text-muted hover:text-tn-text"
-                }`}
-                onClick={() => setLeftTab("files")}
-              >
-                Files
-              </button>
-              <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium ${
-                  leftTab === "history"
-                    ? "text-tn-accent border-b-2 border-tn-accent"
-                    : "text-tn-text-muted hover:text-tn-text"
-                }`}
-                onClick={() => setLeftTab("history")}
-              >
-                History
-              </button>
-              <button
-                className={`flex-1 px-3 py-1.5 text-xs font-medium ${
-                  leftTab === "validation"
-                    ? "text-tn-accent border-b-2 border-tn-accent"
-                    : "text-tn-text-muted hover:text-tn-text"
-                }`}
-                onClick={() => setLeftTab("validation")}
-              >
-                Issues
-              </button>
-            </div>
-
-            {/* Tab content — both rendered always; inactive hidden via CSS to preserve state */}
-            <div className="flex-1 overflow-y-auto">
-              <div className={leftTab === "nodes" ? "flex flex-col h-full" : "hidden"}>
-                <div className="flex-1 overflow-y-auto">
-                  <NodePalette />
-                </div>
-                <BookmarkSection />
-              </div>
-              <div className={leftTab === "files" ? "" : "hidden"}>
-                <FileActions />
-                <AssetTree />
-              </div>
-              <div className={leftTab === "history" ? "h-full" : "hidden"}>
-                <HistoryPanel />
-              </div>
-              <div className={leftTab === "validation" ? "h-full" : "hidden"}>
-                <ValidationPanel />
-              </div>
-            </div>
+            {useAccordion ? <AccordionSidebar /> : <TabSidebar />}
           </div>
 
           {/* Left drag handle */}

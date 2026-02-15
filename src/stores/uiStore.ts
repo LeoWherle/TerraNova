@@ -19,6 +19,40 @@ function persist(key: string, value: boolean) {
   }
 }
 
+function persistJson(key: string, value: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Ignore write failures
+  }
+}
+
+function getStoredJson<T>(key: string, fallback: T): T {
+  try {
+    const v = localStorage.getItem(key);
+    if (v === null) return fallback;
+    return JSON.parse(v) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Accordion sidebar types & defaults
+// ---------------------------------------------------------------------------
+
+export type SidebarSectionId = "nodes" | "files" | "history" | "validation" | "bookmarks";
+
+const DEFAULT_SECTION_ORDER: SidebarSectionId[] = ["nodes", "files", "history", "validation", "bookmarks"];
+
+const DEFAULT_SECTION_EXPANDED: Record<SidebarSectionId, boolean> = {
+  nodes: true,
+  files: false,
+  history: false,
+  validation: false,
+  bookmarks: false,
+};
+
 export interface Bookmark {
   x: number;
   y: number;
@@ -76,6 +110,11 @@ interface UIState {
   // Props deletion confirmation preference
   suppressPropDeleteConfirm: boolean;
 
+  // Accordion sidebar
+  useAccordionSidebar: boolean;
+  sidebarSectionOrder: SidebarSectionId[];
+  sidebarExpanded: Record<SidebarSectionId, boolean>;
+
   // Bookmarks
   bookmarks: Map<number, Bookmark>;
 
@@ -90,6 +129,11 @@ interface UIState {
 
   // Props deletion confirmation
   setSuppressPropDeleteConfirm: (value: boolean) => void;
+
+  // Accordion sidebar actions
+  toggleAccordionSidebar: () => void;
+  toggleSection: (id: SidebarSectionId) => void;
+  reorderSections: (fromIndex: number, toIndex: number) => void;
 
   // Bookmark actions
   setBookmark: (slot: number, bookmark: Bookmark) => void;
@@ -108,6 +152,9 @@ export const useUIStore = create<UIState>((set, get) => ({
   rightPanelVisible: getStoredBool("tn-rightPanel", true),
   helpMode: false,
   suppressPropDeleteConfirm: getStoredBool("tn-suppressPropDeleteConfirm", false),
+  useAccordionSidebar: getStoredBool("tn-accordionSidebar", false),
+  sidebarSectionOrder: getStoredJson<SidebarSectionId[]>("tn-sidebar-order", DEFAULT_SECTION_ORDER),
+  sidebarExpanded: getStoredJson<Record<SidebarSectionId, boolean>>("tn-sidebar-expanded", DEFAULT_SECTION_EXPANDED),
   bookmarks: new Map(),
 
   toggleGrid: () => {
@@ -148,6 +195,26 @@ export const useUIStore = create<UIState>((set, get) => ({
   setSuppressPropDeleteConfirm: (value) => {
     persist("tn-suppressPropDeleteConfirm", value);
     set({ suppressPropDeleteConfirm: value });
+  },
+
+  toggleAccordionSidebar: () => {
+    const next = !get().useAccordionSidebar;
+    persist("tn-accordionSidebar", next);
+    set({ useAccordionSidebar: next });
+  },
+
+  toggleSection: (id) => {
+    const expanded = { ...get().sidebarExpanded, [id]: !get().sidebarExpanded[id] };
+    persistJson("tn-sidebar-expanded", expanded);
+    set({ sidebarExpanded: expanded });
+  },
+
+  reorderSections: (fromIndex, toIndex) => {
+    const order = [...get().sidebarSectionOrder];
+    const [moved] = order.splice(fromIndex, 1);
+    order.splice(toIndex, 0, moved);
+    persistJson("tn-sidebar-order", order);
+    set({ sidebarSectionOrder: order });
   },
 
   setBookmark: (slot, bookmark) => {

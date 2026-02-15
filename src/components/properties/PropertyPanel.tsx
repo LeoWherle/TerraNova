@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useEditorStore } from "@/stores/editorStore";
 import { useProjectStore } from "@/stores/projectStore";
 import { useUIStore } from "@/stores/uiStore";
@@ -23,8 +23,6 @@ import { NODE_TIPS } from "@/schema/nodeTips";
 import { FIELD_DESCRIPTIONS, getShortDescription, getExtendedDescription } from "@/schema/fieldDescriptions";
 import { useLanguage } from "@/languages/useLanguage";
 
-const DEBOUNCE_MS = 300;
-
 export function PropertyPanel() {
   const nodes = useEditorStore((s) => s.nodes);
   const edges = useEditorStore((s) => s.edges);
@@ -45,20 +43,15 @@ export function PropertyPanel() {
   const setSettingsConfig = useEditorStore((s) => s.setSettingsConfig);
   const activeBiomeSection = useEditorStore((s) => s.activeBiomeSection);
 
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPendingSnapshotRef = useRef(false);
   const lastChangedFieldRef = useRef<{ field: string; nodeType: string }>({ field: "", nodeType: "" });
 
   const selectedNode = selectedNodeId ? nodes.find((n) => n.id === selectedNodeId) : null;
 
   /**
-   * Flush any pending debounced history snapshot immediately.
+   * Flush any pending history snapshot immediately.
    */
   const flushPendingSnapshot = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
     if (hasPendingSnapshotRef.current) {
       const { field, nodeType } = lastChangedFieldRef.current;
       commitState(field ? `Edit ${field} on ${nodeType}` : "Edit");
@@ -84,7 +77,8 @@ export function PropertyPanel() {
 
   /**
    * For continuous changes (slider drags, text typing): update immediately
-   * but debounce the history commit so rapid changes produce a single undo entry.
+   * but only commit to history on blur (interaction end) so a single drag
+   * produces exactly one undo entry.
    */
   const handleContinuousChange = useCallback(
     (fieldName: string, value: unknown) => {
@@ -98,21 +92,10 @@ export function PropertyPanel() {
       updateNodeField(selectedNodeId, fieldName, value);
       setDirty(true);
 
-      // Mark that we have uncommitted changes
+      // Mark that we have uncommitted changes — commit happens on blur
       hasPendingSnapshotRef.current = true;
-
-      // Reset debounce timer — commit after the burst settles
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        const { field, nodeType: nt } = lastChangedFieldRef.current;
-        commitState(`Edit ${field} on ${nt}`);
-        hasPendingSnapshotRef.current = false;
-        debounceTimerRef.current = null;
-      }, DEBOUNCE_MS);
     },
-    [selectedNodeId, commitState, updateNodeField, setDirty],
+    [selectedNodeId, updateNodeField, setDirty],
   );
 
   /**
@@ -120,18 +103,17 @@ export function PropertyPanel() {
    * other actions (like deletion) can occur.
    */
   const handleBlur = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-    if (hasPendingSnapshotRef.current) {
-      const { field, nodeType } = lastChangedFieldRef.current;
-      commitState(field ? `Edit ${field} on ${nodeType}` : "Edit");
-      hasPendingSnapshotRef.current = false;
-    }
-  }, [commitState]);
+    flushPendingSnapshot();
+  }, [flushPendingSnapshot]);
 
-  const { debouncedChange: debouncedConfigChange, flush: flushConfig } = useFieldChange(commitState, setDirty, DEBOUNCE_MS);
+  // Flush pending snapshot when switching nodes so changes aren't lost
+  useEffect(() => {
+    return () => {
+      flushPendingSnapshot();
+    };
+  }, [selectedNodeId, flushPendingSnapshot]);
+
+  const { debouncedChange: debouncedConfigChange, flush: flushConfig } = useFieldChange(commitState, setDirty, 300);
 
   const handleConfigBlur = useCallback(() => {
     flushConfig();
