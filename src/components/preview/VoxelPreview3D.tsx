@@ -3,6 +3,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, SSAO } from "@react-three/postprocessing";
 import { usePreviewStore } from "@/stores/previewStore";
+import { useConfigStore } from "@/stores/configStore";
 import { CameraPresets } from "./CameraPresets";
 import { FluidPlane } from "./FluidPlane";
 import { MaterialLegend } from "./MaterialLegend";
@@ -98,38 +99,37 @@ function EdgeOutline() {
 
 /* ── Post-processing ─────────────────────────────────────────────── */
 
-function SSAOOnly() {
-  return (
-    <EffectComposer>
-      <SSAO samples={8} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />
-    </EffectComposer>
-  );
-}
-
-function EdgeOutlineOnly() {
-  return (
-    <EffectComposer>
-      <EdgeOutline />
-    </EffectComposer>
-  );
-}
-
-function SSAOAndEdge() {
-  return (
-    <EffectComposer>
-      <SSAO samples={8} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />
-      <EdgeOutline />
-    </EffectComposer>
-  );
+function SSAOEffect() {
+  const ssaoSamples = useConfigStore((s) => s.ssaoSamples);
+  return <SSAO samples={ssaoSamples} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />;
 }
 
 function PostProcessing() {
   const showSSAO = usePreviewStore((s) => s.showSSAO);
   const showEdgeOutline = usePreviewStore((s) => s.showEdgeOutline);
 
-  if (showSSAO && showEdgeOutline) return <SSAOAndEdge />;
-  if (showSSAO) return <SSAOOnly />;
-  if (showEdgeOutline) return <EdgeOutlineOnly />;
+  if (showSSAO && showEdgeOutline) {
+    return (
+      <EffectComposer>
+        <SSAOEffect />
+        <EdgeOutline />
+      </EffectComposer>
+    );
+  }
+  if (showSSAO) {
+    return (
+      <EffectComposer>
+        <SSAOEffect />
+      </EffectComposer>
+    );
+  }
+  if (showEdgeOutline) {
+    return (
+      <EffectComposer>
+        <EdgeOutline />
+      </EffectComposer>
+    );
+  }
   return null;
 }
 
@@ -140,6 +140,8 @@ const VoxelScene = memo(function VoxelScene({ wireframe }: { wireframe: boolean 
   const showFog3D = usePreviewStore((s) => s.showFog3D);
   const showSky3D = usePreviewStore((s) => s.showSky3D);
   const voxelMeshData = usePreviewStore((s) => s.voxelMeshData);
+  const enableShadows = useConfigStore((s) => s.enableShadows);
+  const shadowMapSize = useConfigStore((s) => s.shadowMapSize);
 
   return (
     <>
@@ -149,9 +151,9 @@ const VoxelScene = memo(function VoxelScene({ wireframe }: { wireframe: boolean 
         position={[15, 30, 10]}
         intensity={0.8}
         color="#fff5e0"
-        castShadow
-        shadow-mapSize-width={1024}
-        shadow-mapSize-height={1024}
+        castShadow={enableShadows}
+        shadow-mapSize-width={shadowMapSize}
+        shadow-mapSize-height={shadowMapSize}
         shadow-camera-left={-35}
         shadow-camera-right={35}
         shadow-camera-top={35}
@@ -188,13 +190,15 @@ export function VoxelPreview3D({ onCanvasRef }: { onCanvasRef?: (el: HTMLCanvasE
   const isVoxelLoading = usePreviewStore((s) => s.isVoxelLoading);
   const voxelError = usePreviewStore((s) => s.voxelError);
   const voxelData = (usePreviewStore.getState() as any)._voxelData as VoxelData | undefined;
+  const enableShadows = useConfigStore((s) => s.enableShadows);
+  const gpuPowerPreference = useConfigStore((s) => s.gpuPowerPreference);
 
   return (
     <div className="relative w-full h-full">
       <Canvas
         camera={{ position: [35, 30, 35], fov: 45 }}
-        gl={{ preserveDrawingBuffer: true }}
-        shadows
+        gl={{ preserveDrawingBuffer: true, powerPreference: gpuPowerPreference }}
+        shadows={enableShadows}
       >
         <VoxelScene wireframe={showVoxelWireframe} />
         {onCanvasRef && <CanvasRefCapture onCanvas={onCanvasRef} />}

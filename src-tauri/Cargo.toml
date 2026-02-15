@@ -26,6 +26,7 @@ fastnoise-lite = "1"
 thiserror = "2"
 reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 tokio = { version = "1", features = ["rt-multi-thread"] }
+sysinfo = "0.33"
 
 [profile.release]
 panic = "abort"

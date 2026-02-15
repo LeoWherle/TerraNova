@@ -3,6 +3,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import { EffectComposer, SSAO } from "@react-three/postprocessing";
 import { usePreviewStore } from "@/stores/previewStore";
+import { useConfigStore } from "@/stores/configStore";
 import { getColormap } from "@/utils/colormaps";
 import { CameraPresets } from "./CameraPresets";
 import { WaterPlane } from "./FluidPlane";
@@ -111,38 +112,37 @@ function EdgeOutline() {
 
 /* ── Post-processing ─────────────────────────────────────────────── */
 
-function SSAOOnly() {
-  return (
-    <EffectComposer>
-      <SSAO samples={8} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />
-    </EffectComposer>
-  );
-}
-
-function EdgeOutlineOnly() {
-  return (
-    <EffectComposer>
-      <EdgeOutline />
-    </EffectComposer>
-  );
-}
-
-function SSAOAndEdge() {
-  return (
-    <EffectComposer>
-      <SSAO samples={8} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />
-      <EdgeOutline />
-    </EffectComposer>
-  );
+function SSAOEffect() {
+  const ssaoSamples = useConfigStore((s) => s.ssaoSamples);
+  return <SSAO samples={ssaoSamples} radius={0.5} intensity={1.5} luminanceInfluence={0.5} />;
 }
 
 function PostProcessing() {
   const showSSAO = usePreviewStore((s) => s.showSSAO);
   const showEdgeOutline = usePreviewStore((s) => s.showEdgeOutline);
 
-  if (showSSAO && showEdgeOutline) return <SSAOAndEdge />;
-  if (showSSAO) return <SSAOOnly />;
-  if (showEdgeOutline) return <EdgeOutlineOnly />;
+  if (showSSAO && showEdgeOutline) {
+    return (
+      <EffectComposer>
+        <SSAOEffect />
+        <EdgeOutline />
+      </EffectComposer>
+    );
+  }
+  if (showSSAO) {
+    return (
+      <EffectComposer>
+        <SSAOEffect />
+      </EffectComposer>
+    );
+  }
+  if (showEdgeOutline) {
+    return (
+      <EffectComposer>
+        <EdgeOutline />
+      </EffectComposer>
+    );
+  }
   return null;
 }
 
@@ -151,13 +151,16 @@ export function Preview3D({ onCanvasRef }: { onCanvasRef?: (el: HTMLCanvasElemen
   const showWaterPlane = usePreviewStore((s) => s.showWaterPlane);
   const showFog3D = usePreviewStore((s) => s.showFog3D);
   const showSky3D = usePreviewStore((s) => s.showSky3D);
+  const enableShadows = useConfigStore((s) => s.enableShadows);
+  const shadowMapSize = useConfigStore((s) => s.shadowMapSize);
+  const gpuPowerPreference = useConfigStore((s) => s.gpuPowerPreference);
 
   return (
     <div className="relative w-full h-full">
       <Canvas
         camera={{ position: [30, 25, 30], fov: 50 }}
-        gl={{ preserveDrawingBuffer: true }}
-        shadows
+        gl={{ preserveDrawingBuffer: true, powerPreference: gpuPowerPreference }}
+        shadows={enableShadows}
       >
         {/* Hytale-style lighting */}
         <hemisphereLight args={["#87CEEB", "#8B7355", 0.4]} />
@@ -165,9 +168,9 @@ export function Preview3D({ onCanvasRef }: { onCanvasRef?: (el: HTMLCanvasElemen
           position={[15, 30, 10]}
           intensity={0.8}
           color="#fff5e0"
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
+          castShadow={enableShadows}
+          shadow-mapSize-width={shadowMapSize}
+          shadow-mapSize-height={shadowMapSize}
           shadow-camera-left={-35}
           shadow-camera-right={35}
           shadow-camera-top={35}

@@ -10,6 +10,7 @@ import { NewProjectDialog } from "@/components/dialogs/NewProjectDialog";
 import { BridgeDialog } from "@/components/dialogs/BridgeDialog";
 import { SettingsDialog } from "@/components/dialogs/SettingsDialog";
 import { KeyboardShortcutsDialog } from "@/components/dialogs/KeyboardShortcutsDialog";
+import { ConfigurationDialog } from "@/components/dialogs/ConfigurationDialog";
 import { useToastStore } from "@/stores/toastStore";
 import { saveRef } from "@/utils/saveRef";
 import { matchesKeybinding, resolveKeybinding } from "@/config/keybindings";
@@ -83,6 +84,7 @@ export function Toolbar({ onCloseProject }: ToolbarProps) {
   const [showNewProject, setShowNewProject] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showConfig, setShowConfig] = useState(false);
   const reactFlow = useReactFlow();
   const showInlinePreviews = usePreviewStore((s) => s.showInlinePreviews);
   const showGrid = useUIStore((s) => s.showGrid);
@@ -546,6 +548,10 @@ export function Toolbar({ onCloseProject }: ToolbarProps) {
             label="Keyboard Shortcuts..."
             onClick={() => setShowShortcuts(true)}
           />
+          <MenuItem
+            label="Configuration..."
+            onClick={() => setShowConfig(true)}
+          />
           <MenuSeparator />
           <MenuItem
             label={flowDirection === "LR" ? "Flow Direction: LTR" : "Flow Direction: RTL"}
@@ -598,6 +604,7 @@ export function Toolbar({ onCloseProject }: ToolbarProps) {
       <BridgeDialog />
       <SettingsDialog open={showSettings} onClose={() => setShowSettings(false)} />
       <KeyboardShortcutsDialog open={showShortcuts} onClose={() => setShowShortcuts(false)} />
+      <ConfigurationDialog open={showConfig} onClose={() => setShowConfig(false)} />
     </>
   );
 }

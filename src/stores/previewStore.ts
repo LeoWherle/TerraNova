@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type { ColormapId } from "@/utils/colormaps";
 import type { VoxelMeshData } from "@/utils/voxelMeshBuilder";
 import type { EvaluatedPosition } from "@/utils/positionEvaluator";
+import { useConfigStore } from "@/stores/configStore";
 
 export type PreviewMode = "2d" | "3d" | "voxel" | "world";
 export type ViewMode = "graph" | "preview" | "split" | "compare";
@@ -286,8 +287,8 @@ function hydratePersistedState() {
     showCrossSection: getStoredBool("tn-showCrossSection", false),
     voxelYMin: getStoredFloat("tn-voxelYMin", 0),
     voxelYMax: getStoredFloat("tn-voxelYMax", 128),
-    voxelYSlices: getStoredFloat("tn-voxelYSlices", 32),
-    voxelResolution: getStoredFloat("tn-voxelResolution", 32),
+    voxelYSlices: getStoredFloat("tn-voxelYSlices", useConfigStore.getState().defaultVoxelYSlices),
+    voxelResolution: getStoredFloat("tn-voxelResolution", useConfigStore.getState().defaultVoxelRes),
     showThresholdView: getStoredBool("tn-showThresholdView", false),
     showMaterialColors: getStoredBool("tn-showMaterialColors", true),
     showVoxelWireframe: getStoredBool("tn-showVoxelWireframe", false),
@@ -339,7 +340,7 @@ export const usePreviewStore = create<PreviewState>((originalSet) => {
 
   return {
     mode: "2d",
-    resolution: 128,
+    resolution: useConfigStore.getState().defaultPreviewRes,
     rangeMin: -64,
     rangeMax: 64,
     yLevel: 64,

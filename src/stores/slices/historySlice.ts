@@ -1,4 +1,5 @@
 import { useProjectStore } from "../projectStore";
+import { useConfigStore } from "../configStore";
 import type {
   EditorState,
   SliceCreator,
@@ -14,7 +15,9 @@ import type { Node, Edge } from "@xyflow/react";
 // History persistence helpers (localStorage)
 // ---------------------------------------------------------------------------
 
-const MAX_PERSISTED_HISTORY = 20;
+function getMaxPersistedHistory(): number {
+  return useConfigStore.getState().maxPersistedHistory;
+}
 let _persistTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Cache structuredClone results for unchanged references between commits
@@ -49,13 +52,13 @@ function persistHistory() {
     if (state.biomeSections) {
       const s: Record<string, { h: SectionHistoryEntry[]; i: number }> = {};
       for (const [k, sec] of Object.entries(state.biomeSections)) {
-        const trimmed = sec.history.slice(-MAX_PERSISTED_HISTORY);
+        const trimmed = sec.history.slice(-getMaxPersistedHistory());
         const offset = sec.history.length - trimmed.length;
         s[k] = { h: trimmed, i: sec.historyIndex - offset };
       }
       localStorage.setItem(key, JSON.stringify({ v: 1, t: Date.now(), s }));
     } else {
-      const trimmed = state.history.slice(-MAX_PERSISTED_HISTORY);
+      const trimmed = state.history.slice(-getMaxPersistedHistory());
       const offset = state.history.length - trimmed.length;
       localStorage.setItem(key, JSON.stringify({
         v: 1, t: Date.now(),
@@ -151,7 +154,8 @@ export const createHistorySlice: SliceCreator<HistorySliceState> = (set, get) =>
           } else {
             sectionHistory.push(entry);
           }
-          if (sectionHistory.length > 30) sectionHistory = sectionHistory.slice(sectionHistory.length - 30);
+          const _secHistMax = useConfigStore.getState().maxHistoryEntries;
+          if (sectionHistory.length > _secHistMax) sectionHistory = sectionHistory.slice(sectionHistory.length - _secHistMax);
           const newSectionIndex = sectionHistory.length - 1;
 
           return {
@@ -194,7 +198,7 @@ export const createHistorySlice: SliceCreator<HistorySliceState> = (set, get) =>
       } else {
         newHistory.push(fullEntry);
       }
-      if (newHistory.length > 50) newHistory.shift();
+      { const _histMax = useConfigStore.getState().maxHistoryEntries; if (newHistory.length > _histMax) newHistory.shift(); }
       return {
         ...updates,
         nodes: newNodes,
@@ -230,7 +234,8 @@ export const createHistorySlice: SliceCreator<HistorySliceState> = (set, get) =>
               outputNodeId: state.outputNodeId,
               label,
             });
-            if (sectionHistory.length > 30) sectionHistory = sectionHistory.slice(sectionHistory.length - 30);
+            const _secHistMax = useConfigStore.getState().maxHistoryEntries;
+          if (sectionHistory.length > _secHistMax) sectionHistory = sectionHistory.slice(sectionHistory.length - _secHistMax);
             return {
               biomeSections: {
                 ...state.biomeSections,
@@ -258,7 +263,7 @@ export const createHistorySlice: SliceCreator<HistorySliceState> = (set, get) =>
           settingsConfig: cachedClone(state.settingsConfig),
           label,
         });
-        if (newHistory.length > 50) newHistory.shift();
+        { const _histMax = useConfigStore.getState().maxHistoryEntries; if (newHistory.length > _histMax) newHistory.shift(); }
         return { history: newHistory, historyIndex: newHistory.length - 1 };
       });
       schedulePersist();

@@ -7,7 +7,7 @@ import { resolveMaterials, DEFAULT_MATERIAL_PALETTE, matchMaterialName } from "@
 import { evaluateMaterialGraph } from "@/utils/materialEvaluator";
 import { createEvaluationContext } from "@/utils/densityEvaluator";
 import { buildVoxelMeshes } from "@/utils/voxelMeshBuilder";
-import { DEBOUNCE_MS } from "@/constants";
+import { useConfigStore } from "@/stores/configStore";
 import { scanDensityGridYBounds, computeGraphHash, analyzeGraphDefaults } from "@/utils/previewAutoFit";
 
 /** Progressive resolution steps */
@@ -87,7 +87,10 @@ export function useVoxelEvaluation() {
 
       // Progressive evaluation: start at lowest res, cascade up
       const targetRes = voxelResolution;
-      const steps = PROGRESSIVE_STEPS.filter((s) => s <= targetRes);
+      const progressive = useConfigStore.getState().enableProgressiveVoxel;
+      const steps = progressive
+        ? PROGRESSIVE_STEPS.filter((s) => s <= targetRes)
+        : [];
       if (!steps.includes(targetRes)) steps.push(targetRes);
 
       let stepIdx = 0;
@@ -282,7 +285,7 @@ export function useVoxelEvaluation() {
       }
 
       runStep();
-    }, DEBOUNCE_MS);
+    }, useConfigStore.getState().debounceMs);
 
     return () => {
       unmountedRef.current = true;

@@ -2,11 +2,13 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { createWorkerInstance, type WorkerInstance } from "@/utils/densityWorkerClient";
-import { DEBOUNCE_MS } from "@/constants";
+import { useConfigStore } from "@/stores/configStore";
 
 /**
  * Dual evaluation hook for Comparison mode.
- * Creates two independent worker instances and evaluates both panes in parallel.
+ * Creates up to two independent worker instances and evaluates both panes.
+ * When maxWorkerThreads <= 2, falls back to sequential evaluation with a
+ * single shared worker to reduce CPU usage.
  */
 export function useComparisonEvaluation() {
   const nodes = useEditorStore((s) => s.nodes);
@@ -29,9 +31,8 @@ export function useComparisonEvaluation() {
   const workerBRef = useRef<WorkerInstance | null>(null);
   const evalIdRef = useRef(0);
 
-  // Lazy-init workers
+  // Lazy-init workers — only create a second worker when thread budget allows
   if (!workerARef.current) workerARef.current = createWorkerInstance();
-  if (!workerBRef.current) workerBRef.current = createWorkerInstance();
 
   useEffect(() => {
     if (viewMode !== "compare") return;
@@ -47,53 +48,96 @@ export function useComparisonEvaluation() {
 
       const evalId = ++evalIdRef.current;
       const baseParams = { nodes, edges, resolution, rangeMin, rangeMax, yLevel, options: { contentFields } };
+      const maxThreads = useConfigStore.getState().maxWorkerThreads;
 
-      // Evaluate A
-      const evalA = compareNodeA
-        ? (async () => {
-            setCompareLoadingA(true);
-            try {
-              const result = await workerARef.current!.evaluate({
-                ...baseParams,
-                rootNodeId: compareNodeA,
-              });
-              if (evalId === evalIdRef.current) {
-                setCompareValuesA(result.values, result.minValue, result.maxValue);
+      // When thread budget allows (>= 3), use parallel workers
+      const useParallel = maxThreads >= 3;
+      if (useParallel && !workerBRef.current) {
+        workerBRef.current = createWorkerInstance();
+      }
+
+      if (useParallel) {
+        // ── Parallel evaluation ──
+        const evalA = compareNodeA
+          ? (async () => {
+              setCompareLoadingA(true);
+              try {
+                const result = await workerARef.current!.evaluate({
+                  ...baseParams,
+                  rootNodeId: compareNodeA,
+                });
+                if (evalId === evalIdRef.current) {
+                  setCompareValuesA(result.values, result.minValue, result.maxValue);
+                }
+              } catch (err) {
+                if (err !== "cancelled" && evalId === evalIdRef.current) {
+                  setCompareValuesA(null, 0, 0);
+                }
+              } finally {
+                if (evalId === evalIdRef.current) setCompareLoadingA(false);
               }
-            } catch (err) {
-              if (err !== "cancelled" && evalId === evalIdRef.current) {
-                setCompareValuesA(null, 0, 0);
+            })()
+          : Promise.resolve();
+
+        const evalB = compareNodeB
+          ? (async () => {
+              setCompareLoadingB(true);
+              try {
+                const result = await workerBRef.current!.evaluate({
+                  ...baseParams,
+                  rootNodeId: compareNodeB,
+                });
+                if (evalId === evalIdRef.current) {
+                  setCompareValuesB(result.values, result.minValue, result.maxValue);
+                }
+              } catch (err) {
+                if (err !== "cancelled" && evalId === evalIdRef.current) {
+                  setCompareValuesB(null, 0, 0);
+                }
+              } finally {
+                if (evalId === evalIdRef.current) setCompareLoadingB(false);
               }
-            } finally {
-              if (evalId === evalIdRef.current) setCompareLoadingA(false);
+            })()
+          : Promise.resolve();
+
+        await Promise.all([evalA, evalB]);
+      } else {
+        // ── Sequential evaluation — uses a single worker ──
+        const worker = workerARef.current!;
+
+        if (compareNodeA) {
+          setCompareLoadingA(true);
+          try {
+            const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeA });
+            if (evalId === evalIdRef.current) {
+              setCompareValuesA(result.values, result.minValue, result.maxValue);
             }
-          })()
-        : Promise.resolve();
-
-      // Evaluate B
-      const evalB = compareNodeB
-        ? (async () => {
-            setCompareLoadingB(true);
-            try {
-              const result = await workerBRef.current!.evaluate({
-                ...baseParams,
-                rootNodeId: compareNodeB,
-              });
-              if (evalId === evalIdRef.current) {
-                setCompareValuesB(result.values, result.minValue, result.maxValue);
-              }
-            } catch (err) {
-              if (err !== "cancelled" && evalId === evalIdRef.current) {
-                setCompareValuesB(null, 0, 0);
-              }
-            } finally {
-              if (evalId === evalIdRef.current) setCompareLoadingB(false);
+          } catch (err) {
+            if (err !== "cancelled" && evalId === evalIdRef.current) {
+              setCompareValuesA(null, 0, 0);
             }
-          })()
-        : Promise.resolve();
+          } finally {
+            if (evalId === evalIdRef.current) setCompareLoadingA(false);
+          }
+        }
 
-      await Promise.all([evalA, evalB]);
-    }, DEBOUNCE_MS);
+        if (compareNodeB && evalId === evalIdRef.current) {
+          setCompareLoadingB(true);
+          try {
+            const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeB });
+            if (evalId === evalIdRef.current) {
+              setCompareValuesB(result.values, result.minValue, result.maxValue);
+            }
+          } catch (err) {
+            if (err !== "cancelled" && evalId === evalIdRef.current) {
+              setCompareValuesB(null, 0, 0);
+            }
+          } finally {
+            if (evalId === evalIdRef.current) setCompareLoadingB(false);
+          }
+        }
+      }
+    }, useConfigStore.getState().debounceMs);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);

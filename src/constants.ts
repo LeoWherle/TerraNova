@@ -20,5 +20,5 @@ export const DEFAULT_WORLD_HEIGHT = 320;
 export const MIN_ZOOM = 0.01;
 export const MAX_ZOOM = 8;
 
-// Evaluation timing
-export const DEBOUNCE_MS = 500;
+// Evaluation timing (default fallback — configurable via Configuration dialog)
+export const DEFAULT_DEBOUNCE_MS = 500;

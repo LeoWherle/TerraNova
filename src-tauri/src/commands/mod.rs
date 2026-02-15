@@ -1,4 +1,5 @@
 pub mod bridge;
+pub mod hardware;
 pub mod io;
 pub mod preview;
 pub mod process;

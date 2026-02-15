@@ -3,7 +3,7 @@ import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateInWorker, cancelEvaluation } from "@/utils/densityWorkerClient";
 import { computeFidelityScore } from "@/utils/graphDiagnostics";
-import { DEBOUNCE_MS } from "@/constants";
+import { useConfigStore } from "@/stores/configStore";
 
 /**
  * Auto-evaluation hook for the preview panel.
@@ -73,7 +73,7 @@ export function usePreviewEvaluation() {
           setLoading(false);
         }
       }
-    }, DEBOUNCE_MS);
+    }, useConfigStore.getState().debounceMs);
 
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
