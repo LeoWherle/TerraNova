@@ -1,4 +1,5 @@
 import { FieldTooltip } from "./FieldTooltip";
+import { SliderField } from "./SliderField";
 
 interface RangeFieldProps {
   label: string;
@@ -15,22 +16,26 @@ export function RangeField({ label, value, description, onChange, onBlur }: Rang
         {label}
         {description && <FieldTooltip description={description} />}
       </label>
-      <div className="flex gap-1">
-        {(["Min", "Max"] as const).map((bound) => (
-          <div key={bound} className="flex-1">
-            <label className="text-[10px] text-tn-text-muted uppercase">{bound}</label>
-            <input
-              type="number"
-              value={value[bound]}
-              onChange={(e) =>
-                onChange({ ...value, [bound]: parseFloat(e.target.value) || 0 })
-              }
-              onBlur={onBlur}
-              className="w-full px-1.5 py-0.5 text-xs bg-tn-bg border border-tn-border rounded"
-            />
-          </div>
-        ))}
-      </div>
+      <SliderField
+        label="Min"
+        value={value.Min}
+        min={-3}
+        max={3}
+        step={0.01}
+        allowInputOverflow
+        onChange={(v) => onChange({ ...value, Min: v })}
+        onBlur={onBlur}
+      />
+      <SliderField
+        label="Max"
+        value={value.Max}
+        min={-3}
+        max={3}
+        step={0.01}
+        allowInputOverflow
+        onChange={(v) => onChange({ ...value, Max: v })}
+        onBlur={onBlur}
+      />
     </div>
   );
 }
