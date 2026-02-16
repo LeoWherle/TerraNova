@@ -5,6 +5,7 @@ import { useUIStore } from "@/stores/uiStore";
 import { useFieldChange } from "@/hooks/useFieldChange";
 import { SliderField } from "./SliderField";
 import { VectorField } from "./VectorField";
+import { RangeField } from "./RangeField";
 import { ToggleField } from "./ToggleField";
 import { TextField } from "./TextField";
 import { ArrayField } from "./ArrayField";
@@ -375,6 +376,25 @@ export function PropertyPanel() {
           return (
             <FieldWrapper key={key} issue={issue} helpMode={helpMode} onHelpClick={handleHelpClick} extendedDesc={isExpanded ? extendedDesc : undefined}>
               <VectorField
+                label={fieldLabel}
+                value={v}
+                description={description}
+                onChange={(v) => handleContinuousChange(key, v)}
+                onBlur={handleBlur}
+              />
+            </FieldWrapper>
+          );
+        }
+        if (
+          typeof value === "object" &&
+          value !== null &&
+          "Min" in (value as Record<string, unknown>) &&
+          "Max" in (value as Record<string, unknown>)
+        ) {
+          const v = value as { Min: number; Max: number };
+          return (
+            <FieldWrapper key={key} issue={issue} helpMode={helpMode} onHelpClick={handleHelpClick} extendedDesc={isExpanded ? extendedDesc : undefined}>
+              <RangeField
                 label={fieldLabel}
                 value={v}
                 description={description}
