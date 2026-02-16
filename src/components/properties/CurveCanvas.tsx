@@ -117,22 +117,31 @@ export function CurveCanvas({ points, onChange, onCommit, evaluator, label, comp
   const cursorPosRef = useRef<{ x: number; y: number } | null>(null);
   const shiftHeldRef = useRef(false);
   const boundsRef = useRef<Bounds>({ xMin: 0, xMax: 1, yMin: 0, yMax: 1 });
+  const boundsInitializedRef = useRef(false);
   const [bounds, setBounds] = useState<Bounds>({ xMin: 0, xMax: 1, yMin: 0, yMax: 1 });
 
   const isInteractive = !!onChange && !compact;
   const canvasHeight = compact ? 40 : CANVAS_HEIGHT;
   const padding = compact ? 4 : PADDING;
 
-  // Keep pointsRef in sync with props and recompute bounds on load/import
+  // Keep pointsRef in sync with props; compute bounds once on first load (interactive) or always (compact)
   useEffect(() => {
     const normalized = points ? normalizePoints(points as unknown[]) : [];
     pointsRef.current = normalized;
-    if (!dragRef.current) {
+
+    if (compact) {
+      // Compact mode: always auto-fit (no user controls)
       const newBounds = computeBounds(normalized);
       boundsRef.current = newBounds;
       setBounds(newBounds);
+    } else if (!boundsInitializedRef.current && normalized.length > 0) {
+      // Interactive mode: compute bounds ONCE on first data load
+      const newBounds = computeBounds(normalized);
+      boundsRef.current = newBounds;
+      setBounds(newBounds);
+      boundsInitializedRef.current = true;
     }
-  }, [points]);
+  }, [points, compact]);
 
   // Coordinate conversions — map [xMin,xMax] / [yMin,yMax] to pixel space
   const toCanvasX = useCallback((vx: number) => {
@@ -560,6 +569,10 @@ export function CurveCanvas({ points, onChange, onCommit, evaluator, label, comp
   const applyPreset = useCallback(
     (name: string) => {
       if (!onChange) return;
+      const presetBounds: Bounds = { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
+      boundsRef.current = presetBounds;
+      setBounds(presetBounds);
+      boundsInitializedRef.current = true;
       onChange(CURVE_PRESETS[name]);
       onCommit?.();
     },

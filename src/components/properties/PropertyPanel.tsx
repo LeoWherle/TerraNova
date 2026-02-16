@@ -467,6 +467,7 @@ export function PropertyPanel() {
             return (
               <FieldWrapper key={key} issue={issue} helpMode={helpMode} onHelpClick={handleHelpClick} extendedDesc={isExpanded ? extendedDesc : undefined}>
                 <CurveCanvas
+                  key={selectedNodeId}
                   label={`Points (${value.length})`}
                   points={value}
                   onChange={(pts) => {
