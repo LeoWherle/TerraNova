@@ -99,12 +99,14 @@ interface BaseNodeProps extends NodeProps {
   children?: React.ReactNode;
 }
 
-export const BaseNode = memo(function BaseNode({ id, data, selected, category, handles, children }: BaseNodeProps) {
+export const BaseNode = memo(function BaseNode({ id, type, data, selected, category, handles, children }: BaseNodeProps) {
   const nodeData = data as unknown as BaseNodeData;
   const headerColor = CATEGORY_COLORS[category];
   const showThumbnails = usePreviewStore((s) => s.showInlinePreviews);
   const { getTypeDisplayName } = useLanguage();
-  const displayName = getTypeDisplayName(nodeData.type);
+  const rfType = type ?? nodeData.type;
+  const rfDisplayName = getTypeDisplayName(rfType);
+  const displayName = (rfDisplayName !== rfType) ? rfDisplayName : getTypeDisplayName(nodeData.type);
   const flowDirection = useSettingsStore((s) => s.flowDirection);
   const inPos = inputPosition(flowDirection);
   const outPos = outputPosition(flowDirection);
@@ -118,7 +120,7 @@ export const BaseNode = memo(function BaseNode({ id, data, selected, category, h
   const evalStatus = isDensity ? getEvalStatus(nodeData.type) : null;
   const bridgeInfo = getBridgeInfo(nodeData.type);
   const bridgeToColor = bridgeInfo ? CATEGORY_COLORS[bridgeInfo.to] : null;
-  const tips = NODE_TIPS[nodeData.type];
+  const tips = NODE_TIPS[rfType] ?? NODE_TIPS[nodeData.type];
   const headerTip = tips?.[0]?.message;
 
   // Determine legacy status — density nodes use bare type, others use "Category:Type"

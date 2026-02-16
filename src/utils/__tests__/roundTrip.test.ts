@@ -181,4 +181,28 @@ describe("round-trip: jsonToGraph → graphToJson", () => {
     const result = graphToJson(nodes, edges);
     expect(result).toEqual(original);
   });
+
+  it("preserves Vector:Constant with object Value through graph round-trip", () => {
+    const original = {
+      Type: "Box",
+      Range: {
+        Type: "Constant",
+        Value: { x: 3, y: 5, z: 3 },
+      },
+    };
+
+    const { nodes, edges } = jsonToGraph(original);
+    expect(nodes).toHaveLength(2);
+    expect(edges).toHaveLength(1);
+
+    // The child node should be typed as Vector:Constant
+    const childNode = nodes.find((n) => n.type === "Vector:Constant");
+    expect(childNode).toBeDefined();
+    expect((childNode!.data as Record<string, unknown>).type).toBe("Constant");
+    const fields = (childNode!.data as Record<string, unknown>).fields as Record<string, unknown>;
+    expect(fields.Value).toEqual({ x: 3, y: 5, z: 3 });
+
+    const result = graphToJson(nodes, edges);
+    expect(result).toEqual(original);
+  });
 });

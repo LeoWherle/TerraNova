@@ -481,8 +481,9 @@ export const FIELD_DESCRIPTIONS: Record<string, Record<string, string | FieldDes
   // ═══════════════════════════════════════════════════════════════════════════
   // VECTOR PROVIDERS
   // ═══════════════════════════════════════════════════════════════════════════
-  // Constant Vector shares key with Density Constant — we use a category-qualified approach
-  // but since keys are type names, Constant.Value already covers this case.
+  "Vector:Constant": {
+    Value: "The fixed 3D point {x, y, z}. In Hytale, this corresponds to a Point3D object with X, Y, Z fields.",
+  },
   // DensityGradient, Cache have no user-editable scalar fields (connections only)
 
   // ═══════════════════════════════════════════════════════════════════════════

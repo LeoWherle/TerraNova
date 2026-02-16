@@ -1139,6 +1139,13 @@ export const NODE_TIPS: Record<string, NodeTip[]> = {
   // VECTOR PROVIDERS
   // ═══════════════════════════════════════════════════════════════════════════
   // Note: Constant, Cache, Imported, Exported have entries above
+  "Vector:Constant": [
+    {
+      message:
+        "Outputs a fixed 3D point (X, Y, Z) everywhere. Used for directions, offsets, and spatial references.",
+      severity: "info",
+    },
+  ],
   DensityGradient: [
     {
       message:

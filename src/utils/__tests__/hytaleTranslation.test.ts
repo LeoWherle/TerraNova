@@ -2016,3 +2016,101 @@ describe("recursive $NodeId stripping", () => {
     expect(queue[0].Material).toBe("Dirt"); // unwrapped to string
   });
 });
+
+// ---------------------------------------------------------------------------
+// Point3D / Vector:Constant round-trip
+// ---------------------------------------------------------------------------
+
+describe("Point3D / Vector:Constant round-trip", () => {
+  it("imports Point3D in an unmapped field as Constant with vector Value", () => {
+    // Use a generic parent node — fields like "Range" and "Offset" aren't in the
+    // FIELD_TO_CATEGORY map, so they default to density. The value-shape detection
+    // on import (in hytaleToInternal) creates {Type: "Constant", Value: {x,y,z}}.
+    const { asset } = hytaleToInternal({
+      $NodeId: "SomeDensityNode-123",
+      Type: "SomeNode",
+      Skip: false,
+      Range: {
+        $NodeId: "Point3D-456",
+        X: 3,
+        Y: 5,
+        Z: 3,
+      },
+    });
+    const range = asset.Range as Record<string, unknown>;
+    expect(range.Type).toBe("Constant");
+    expect(range.Value).toEqual({ x: 3, y: 5, z: 3 });
+  });
+
+  it("exports vector Constant in an unmapped field as Point3D format", () => {
+    const result = internalToHytale({
+      Type: "SomeNode",
+      Range: { Type: "Constant", Value: { x: 3, y: 5, z: 3 } },
+    });
+    // The nested Constant with object Value should export as Point3D (no Type, has X/Y/Z)
+    const range = result.Range as Record<string, unknown>;
+    expect(range.Type).toBeUndefined();
+    expect(range.X).toBe(3);
+    expect(range.Y).toBe(5);
+    expect(range.Z).toBe(3);
+    expect((range.$NodeId as string).startsWith("Point3D-")).toBe(true);
+  });
+
+  it("imports Point3D in Offset field as Constant with vector Value", () => {
+    const { asset } = hytaleToInternal({
+      $NodeId: "SomeDensityNode-123",
+      Type: "SomeNode",
+      Skip: false,
+      Offset: {
+        $NodeId: "Point3D-789",
+        X: 0,
+        Y: -1,
+        Z: 0,
+      },
+    });
+    const offset = asset.Offset as Record<string, unknown>;
+    expect(offset.Type).toBe("Constant");
+    expect(offset.Value).toEqual({ x: 0, y: -1, z: 0 });
+  });
+
+  it("exports vector Constant in Offset field as Point3D format", () => {
+    const result = internalToHytale({
+      Type: "SomeNode",
+      Offset: { Type: "Constant", Value: { x: 0, y: -1, z: 0 } },
+    });
+    const offset = result.Offset as Record<string, unknown>;
+    expect(offset.Type).toBeUndefined();
+    expect(offset.X).toBe(0);
+    expect(offset.Y).toBe(-1);
+    expect(offset.Z).toBe(0);
+    expect((offset.$NodeId as string).startsWith("Point3D-")).toBe(true);
+  });
+
+  it("round-trips Point3D through Hytale → internal → Hytale", () => {
+    const hytaleInput = {
+      $NodeId: "SomeDensityNode-123",
+      Type: "SomeNode",
+      Skip: false,
+      Range: {
+        $NodeId: "Point3D-456",
+        X: 3,
+        Y: 5,
+        Z: 3,
+      },
+    };
+    // Import: Point3D → Constant with vector Value
+    const { asset: imported } = hytaleToInternal(hytaleInput);
+    const range = imported.Range as Record<string, unknown>;
+    expect(range.Type).toBe("Constant");
+    expect(range.Value).toEqual({ x: 3, y: 5, z: 3 });
+
+    // Re-export: Constant with vector Value → Point3D
+    const exported = internalToHytale(imported as any);
+    const exportedRange = exported.Range as Record<string, unknown>;
+    expect(exportedRange.Type).toBeUndefined();
+    expect(exportedRange.X).toBe(3);
+    expect(exportedRange.Y).toBe(5);
+    expect(exportedRange.Z).toBe(3);
+    expect((exportedRange.$NodeId as string).startsWith("Point3D-")).toBe(true);
+  });
+});

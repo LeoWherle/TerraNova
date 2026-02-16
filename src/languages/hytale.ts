@@ -9,7 +9,7 @@ export const hytaleLanguage: LanguageDefinition = {
   description:
     "Exact Hytale worldgen names and terminology. Matches the official documentation and JSON format 1:1.",
 
-  typeDisplayNames: { ...INTERNAL_TO_HYTALE_TYPES },
+  typeDisplayNames: { ...INTERNAL_TO_HYTALE_TYPES, "Vector:Constant": "Point3D" },
 
   fieldDisplayNames: {
     Clamp: { Min: "WallB", Max: "WallA" },

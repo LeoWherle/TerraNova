@@ -1073,7 +1073,14 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
   const category = inferCategory(ctx.parentField, asset.Type);
 
   // Vector:Constant → Point3D format (Hytale uses { $NodeId: "Point3D-...", X, Y, Z } without Type)
-  if (internalType === "Constant" && category === "vector") {
+  // Detect by category prefix OR by value shape (for nodes in fields like Range/Offset
+  // where field-based category inference defaults to "density").
+  const isVectorConstant = internalType === "Constant" && (
+    category === "vector" ||
+    (asset.Value != null && typeof asset.Value === "object" &&
+     !Array.isArray(asset.Value) && "x" in (asset.Value as Record<string, unknown>))
+  );
+  if (isVectorConstant) {
     const val = asset.Value as { x: number; y: number; z: number } | undefined;
     return {
       $NodeId: generateNodeId("Point3D"),

@@ -5,7 +5,7 @@ export const terranovaLanguage: LanguageDefinition = {
   displayName: "TerraNova",
   description:
     "Friendly names and convenience node types for an intuitive editing experience. Includes helper types like SimplexRidgeNoise, FractalNoise, and GradientDensity.",
-  typeDisplayNames: {},
+  typeDisplayNames: { "Vector:Constant": "3D Point" },
   fieldDisplayNames: {},
   fieldTransforms: {},
   hiddenTypes: new Set(),

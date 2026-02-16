@@ -135,7 +135,18 @@ export function jsonToGraph(json: V2Asset, startX = 0, startY = 0, idPrefix = "g
     const fields: Record<string, unknown> = {};
     let childIndex = 0;
     const rawType = asset.Type ?? "unknown";
-    const nodeType = resolveNodeType(rawType, parentFieldName);
+
+    // Detect vector constant: bare "Constant" with vector-shaped Value {x, y, z}.
+    // Density constants always have numeric Values; vector constants have object Values.
+    const isVectorValue =
+      rawType === "Constant" &&
+      asset.Value != null &&
+      typeof asset.Value === "object" &&
+      !Array.isArray(asset.Value) &&
+      "x" in (asset.Value as Record<string, unknown>);
+    const nodeType = isVectorValue
+      ? "Vector:Constant"
+      : resolveNodeType(rawType, parentFieldName);
 
     for (const [key, value] of Object.entries(asset)) {
       if (key === "Type") continue;

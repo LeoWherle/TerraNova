@@ -255,9 +255,12 @@ export function PropertyPanel() {
   const data = selectedNode.data as Record<string, unknown>;
   const fields = (data.fields as Record<string, unknown>) ?? {};
   const typeName = (data.type as string) ?? "Unknown";
-  const typeConstraints = FIELD_CONSTRAINTS[getTypeDisplayName(typeName)] ?? FIELD_CONSTRAINTS[typeName] ?? {};
-  const tips = NODE_TIPS[typeName] ?? [];
-  const typeDescriptions = FIELD_DESCRIPTIONS[typeName] ?? {};
+  const rfType = selectedNode.type ?? typeName;
+  const rfDisplayName = getTypeDisplayName(rfType);
+  const displayTypeName = (rfDisplayName !== rfType) ? rfDisplayName : getTypeDisplayName(typeName);
+  const typeConstraints = FIELD_CONSTRAINTS[displayTypeName] ?? FIELD_CONSTRAINTS[typeName] ?? {};
+  const tips = NODE_TIPS[rfType] ?? NODE_TIPS[typeName] ?? [];
+  const typeDescriptions = FIELD_DESCRIPTIONS[rfType] ?? FIELD_DESCRIPTIONS[typeName] ?? {};
   const isCurveNode = selectedNode.type?.startsWith("Curve:") ?? false;
   const isManualCurve = selectedNode.type === "Curve:Manual";
   const isPositionNode = (selectedNode.type?.startsWith("Position:") ?? false) || (POSITION_TYPE_NAMES as readonly string[]).includes(typeName);
@@ -266,7 +269,7 @@ export function PropertyPanel() {
     <div className="flex flex-col p-3 gap-3">
       <div className="border-b border-tn-border pb-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold">{getTypeDisplayName(typeName)}</h3>
+          <h3 className="text-sm font-semibold">{displayTypeName}</h3>
           <button
             onClick={toggleHelpMode}
             title={helpMode ? "Exit help mode (?)" : "Toggle help mode (?)"}
