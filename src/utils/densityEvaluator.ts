@@ -971,8 +971,8 @@ export function createEvaluationContext(
             result = getInput(inputs, "Input", x - ctxAnchorX, y - ctxAnchorY, z - ctxAnchorZ);
           }
         } else {
-          // No anchor set — passthrough
-          result = getInput(inputs, "Input", x, y, z);
+          // No anchor set — evaluate at origin (default anchor is 0,0,0)
+          result = getInput(inputs, "Input", 0, 0, 0);
         }
         break;
       }
@@ -1021,11 +1021,8 @@ export function createEvaluationContext(
         if (ctxCellWallDist < Infinity) {
           result = ctxCellWallDist;
         } else {
-          // Compute directly — approximate with voronoi Distance2Sub
-          const freq = Number(fields.Frequency ?? 0.01);
-          const seed = hashSeed(fields.Seed as string | number | undefined);
-          const noise = getVoronoi2D(seed, "Distance2Sub", 1.0);
-          result = Math.max(0, noise(x * freq, z * freq));
+          // No context — return 0 fallback
+          result = 0;
         }
         break;
       }
@@ -1068,21 +1065,31 @@ export function createEvaluationContext(
       }
 
       case "YSampled": {
-        const sampleDist = Number(fields.SampleDistance ?? 4.0);
-        const sampleOffset = Number(fields.SampleOffset ?? 0.0);
-        const snappedY = sampleDist > 0
-          ? Math.round((y - sampleOffset) / sampleDist) * sampleDist + sampleOffset
-          : y;
-        result = getInput(inputs, "Input", x, snappedY, z);
+        let targetY: number;
+        if (inputs.has("YProvider")) {
+          targetY = getInput(inputs, "YProvider", x, y, z);
+        } else {
+          const sampleDist = Number(fields.SampleDistance ?? 4.0);
+          const sampleOffset = Number(fields.SampleOffset ?? 0.0);
+          targetY = sampleDist > 0
+            ? Math.round((y - sampleOffset) / sampleDist) * sampleDist + sampleOffset
+            : y;
+        }
+        result = getInput(inputs, "Input", x, targetY, z);
         break;
       }
 
       case "SwitchState": {
-        // Set the context switchState and evaluate child
-        const prevState = ctxSwitchState;
-        ctxSwitchState = hashSeed(fields.State as string | number | undefined);
-        result = getInput(inputs, "Input", x, y, z);
-        ctxSwitchState = prevState; // restore
+        if (!inputs.has("Input")) {
+          // No child connected — return the State field value directly
+          result = Number(fields.State ?? 0);
+        } else {
+          // Set the context switchState and evaluate child
+          const prevState = ctxSwitchState;
+          ctxSwitchState = hashSeed(fields.State as string | number | undefined);
+          result = getInput(inputs, "Input", x, y, z);
+          ctxSwitchState = prevState; // restore
+        }
         break;
       }
 
@@ -1290,7 +1297,19 @@ export function createEvaluationContext(
       }
 
       case "Shell": {
-        // Shell uses angle × distance curve multiplication (ShellDensity.java)
+        // SDF branch: when no curves connected and InnerRadius/OuterRadius present
+        if (!inputs.has("DistanceCurve") && !inputs.has("AngleCurve") &&
+            (fields.InnerRadius != null || fields.OuterRadius != null)) {
+          const inner = Number(fields.InnerRadius ?? 0);
+          const outer = Number(fields.OuterRadius ?? 0);
+          const midRadius = (inner + outer) / 2;
+          const halfThickness = (outer - inner) / 2;
+          const dist = Math.sqrt(x * x + y * y + z * z);
+          result = Math.abs(dist - midRadius) - halfThickness;
+          break;
+        }
+
+        // Curve-based: Shell uses angle × distance curve multiplication (ShellDensity.java)
         const shellAxis = fields.Axis as { x?: number; y?: number; z?: number } | undefined;
         let sax = Number(shellAxis?.x ?? 0);
         let say = Number(shellAxis?.y ?? 1);

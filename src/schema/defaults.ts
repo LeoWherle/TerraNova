@@ -120,7 +120,7 @@ export const DENSITY_DEFAULTS: Record<DensityType, DefaultFields> = {
   XOverride: { OverrideX: 0 },
   ZOverride: { OverrideZ: 0 },
   // Warp types
-  GradientWarp: { WarpFactor: 1.0, SampleRange: 1.0, Is2D: false, YFor2D: 0.0 },
+  GradientWarp: { WarpFactor: 1.0, WarpScale: 1.0, SampleRange: 1.0, Is2D: false, YFor2D: 0.0 },
   FastGradientWarp: { WarpFactor: 1.0, WarpSeed: "A", WarpScale: 0.01, WarpOctaves: 3, WarpLacunarity: 2.0, WarpPersistence: 0.5, Is2D: false },
   VectorWarp: { WarpFactor: 1.0 },
   // Context-dependent

@@ -145,7 +145,7 @@ export const HANDLE_REGISTRY: Record<string, HandleDef[]> = {
   PositionsTwist: [densityInput("Input", "Input"), densityOutput()],
   GradientWarp: [densityInput("Input", "Input"), densityInput("WarpSource", "Warp Source"), densityOutput()],
   FastGradientWarp: [densityInput("Input", "Input"), densityOutput()],
-  VectorWarp: [densityInput("Input", "Input"), densityInput("Magnitude", "Magnitude"), vectorInput("Direction", "Direction"), densityOutput()],
+  VectorWarp: [densityInput("Input", "Input"), densityInput("Magnitude", "Magnitude"), vectorInput("WarpVector", "Warp Vector"), densityOutput()],
   Terrain: [densityOutput()],
   CellWallDistance: [densityOutput()],
   DistanceToBiomeEdge: [densityOutput()],
