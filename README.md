@@ -190,6 +190,10 @@ TerraNova/
 
 [LGPL-2.1](LICENSE)
 
+## Built with AI
+
+TerraNova is developed with assistance from AI tooling. We believe in being upfront about how this project is built — read the full breakdown in our [AI Transparency & Usage Disclaimer](docs/AI_TRANSPARENCY.md).
+
 ---
 
 Part of the **HyperSystems** suite: [HyperPerms](https://github.com/HyperSystemsDev/HyperPerms) | [HyperHomes](https://github.com/HyperSystemsDev/HyperHomes) | [HyperFactions](https://github.com/HyperSystemsDev/HyperFactions) | [TerraNova](https://github.com/HyperSystemsDev/TerraNova)
