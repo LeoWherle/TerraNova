@@ -10,8 +10,8 @@ interface CurvePointListProps {
 /** Inline slider + number input for a single axis of a curve point. */
 function PointAxisControl({
   value,
-  pointKey,
-  axis,
+  pointKey: _pointKey,
+  axis: _axis,
   onUpdate,
   onCommit,
 }: {
