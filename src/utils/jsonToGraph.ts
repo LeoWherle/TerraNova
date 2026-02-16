@@ -102,6 +102,7 @@ const FIELD_CATEGORY_PREFIX: Record<string, string> = {
   // Layer sub-assets within SpaceAndDepth
   Layers: "Material",
   Material: "Material",
+  Materials: "Material",
   ThicknessFunctionXZ: "",
   NewYAxis: "Vector",
   // Curve fields on non-CurveFunction parents (e.g. PositionsCellNoise, Shell)

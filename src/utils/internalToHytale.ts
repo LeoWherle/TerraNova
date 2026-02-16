@@ -675,6 +675,84 @@ function flattenSumInputs(
 }
 
 // ---------------------------------------------------------------------------
+// FieldFunction MaterialProvider with Materials[] → Delimiters format
+// ---------------------------------------------------------------------------
+
+/**
+ * Convert the internal FieldFunction MaterialProvider (with Materials[] and
+ * DelimiterRanges[]) back to the Hytale Delimiters format.
+ *
+ * Internal:                              Hytale:
+ * FieldFunction {                   →    FieldFunction {
+ *   FieldFunction: <density>,              FieldFunction: <density>,
+ *   Materials: [matA, matB],               Delimiters: [
+ *   DelimiterRanges: [{From, To}],           {From:0, To:25, Material:matA},
+ *   ExportAs: ...                            {From:25, To:40, Material:matB},
+ * }                                        ],
+ *                                          ExportAs: ...
+ *                                        }
+ */
+function transformFieldFunctionMaterialWithDelimiters(
+  asset: V2Asset,
+  ctx: TransformContext,
+): Record<string, unknown> {
+  const output: Record<string, unknown> = {
+    $NodeId: generateNodeId("FieldFunctionMaterialProvider"),
+    Type: "FieldFunction",
+    Skip: false,
+  };
+
+  // Transform the density subtree
+  const densityTree = asset.FieldFunction as V2Asset | undefined;
+  if (densityTree && typeof densityTree === "object" && "Type" in densityTree) {
+    output.FieldFunction = transformNode(densityTree, {
+      ...ctx,
+      parentField: "FieldFunction",
+      category: "density",
+    });
+  }
+
+  // Build Delimiters from Materials[] + DelimiterRanges[]
+  const materials = asset.Materials as V2Asset[];
+  const ranges = (asset.DelimiterRanges as Record<string, unknown>[]) ?? [];
+  const delimiters: Record<string, unknown>[] = [];
+
+  for (let i = 0; i < materials.length; i++) {
+    const mat = materials[i];
+    const range = ranges[i] ?? {};
+
+    let transformedMaterial: unknown;
+    if (typeof mat === "string") {
+      transformedMaterial = wrapMaterialString(mat);
+    } else if (mat && typeof mat === "object" && "Type" in mat) {
+      transformedMaterial = transformNode(mat, {
+        ...ctx,
+        parentField: "Material",
+        category: "material",
+      });
+    } else {
+      transformedMaterial = mat;
+    }
+
+    delimiters.push({
+      $NodeId: generateNodeId("DelimiterFieldFunctionMP"),
+      From: range.From ?? 0,
+      To: range.To ?? 1000,
+      Material: transformedMaterial,
+    });
+  }
+
+  output.Delimiters = delimiters;
+
+  // Pass through ExportAs if present
+  if ("ExportAs" in asset) {
+    output.ExportAs = asset.ExportAs;
+  }
+
+  return output;
+}
+
+// ---------------------------------------------------------------------------
 // Material Conditional chain → Queue[FieldFunction(...)] transform
 // ---------------------------------------------------------------------------
 
@@ -1098,6 +1176,12 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
   // Density Conditional → Mix(FalseInput, TrueInput, StepFactor) — Switch is not a valid Hytale density type
   if (internalType === "Conditional" && category === "density") {
     return transformDensityConditional(asset, ctx);
+  }
+
+  // FieldFunction MaterialProvider with Materials[] → Delimiters format
+  if (internalType === "FieldFunction" && category === "material" &&
+      "Materials" in asset && Array.isArray(asset.Materials)) {
+    return transformFieldFunctionMaterialWithDelimiters(asset, ctx);
   }
 
   // HeightGradient → Queue[FieldFunction(YValue, Delimiters), LowFallback] — HeightGradient is not a valid Hytale type

@@ -13,6 +13,7 @@ export {
   ClusterMaterialNode,
   ImportedMaterialNode,
   ExportedMaterialNode,
+  FieldFunctionMaterialNode,
   // Layer sub-asset nodes (SpaceAndDepth V2)
   ConstantThicknessNode,
   NoiseThicknessNode,

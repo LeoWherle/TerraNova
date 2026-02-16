@@ -61,6 +61,7 @@ export const COMPOUND_PORTS: Record<string, CompoundPortConfig> = {
   "Material:WeightedRandom": { arrayBase: "Entries",   label: "Entry",    category: AssetCategory.MaterialProvider, minSlots: 2 },
   "Material:Queue":          { arrayBase: "Queue",     label: "Material", category: AssetCategory.MaterialProvider, minSlots: 2 },
   "Material:Striped":        { arrayBase: "Materials", label: "Material", category: AssetCategory.MaterialProvider, minSlots: 2 },
+  "Material:FieldFunction":  { arrayBase: "Materials", label: "Material", category: AssetCategory.MaterialProvider, minSlots: 1 },
   "Material:SpaceAndDepth":  { arrayBase: "Layers",   label: "Layer",    category: AssetCategory.MaterialProvider, minSlots: 2 },
   "Material:NoiseSelectorMaterial": { arrayBase: "Inputs", label: "Input", category: AssetCategory.MaterialProvider, minSlots: 2 },
   "Material:NoiseSelector":         { arrayBase: "Inputs", label: "Input", category: AssetCategory.MaterialProvider, minSlots: 2 },

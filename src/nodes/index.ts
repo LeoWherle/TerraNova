@@ -53,7 +53,7 @@ import {
   ConditionalMaterialNode, BlendMaterialNode, HeightGradientMaterialNode,
   NoiseSelectorMaterialNode, SolidMaterialNode, EmptyMaterialNode,
   SurfaceMaterialNode, CaveMaterialNode, ClusterMaterialNode,
-  ImportedMaterialNode, ExportedMaterialNode,
+  ImportedMaterialNode, ExportedMaterialNode, FieldFunctionMaterialNode,
   ConstantThicknessNode, NoiseThicknessNode, RangeThicknessNode, WeightedThicknessNode,
 } from "./material";
 
@@ -287,6 +287,7 @@ export const nodeTypes: Record<string, ComponentType<any>> = {
   "Material:Surface": SurfaceMaterialNode,
   "Material:Cave": CaveMaterialNode,
   "Material:Cluster": ClusterMaterialNode,
+  "Material:FieldFunction": FieldFunctionMaterialNode,
   "Material:Imported": ImportedMaterialNode,
   "Material:Exported": ExportedMaterialNode,
   // Layer sub-asset types (SpaceAndDepth V2)

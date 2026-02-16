@@ -297,6 +297,34 @@ export const ExportedMaterialNode = memo(function ExportedMaterialNode(props: Ty
   );
 });
 
+/* ── FieldFunction MaterialProvider ─────────────────────────────────── */
+
+export const FieldFunctionMaterialNode = memo(function FieldFunctionMaterialNode(props: TypedNodeProps) {
+  const data = props.data;
+  const handles = useCompoundHandles(props.id, "Material:FieldFunction");
+  const ranges = (data.fields.DelimiterRanges as Array<{ From?: number; To?: number }>) ?? [];
+  return (
+    <BaseNode
+      {...props}
+      category={AssetCategory.MaterialProvider}
+      handles={handles}
+    >
+      {ranges.length > 0 ? (
+        <div className="space-y-0.5">
+          {ranges.map((r, i) => (
+            <div key={i} className="flex items-center justify-between text-[10px]">
+              <span className="text-tn-text-muted">[{i}]</span>
+              <span>{safeDisplay(r.From, 0)} → {safeDisplay(r.To, 0)}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-tn-text-muted text-[10px] text-center py-0.5">No delimiters</div>
+      )}
+    </BaseNode>
+  );
+});
+
 /* ── Layer sub-asset nodes (SpaceAndDepth V2) ──────────────────────── */
 
 export const ConstantThicknessNode = memo(function ConstantThicknessNode(props: TypedNodeProps) {

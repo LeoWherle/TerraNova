@@ -526,6 +526,78 @@ function inferCategoryFromNodeId(nodeId: string): string | undefined {
 }
 
 // ---------------------------------------------------------------------------
+// Standalone FieldFunction MaterialProvider with Delimiters → Materials[]
+// ---------------------------------------------------------------------------
+
+/**
+ * Reverse a standalone FieldFunction MaterialProvider (with Delimiters array)
+ * into the internal format with separate Materials[] and DelimiterRanges[].
+ *
+ * Hytale:                              Internal:
+ * FieldFunction {                 →    FieldFunction {
+ *   FieldFunction: <density>,           FieldFunction: <density>,
+ *   Delimiters: [                       Materials: [matA, matB, ...],
+ *     {From:0, To:25, Material:matA},   DelimiterRanges: [{From:0,To:25}, ...],
+ *     {From:25, To:40, Material:matB},  ExportAs: ...
+ *   ],                                }
+ *   ExportAs: ...
+ * }
+ */
+function reverseFieldFunctionMaterialDelimiters(
+  asset: Record<string, unknown>,
+  ctx: ImportContext,
+  metadata: ImportMetadata,
+): Record<string, unknown> {
+  const output: Record<string, unknown> = { Type: "FieldFunction" };
+
+  // Transform the density subtree
+  const densityTree = asset.FieldFunction as Record<string, unknown> | undefined;
+  if (densityTree && typeof densityTree === "object" && "Type" in densityTree) {
+    output.FieldFunction = transformNodeToInternal(densityTree, { ...ctx, parentField: "FieldFunction" }, metadata);
+  }
+
+  // Process Delimiters: extract Materials and ranges
+  const delimiters = asset.Delimiters as Record<string, unknown>[];
+  const materials: unknown[] = [];
+  const delimiterRanges: Record<string, unknown>[] = [];
+
+  for (const delimiter of delimiters) {
+    // Extract and transform the Material
+    const materialValue = delimiter.Material;
+    if (materialValue && typeof materialValue === "object" && "Type" in (materialValue as Record<string, unknown>)) {
+      materials.push(
+        transformNodeToInternal(materialValue as Record<string, unknown>, { ...ctx, parentField: "Material" }, metadata),
+      );
+    } else {
+      const unwrapped = unwrapMaterial(materialValue);
+      if (typeof unwrapped === "string") {
+        materials.push({ Type: "Constant", Material: unwrapped });
+      } else if (unwrapped && typeof unwrapped === "object") {
+        materials.push(stripNodeIds(unwrapped));
+      } else {
+        materials.push({ Type: "Constant", Material: "Air" });
+      }
+    }
+
+    // Collect the range
+    delimiterRanges.push({
+      From: delimiter.From ?? 0,
+      To: delimiter.To ?? 1000,
+    });
+  }
+
+  output.Materials = materials;
+  output.DelimiterRanges = delimiterRanges;
+
+  // Preserve ExportAs if present
+  if ("ExportAs" in asset) {
+    output.ExportAs = asset.ExportAs;
+  }
+
+  return output;
+}
+
+// ---------------------------------------------------------------------------
 // Queue[FieldFunction] → Conditional chain reverse transform
 // ---------------------------------------------------------------------------
 
@@ -709,6 +781,12 @@ function transformNodeToInternal(
     }
     const reversed = reverseClusterPropFields(fields, ctx, metadata);
     return { Type: "Cluster", ...reversed };
+  }
+
+  // Detect standalone FieldFunction MaterialProvider with Delimiters → expand to Materials[]
+  if (hytaleType === "FieldFunction" && category === "material" &&
+      "Delimiters" in asset && Array.isArray(asset.Delimiters)) {
+    return reverseFieldFunctionMaterialDelimiters(asset, ctx, metadata);
   }
 
   // Detect Queue[FieldFunction(Delimiters)] → reverse to Conditional chain

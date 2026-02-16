@@ -407,6 +407,61 @@ export function PropertyPanel() {
             </FieldWrapper>
           );
         }
+        if (Array.isArray(value) && key === "DelimiterRanges") {
+          const ranges = value as { From?: number; To?: number }[];
+          return (
+            <FieldWrapper key={key} issue={issue} helpMode={helpMode} onHelpClick={handleHelpClick} extendedDesc={isExpanded ? extendedDesc : undefined}>
+              <ArrayField
+                label={fieldLabel}
+                values={ranges}
+                description={description}
+                renderItem={(item, index) => {
+                  const range = item as { From?: number; To?: number };
+                  return (
+                    <div className="flex items-center gap-1.5 py-0.5">
+                      <span className="text-[10px] text-tn-text-muted w-4 shrink-0">[{index}]</span>
+                      <label className="text-[10px] text-tn-text-muted shrink-0">From</label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={range.From ?? 0}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          if (Number.isNaN(v)) return;
+                          const newRanges = ranges.map((r, i) => i === index ? { ...r, From: v } : r);
+                          handleContinuousChange("DelimiterRanges", newRanges);
+                        }}
+                        onBlur={handleBlur}
+                        className="w-16 shrink-0 px-1.5 py-0.5 text-xs bg-tn-bg border border-tn-border rounded text-right"
+                      />
+                      <label className="text-[10px] text-tn-text-muted shrink-0">To</label>
+                      <input
+                        type="number"
+                        step="any"
+                        value={range.To ?? 1000}
+                        onChange={(e) => {
+                          const v = parseFloat(e.target.value);
+                          if (Number.isNaN(v)) return;
+                          const newRanges = ranges.map((r, i) => i === index ? { ...r, To: v } : r);
+                          handleContinuousChange("DelimiterRanges", newRanges);
+                        }}
+                        onBlur={handleBlur}
+                        className="w-16 shrink-0 px-1.5 py-0.5 text-xs bg-tn-bg border border-tn-border rounded text-right"
+                      />
+                    </div>
+                  );
+                }}
+                onAdd={() => {
+                  const lastTo = ranges.length > 0 ? (ranges[ranges.length - 1].To ?? 0) : 0;
+                  handleDiscreteChange("DelimiterRanges", [...ranges, { From: lastTo, To: lastTo + 25 }]);
+                }}
+                onRemove={(index) => {
+                  handleDiscreteChange("DelimiterRanges", ranges.filter((_, i) => i !== index));
+                }}
+              />
+            </FieldWrapper>
+          );
+        }
         if (Array.isArray(value)) {
           if (isManualCurve && key === "Points") {
             return (
