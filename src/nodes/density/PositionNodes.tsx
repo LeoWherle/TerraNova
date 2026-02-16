@@ -103,9 +103,15 @@ export const HeightAboveSurfaceNode = memo(function HeightAboveSurfaceNode(props
   );
 });
 
+const ANGLE_HANDLES = [
+  vectorInput("VectorProvider", "VectorProvider"),
+  vectorInput("Vector", "Vector"),
+  densityOutput(),
+];
+
 export const AngleNode = memo(function AngleNode(props: TypedNodeProps) {
   return (
-    <BaseNode {...props} category={AssetCategory.Density} handles={VECTOR_INPUT_HANDLES}>
+    <BaseNode {...props} category={AssetCategory.Density} handles={ANGLE_HANDLES}>
       <div className="text-tn-text-muted text-center py-1">Angle (deg)</div>
     </BaseNode>
   );

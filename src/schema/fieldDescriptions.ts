@@ -577,6 +577,11 @@ export const FIELD_DESCRIPTIONS: Record<string, Record<string, string | FieldDes
   OffsetConstant: {
     Value: "Constant offset added to the input. Output = Input + Value. Use to shift a density signal by a fixed amount.",
   },
+  Angle: {
+    Vector: "Static reference vector {x, y, z} for angle computation.",
+    VectorProvider: "Optional dynamic vector provider that overrides the static Vector.",
+    IsAxis: "Whether the reference is treated as an axis (angle measured in 0-180 range).",
+  },
   Axis: {
     Axis: "Unit direction vector {x, y, z} defining the axis of the SDF. Default (0, 1, 0) creates a vertical axis.",
     IsAnchored: "When true, the axis is anchored at the origin. When false, the axis extends infinitely in both directions.",

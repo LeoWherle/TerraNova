@@ -159,7 +159,7 @@ export const HANDLE_REGISTRY: Record<string, HandleDef[]> = {
   Shell: [curveInput("AngleCurve", "Angle Curve"), curveInput("DistanceCurve", "Distance Curve"), densityOutput()],
   Cube: [curveInput("Curve", "Curve"), densityOutput()],
   Axis: [curveInput("Curve", "Curve"), densityOutput()],
-  Angle: [vectorInput("VectorProvider", "Vector"), densityOutput()],
+  Angle: [vectorInput("VectorProvider", "VectorProvider"), vectorInput("Vector", "Vector"), densityOutput()],
   Cache2D: [densityInput("Input", "Input"), densityOutput()],
   OffsetConstant: [densityInput("Input", "Input"), densityOutput()],
   Exported: [densityInput("Input", "Input"), densityOutput()],

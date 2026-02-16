@@ -234,6 +234,7 @@ export const FIELD_TO_CATEGORY: Record<string, string> = {
   Top: "assignment",
   Bottom: "assignment",
   VectorProvider: "vector",
+  Vector: "vector",
   NewYAxis: "vector",
   Queue: "material",
   Layers: "sadLayer",

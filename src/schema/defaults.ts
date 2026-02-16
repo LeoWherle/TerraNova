@@ -132,7 +132,7 @@ export const DENSITY_DEFAULTS: Record<DensityType, DefaultFields> = {
   OffsetConstant: { Value: 0.0 },
   Cache2D: {},
   Exported: { Name: "", SingleInstance: false },
-  Angle: {},
+  Angle: { Vector: { x: 0, y: 1, z: 0 }, IsAxis: false },
   // Shape SDFs
   Cube: {},
   Axis: { Axis: { x: 0, y: 1, z: 0 }, IsAnchored: false },
