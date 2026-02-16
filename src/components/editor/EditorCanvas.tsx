@@ -211,11 +211,14 @@ export function EditorCanvas() {
       try {
         const layouted = await autoLayout(nodes, edges, flowDirection);
         useEditorStore.getState().setNodes(layouted);
-        // Force React Flow to re-read handle positions from the DOM so edges route correctly
-        setTimeout(() => {
-          updateNodeInternals(layouted.map((n) => n.id));
-          reactFlowInstance.fitView({ padding: 0.1, duration: 300 });
-        }, 50);
+        // Double rAF ensures React's commit phase is done and the browser has painted,
+        // so updateNodeInternals reads the correct handle positions from the DOM.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            updateNodeInternals(layouted.map((n) => n.id));
+            reactFlowInstance.fitView({ padding: 0.1, duration: 300 });
+          });
+        });
       } catch (err) {
         if (import.meta.env.DEV) console.error("Auto layout failed (flow direction change):", err);
       }
