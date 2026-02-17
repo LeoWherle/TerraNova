@@ -42,6 +42,31 @@
 3. Design your worldgen using the node editor and live preview
 4. Export and drop the JSON files in your server's `mods/` folder
 
+<details>
+<summary><strong>macOS: App Won't Open / "Unverified Developer"</strong></summary>
+
+TerraNova is not yet signed with an Apple Developer certificate. macOS may block the app on first launch. Use one of these methods:
+
+**Method 1 — Right-click Open (recommended)**
+1. Right-click (or Control-click) TerraNova in Applications
+2. Select "Open" from the context menu
+3. Click "Open" in the dialog that appears
+
+**Method 2 — Terminal command**
+```bash
+xattr -cr /Applications/TerraNova.app
+```
+Then launch normally.
+
+**Method 3 — System Settings**
+1. Open **System Settings → Privacy & Security**
+2. Scroll to the Security section — you'll see a message about TerraNova being blocked
+3. Click **"Open Anyway"**
+
+> These steps are only needed once. Subsequent launches will work normally.
+
+</details>
+
 ## Keyboard Shortcuts
 
 | Shortcut | Action |

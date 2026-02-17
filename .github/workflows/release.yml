@@ -104,7 +104,11 @@ jobs:
             **macOS**
             1. Download the `.dmg` for your architecture (aarch64 = Apple Silicon, x86_64 = Intel)
             2. Open the `.dmg` and drag TerraNova to Applications
-            3. On first launch, right-click → Open (macOS may block unsigned apps)
+            3. **First launch:** Right-click (or Control-click) TerraNova → select "Open" → click "Open" in the dialog
+            4. If macOS still blocks the app, open Terminal and run:
+               `xattr -cr /Applications/TerraNova.app` then launch normally
+            5. Alternatively: **System Settings → Privacy & Security** → click "Open Anyway"
+            > TerraNova is not yet signed with an Apple Developer certificate. The steps above are only needed once.
             > Requires macOS 10.15+.
 
             **Linux**
@@ -115,3 +119,13 @@ jobs:
           releaseDraft: false
           prerelease: true
           args: ${{ matrix.rust_target != '' && format('--target {0}', matrix.rust_target) || '' }}
+
+      - name: Verify macOS code signature
+        if: runner.os == 'macOS'
+        run: |
+          APP_PATH=$(find src-tauri/target -name "TerraNova.app" -type d | head -1)
+          if [ -n "$APP_PATH" ]; then
+            echo "Verifying signature on: $APP_PATH"
+            codesign -dvv "$APP_PATH" 2>&1
+            codesign --verify --deep --strict "$APP_PATH" 2>&1 || echo "Warning: Signature verification had issues"
+          fi

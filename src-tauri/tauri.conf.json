@@ -48,6 +48,11 @@
         "installMode": "currentUser",
         "displayLanguageSelector": false
       }
+    },
+    "macOS": {
+      "signingIdentity": "-",
+      "minimumSystemVersion": "10.15",
+      "entitlements": "./Entitlements.plist"
     }
   },
   "plugins": {

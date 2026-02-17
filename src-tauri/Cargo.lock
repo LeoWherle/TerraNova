@@ -3970,7 +3970,7 @@ dependencies = [
 
 [[package]]
 name = "terranova"
-version = "0.1.4"
+version = "0.1.5"
 dependencies = [
  "fastnoise-lite",
  "reqwest 0.12.28",
