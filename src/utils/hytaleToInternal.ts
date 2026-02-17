@@ -183,17 +183,18 @@ function reverseRotatorFields(asset: Record<string, unknown>): Record<string, un
   return result;
 }
 
-function reverseDomainWarpFields(asset: Record<string, unknown>): Record<string, unknown> {
+function reverseFastGradientWarpFields(asset: Record<string, unknown>): Record<string, unknown> {
   const result = { ...asset };
-  if ("WarpFactor" in result) {
-    result.Amplitude = result.WarpFactor;
-    delete result.WarpFactor;
+  // Hytale uses "Seed", internal uses "WarpSeed"
+  if ("Seed" in result) {
+    result.WarpSeed = result.Seed;
+    delete result.Seed;
   }
-  // Strip Hytale-specific warp params
-  delete result.WarpScale;
-  delete result.WarpOctaves;
-  delete result.WarpLacunarity;
-  delete result.WarpPersistence;
+  // Hytale uses "2D", internal uses "Is2D"
+  if ("2D" in result) {
+    result.Is2D = result["2D"];
+    delete result["2D"];
+  }
   return result;
 }
 
@@ -918,9 +919,9 @@ function transformNodeToInternal(
     processedFields = reverseRotatorFields(processedFields);
   }
 
-  // FastGradientWarp → DomainWarp
+  // FastGradientWarp: convert Hytale field names to internal names
   if (hytaleType === "FastGradientWarp") {
-    processedFields = reverseDomainWarpFields(processedFields);
+    processedFields = reverseFastGradientWarpFields(processedFields);
   }
 
   // AmplitudeConstant → LinearTransform

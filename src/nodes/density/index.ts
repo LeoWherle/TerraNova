@@ -117,6 +117,7 @@ export {
   YSampledNode,
   SwitchStateNode,
   GradientWarpNode,
+  FastGradientWarpNode,
   VectorWarpNode,
   TerrainNode,
   DistanceToBiomeEdgeNode,

@@ -212,6 +212,15 @@ export const FIELD_DESCRIPTIONS: Record<string, Record<string, string | FieldDes
   GradientWarp: {
     WarpScale: "How far sample positions are displaced along the gradient. Higher values create more dramatic distortion.",
   },
+  FastGradientWarp: {
+    WarpFactor: "Displacement magnitude multiplier. Higher values create stronger warping distortion.",
+    WarpScale: "Base frequency of the internal warp noise. Lower values produce larger, smoother distortion patterns.",
+    WarpOctaves: "Number of noise octaves for the warp. More octaves add finer detail to the distortion pattern.",
+    WarpLacunarity: "Frequency multiplier between warp octaves. Default 2.0 doubles frequency per octave.",
+    WarpPersistence: "Amplitude decay per warp octave. Default 0.5 halves amplitude each octave for natural falloff.",
+    WarpSeed: "Seed for the internal warp noise. Different seeds produce different distortion patterns.",
+    Is2D: "When true, warping is computed in 2D (XZ plane only), ignoring the Y coordinate.",
+  },
   CellWallDistance: {
     Frequency: "Controls the cell size. Lower values create larger cells with more distant walls.",
     Seed: "Random seed for cell generation. Different seeds produce different cell layouts.",

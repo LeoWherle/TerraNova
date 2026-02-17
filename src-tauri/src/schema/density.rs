@@ -375,6 +375,10 @@ pub enum DensityType {
         warp_octaves: Option<i32>,
         #[serde(rename = "WarpFactor", default)]
         warp_factor: Option<f64>,
+        #[serde(rename = "Seed", default)]
+        seed: Option<String>,
+        #[serde(rename = "2D", default)]
+        is_2d: Option<bool>,
         #[serde(rename = "Input", default)]
         input: Option<Value>,
     },

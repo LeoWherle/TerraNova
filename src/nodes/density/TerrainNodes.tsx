@@ -283,6 +283,36 @@ export const GradientWarpNode = memo(function GradientWarpNode(props: TypedNodeP
   );
 });
 
+export const FastGradientWarpNode = memo(function FastGradientWarpNode(props: TypedNodeProps) {
+  const data = props.data;
+  return (
+    <BaseNode {...props} category={AssetCategory.Density} handles={INPUT_OUTPUT_HANDLES}>
+      <div className="space-y-1">
+        <div className="flex justify-between">
+          <span className="text-tn-text-muted">Factor</span>
+          <span>{safeDisplay(data.fields.WarpFactor, 1)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-tn-text-muted">Scale</span>
+          <span>{safeDisplay(data.fields.WarpScale, 0.01)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-tn-text-muted">Oct</span>
+          <span>{safeDisplay(data.fields.WarpOctaves, 3)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-tn-text-muted">Lac</span>
+          <span>{safeDisplay(data.fields.WarpLacunarity, 2)}</span>
+        </div>
+        <div className="flex justify-between">
+          <span className="text-tn-text-muted">Persist</span>
+          <span>{safeDisplay(data.fields.WarpPersistence, 0.5)}</span>
+        </div>
+      </div>
+    </BaseNode>
+  );
+});
+
 export const VectorWarpNode = memo(function VectorWarpNode(props: TypedNodeProps) {
   return (
     <BaseNode {...props} category={AssetCategory.Density} handles={VECTOR_WARP_HANDLES}>

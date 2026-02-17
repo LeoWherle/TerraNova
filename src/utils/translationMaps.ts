@@ -39,9 +39,9 @@ export const HYTALE_TO_INTERNAL_TYPES: Record<string, string> = Object.fromEntri
   Object.entries(INTERNAL_TO_HYTALE_TYPES).map(([k, v]) => [v, k]),
 );
 
-// Resolve collisions: both DomainWarp2D and DomainWarp3D map to FastGradientWarp.
-// Default import → DomainWarp2D (the more common 2D variant).
-HYTALE_TO_INTERNAL_TYPES["FastGradientWarp"] = "DomainWarp2D";
+// FastGradientWarp is its own internal type (not collapsed to DomainWarp2D).
+// Remove the auto-reversed entry which would incorrectly alias it.
+delete HYTALE_TO_INTERNAL_TYPES["FastGradientWarp"];
 
 // ---------------------------------------------------------------------------
 // Density input handle mapping (named handles → Inputs[] array order)
@@ -70,6 +70,7 @@ export const DENSITY_NAMED_TO_ARRAY: Record<string, string[]> = {
   FlatCache: ["Input"],
   DomainWarp2D: ["Input"],
   DomainWarp3D: ["Input"],
+  FastGradientWarp: ["Input"],
   ScaledPosition: ["Input"],
   TranslatedPosition: ["Input"],
   RotatedPosition: ["Input"],

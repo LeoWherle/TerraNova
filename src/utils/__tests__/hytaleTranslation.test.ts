@@ -401,7 +401,7 @@ describe("DomainWarp ↔ FastGradientWarp", () => {
     expect(result.WarpOctaves).toBe(1);
   });
 
-  it("reverses WarpFactor → Amplitude on import", () => {
+  it("preserves FastGradientWarp fields on import", () => {
     const { asset } = hytaleToInternal({
       $NodeId: "FastGradientWarp.Density-123",
       Type: "FastGradientWarp",
@@ -414,10 +414,14 @@ describe("DomainWarp ↔ FastGradientWarp", () => {
       Inputs: [],
       Skip: false,
     });
-    expect(asset.Type).toBe("DomainWarp2D");
-    expect(asset.Amplitude).toBe(5);
-    expect(asset.WarpFactor).toBeUndefined();
-    expect(asset.WarpScale).toBeUndefined();
+    expect(asset.Type).toBe("FastGradientWarp");
+    expect(asset.WarpFactor).toBe(5);
+    expect(asset.WarpScale).toBe(1);
+    expect(asset.WarpOctaves).toBe(1);
+    expect(asset.WarpLacunarity).toBe(2);
+    expect(asset.WarpPersistence).toBe(0.5);
+    expect(asset.WarpSeed).toBe("A");
+    expect(asset.Seed).toBeUndefined();
   });
 });
 

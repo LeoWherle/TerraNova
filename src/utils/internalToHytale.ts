@@ -214,6 +214,21 @@ function transformDomainWarpFields(asset: Record<string, unknown>): Record<strin
   return result;
 }
 
+function transformFastGradientWarpFields(asset: Record<string, unknown>): Record<string, unknown> {
+  const result = { ...asset };
+  // Internal uses "WarpSeed", Hytale uses "Seed"
+  if ("WarpSeed" in result) {
+    result.Seed = result.WarpSeed;
+    delete result.WarpSeed;
+  }
+  // Internal uses "Is2D", Hytale uses "2D"
+  if ("Is2D" in result) {
+    result["2D"] = result.Is2D;
+    delete result.Is2D;
+  }
+  return result;
+}
+
 function transformLinearTransformFields(asset: Record<string, unknown>): Record<string, unknown> {
   const result = { ...asset };
   // AmplitudeConstant uses Value as the scale multiplier
@@ -1318,6 +1333,11 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
   // FastGradientWarp (DomainWarp)
   if (internalType === "DomainWarp2D" || internalType === "DomainWarp3D") {
     transformedFields = transformDomainWarpFields(transformedFields);
+  }
+
+  // FastGradientWarp: convert internal field names to Hytale names
+  if (internalType === "FastGradientWarp") {
+    transformedFields = transformFastGradientWarpFields(transformedFields);
   }
 
   // AmplitudeConstant (LinearTransform)
