@@ -101,6 +101,7 @@ export interface ServerStatus {
   bridge_version: string;
   player_count: number;
   port: number;
+  singleplayer?: boolean;
 }
 
 export interface BridgeResponse {

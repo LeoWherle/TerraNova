@@ -5,6 +5,7 @@ interface BridgeState {
   // Connection state
   connected: boolean;
   connecting: boolean;
+  singleplayer: boolean;
   serverStatus: ServerStatus | null;
   lastError: string | null;
 
@@ -46,6 +47,7 @@ function getStoredNumber(key: string, fallback: number): number {
 export const useBridgeStore = create<BridgeState>((set) => ({
   connected: false,
   connecting: false,
+  singleplayer: false,
   serverStatus: null,
   lastError: null,
 
@@ -62,6 +64,7 @@ export const useBridgeStore = create<BridgeState>((set) => ({
     set({
       connected,
       connecting: false,
+      singleplayer: connected ? (status?.singleplayer ?? false) : false,
       serverStatus: status ?? (connected ? undefined : null),
     }),
 
