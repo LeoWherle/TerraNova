@@ -254,7 +254,13 @@ export function BridgeDialog() {
                   <span>Bridge: v{serverStatus.bridge_version}</span>
                   <span>Players: {serverStatus.player_count}</span>
                   <span>Port: {serverStatus.port}</span>
+                  <span>Mode: {serverStatus.singleplayer ? "Singleplayer" : "Dedicated"}</span>
                 </div>
+              )}
+              {serverStatus?.singleplayer && (
+                <p className="mt-2 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1.5">
+                  Singleplayer mode — chunk loading is throttled to reduce memory pressure on the shared JVM.
+                </p>
               )}
             </div>
 

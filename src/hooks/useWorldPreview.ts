@@ -40,6 +40,7 @@ export function useWorldPreview() {
   const worldForceLoad = usePreviewStore((s) => s.worldForceLoad);
 
   const connected = useBridgeStore((s) => s.connected);
+  const singleplayer = useBridgeStore((s) => s.singleplayer);
   const blockPalette = useBridgeStore((s) => s.blockPalette);
 
   const evalIdRef = useRef(0);
@@ -186,8 +187,9 @@ export function useWorldPreview() {
         }
       }
 
-      // Reduce batch size when force-loading to match server's thread pool
-      const BATCH_SIZE = worldForceLoad ? 4 : 8;
+      // In singleplayer, client and server share a JVM — limit concurrency to avoid OOM.
+      // On dedicated servers, use full batch sizes for throughput.
+      const BATCH_SIZE = singleplayer ? 2 : (worldForceLoad ? 4 : 8);
       const timeoutMs = worldForceLoad ? CHUNK_FORCE_LOAD_TIMEOUT_MS : CHUNK_FETCH_TIMEOUT_MS;
       const loadedChunks: ChunkDataResponse[] = [];
       const chunkErrors: string[] = [];
@@ -218,6 +220,13 @@ export function useWorldPreview() {
 
         if (evalId === evalIdRef.current && !cancelled) {
           usePreviewStore.getState().setWorldProgress(loaded, totalChunks);
+        }
+
+        // In singleplayer, pause between batches to let the JVM GC reclaim
+        // chunk serialization buffers before the next batch allocates more.
+        if (singleplayer && i + BATCH_SIZE < coords.length) {
+          await new Promise((r) => setTimeout(r, 200));
+          if (cancelled || evalId !== evalIdRef.current) return;
         }
 
         // Fail-fast: if every chunk in the first batch failed, abort early
@@ -289,7 +298,7 @@ export function useWorldPreview() {
       cancelled = true;
       clearTimeout(debounceTimer);
     };
-  }, [mode, viewMode, connected, blockPalette, worldCenterX, worldCenterZ, worldRadius, worldYMin, worldYMax, worldSurfaceDepth, worldForceLoad]);
+  }, [mode, viewMode, connected, singleplayer, blockPalette, worldCenterX, worldCenterZ, worldRadius, worldYMin, worldYMax, worldSurfaceDepth, worldForceLoad]);
 
   // Instant lava plane repositioning — no re-fetch, no re-mesh
   useEffect(() => {

@@ -6,6 +6,8 @@ pub struct ServerStatus {
     pub bridge_version: String,
     pub player_count: u32,
     pub port: u16,
+    #[serde(default)]
+    pub singleplayer: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
