@@ -91,6 +91,7 @@
             webkitgtk_4_1
             gtk3
             libsoup_3
+            gsettings-desktop-schemas
           ];
 
         terranova = pkgs.rustPlatform.buildRustPackage {
@@ -229,7 +230,12 @@
               rust-analyzer
               jq
             ]
-            ++ linuxInputs ++ darwinInputs;
+            ++ linuxInputs
+            ++ darwinInputs
+            # Ensure GSettings schemas are available
+            ++ lib.optionals stdenv.isLinux [
+              glib # for GSettings
+            ];
 
           shellHook = ''
             echo "TerraNova development environment"
@@ -253,6 +259,9 @@
 
           # Set WebKit environment variable for Linux
           WEBKIT_DISABLE_DMABUF_RENDERER = pkgs.lib.optionalString pkgs.stdenv.isLinux "1";
+
+          # Ensure GSettings schemas are found
+          XDG_DATA_DIRS = pkgs.lib.optionalString pkgs.stdenv.isLinux "${pkgs.gsettings-desktop-schemas}/share/gsettings-schemas/${pkgs.gsettings-desktop-schemas.name}:${pkgs.gtk3}/share/gsettings-schemas/${pkgs.gtk3.name}:$XDG_DATA_DIRS";
         };
 
         apps.default = {
