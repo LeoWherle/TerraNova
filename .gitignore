@@ -33,3 +33,8 @@ src-tauri/gen/
 
 # Logs
 *.log
+
+# Nix
+result
+result-*
+.direnv/
