@@ -142,7 +142,7 @@ pub fn create_blank_project(target_path: String) -> Result<(), String> {
             "Octaves": 1,
             "Seed": "main"
         },
-        "Framework": {}
+        "Framework": []
     });
     fs::write(
         gen.join("WorldStructures/MainWorld.json"),
@@ -168,6 +168,22 @@ pub fn create_blank_project(target_path: String) -> Result<(), String> {
     fs::write(
         gen.join("Biomes/DefaultBiome.json"),
         serde_json::to_string_pretty(&biome).unwrap(),
+    )
+    .map_err(|e| e.to_string())?;
+
+    // TerraNova manifest at project root (used for export metadata)
+    let dir_name = target
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("Untitled");
+    let manifest = serde_json::json!({
+        "name": dir_name,
+        "version": "1.0.0",
+        "description": ""
+    });
+    fs::write(
+        target.join("manifest.json"),
+        serde_json::to_string_pretty(&manifest).unwrap(),
     )
     .map_err(|e| e.to_string())?;
 

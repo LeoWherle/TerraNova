@@ -1271,6 +1271,17 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
     hytaleType = INTERNAL_TO_HYTALE_TYPES[internalType] ?? internalType;
   }
 
+  // Framework-specific types pass through without $NodeId/Skip injection
+  const FRAMEWORK_TYPES = new Set(["Positions", "DecimalConstants", "DensityConstants"]);
+  if (FRAMEWORK_TYPES.has(hytaleType)) {
+    const output: Record<string, unknown> = { Type: hytaleType };
+    for (const [key, value] of Object.entries(asset)) {
+      if (key === "Type") continue;
+      output[key] = value;
+    }
+    return output;
+  }
+
   // Generate $NodeId
   const nodeIdPrefix = getNodeIdPrefix(category, hytaleType);
   const nodeId = generateNodeId(nodeIdPrefix);
@@ -1505,6 +1516,9 @@ export function transformNode(asset: V2Asset, ctx: TransformContext = {}): Recor
   for (const [key, value] of Object.entries(transformedFields)) {
     if (key === "Type") continue;
 
+    // Strip TerraNova-internal fields that should not appear in Hytale output
+    if (key === "$DisconnectedTrees") continue;
+
     // Curve points: [[x,y]] → [{$NodeId, In, Out}]
     if (key === "Points" && Array.isArray(value)) {
       output.Points = transformCurvePoints(value);
@@ -1615,27 +1629,34 @@ export function internalToHytaleBiome(
       // Check for fluid fields on the wrapper to generate proper Empty branch
       const fluidLevel = wrapper.FluidLevel as number | undefined;
       const fluidMaterial = wrapper.FluidMaterial as string | undefined;
-      const emptyBranch = (fluidLevel != null && fluidMaterial)
-        ? {
-            $NodeId: generateNodeId("SimpleHorizontalMaterialProvider"),
-            Type: "SimpleHorizontal",
-            TopY: fluidLevel,
-            BottomY: 0,
-            Material: {
-              $NodeId: generateNodeId("ConstantMaterialProvider"),
-              Type: "Constant",
-              Material: { $NodeId: generateNodeId("Material"), Fluid: fluidMaterial },
-            },
-          }
-        : {
-            $NodeId: generateNodeId("QueueMaterialProvider"),
-            Type: "Queue",
-            Queue: [{
-              $NodeId: generateNodeId("ConstantMaterialProvider"),
-              Type: "Constant",
-              Material: { $NodeId: generateNodeId("Material"), Solid: "Empty" },
-            }],
-          };
+      const originalEmpty = wrapper._originalEmptyBranch as Record<string, unknown> | undefined;
+      let emptyBranch: Record<string, unknown>;
+      if (fluidLevel != null && fluidMaterial) {
+        emptyBranch = {
+          $NodeId: generateNodeId("SimpleHorizontalMaterialProvider"),
+          Type: "SimpleHorizontal",
+          TopY: fluidLevel,
+          BottomY: 0,
+          Material: {
+            $NodeId: generateNodeId("ConstantMaterialProvider"),
+            Type: "Constant",
+            Material: { $NodeId: generateNodeId("Material"), Fluid: fluidMaterial },
+          },
+        };
+      } else if (originalEmpty) {
+        // Re-export preserved complex Empty branch (inject $NodeId for Hytale format)
+        emptyBranch = { $NodeId: generateNodeId("EmptyBranch"), ...originalEmpty };
+      } else {
+        emptyBranch = {
+          $NodeId: generateNodeId("QueueMaterialProvider"),
+          Type: "Queue",
+          Queue: [{
+            $NodeId: generateNodeId("ConstantMaterialProvider"),
+            Type: "Constant",
+            Material: { $NodeId: generateNodeId("Material"), Solid: "Empty" },
+          }],
+        };
+      }
       output[key] = {
         $NodeId: generateNodeId("SolidityMaterialProvider"),
         Type: "Solidity",
@@ -1673,8 +1694,8 @@ export function internalToHytaleBiome(
       continue;
     }
 
-    // FluidLevel/FluidMaterial are consumed by MaterialProvider export — skip here
-    if (key === "FluidLevel" || key === "FluidMaterial") continue;
+    // FluidLevel/FluidMaterial/_originalEmptyBranch are consumed by MaterialProvider export — skip here
+    if (key === "FluidLevel" || key === "FluidMaterial" || key === "_originalEmptyBranch") continue;
 
     // Pass through other fields (Name, etc.)
     output[key] = value;

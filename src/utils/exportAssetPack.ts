@@ -5,6 +5,7 @@ import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
 import { graphToJson, graphToJsonMulti } from "@/utils/graphToJson";
 import { normalizeExport, isBiomeFile, isSettingsFile, internalToHytaleBiome } from "@/utils/fileTypeDetection";
+import { isHytaleNativeFormat } from "@/utils/hytaleToInternal";
 import { exportAssetFile, copyFile, readAssetFile, listDirectory } from "@/utils/ipc";
 import type { DirectoryEntryData } from "@/utils/ipc";
 
@@ -44,6 +45,9 @@ export function serializeCurrentFile(): Record<string, unknown> | null {
   // NoiseRange files
   if (originalWrapper?.Type === "NoiseRange") {
     const output = { ...originalWrapper } as Record<string, unknown>;
+    if (output.Framework && !Array.isArray(output.Framework)) {
+      output.Framework = [];
+    }
     output.Biomes = biomeRanges.map((r) => ({ Biome: r.Biome, Min: r.Min, Max: r.Max }));
     if (noiseRangeConfig) {
       output.DefaultBiome = noiseRangeConfig.DefaultBiome;
@@ -159,6 +163,72 @@ export function serializeCurrentFile(): Record<string, unknown> | null {
   return normalizeExport(json, nodes) as Record<string, unknown>;
 }
 
+// ---------------------------------------------------------------------------
+// Lightweight pre-export validation
+// ---------------------------------------------------------------------------
+
+/**
+ * Validate exported JSON for common issues before writing.
+ * Returns an array of warning strings (empty = valid).
+ * Does NOT block export — just surfaces warnings.
+ */
+export function validateExport(json: Record<string, unknown>, filePath?: string): string[] {
+  const warnings: string[] = [];
+
+  // Recursive check for typed nodes missing Type field or having empty Type
+  function checkNode(obj: Record<string, unknown>, path: string): void {
+    if ("Type" in obj && (!obj.Type || typeof obj.Type !== "string")) {
+      warnings.push(`${path}: Node has empty or invalid Type`);
+    }
+
+    // Check for null/undefined in value positions
+    for (const [key, value] of Object.entries(obj)) {
+      if (key.startsWith("$")) continue;
+      if (value === null || value === undefined) {
+        warnings.push(`${path}.${key}: null or undefined value`);
+      }
+
+      // Check material strings are non-empty
+      if (key === "Material" && typeof value === "object" && value !== null) {
+        const mat = value as Record<string, unknown>;
+        if ("Solid" in mat && (!mat.Solid || typeof mat.Solid !== "string")) {
+          warnings.push(`${path}.Material.Solid: empty material string`);
+        }
+      }
+
+      // Recurse into child objects/arrays
+      if (value && typeof value === "object" && !Array.isArray(value) && "Type" in (value as Record<string, unknown>)) {
+        checkNode(value as Record<string, unknown>, `${path}.${key}`);
+      }
+      if (Array.isArray(value)) {
+        for (let i = 0; i < value.length; i++) {
+          if (value[i] && typeof value[i] === "object" && "Type" in (value[i] as Record<string, unknown>)) {
+            checkNode(value[i] as Record<string, unknown>, `${path}.${key}[${i}]`);
+          }
+        }
+      }
+    }
+  }
+
+  // Top-level validation based on file type
+  const pathLower = (filePath ?? "").toLowerCase();
+  if (pathLower.includes("/biomes/") || ("Name" in json && "Terrain" in json)) {
+    // Biome file validation
+    if (!json.Name) warnings.push("Biome missing Name field");
+    const terrain = json.Terrain as Record<string, unknown> | undefined;
+    if (!terrain?.Density) warnings.push("Biome missing Terrain.Density");
+  } else if (json.Type === "NoiseRange") {
+    // NoiseRange file validation
+    if (!json.DefaultBiome) warnings.push("NoiseRange missing DefaultBiome");
+    if (!json.Density) warnings.push("NoiseRange missing Density");
+  }
+
+  // Walk the tree for structural issues
+  checkNode(json, "root");
+
+  return warnings;
+}
+
 /**
  * Export the currently open file as a standalone JSON to a user-chosen location.
  * Does NOT modify editor state (dirty flag, currentFile, etc.).
@@ -171,6 +241,13 @@ export async function exportCurrentJson(): Promise<void> {
     if (!json) {
       addToast("No file open to export", "error");
       return;
+    }
+
+    // Run lightweight pre-export validation (warn but don't block)
+    const currentFile = useProjectStore.getState().currentFile ?? "";
+    const validationWarnings = validateExport(json, currentFile);
+    if (validationWarnings.length > 0) {
+      addToast(`Export warnings: ${validationWarnings.join("; ")}`, "warning");
     }
 
     const exportPath = useSettingsStore.getState().exportPath;
@@ -216,6 +293,11 @@ async function convertFileForExport(sourcePath: string): Promise<Record<string, 
   if (!rawContent || typeof rawContent !== "object") return rawContent as Record<string, unknown> | null;
 
   const content = rawContent as Record<string, unknown>;
+
+  // Already in Hytale native format (e.g. template biome files with $NodeId) — pass through as-is
+  if (isHytaleNativeFormat(content)) {
+    return content;
+  }
 
   // Settings files pass through unchanged
   if (isSettingsFile(content, sourcePath)) {
@@ -270,11 +352,45 @@ export async function exportAssetPack(): Promise<void> {
     const entries = await listDirectory(projectPath);
     const allFiles = flattenEntries(entries, projectPath).filter((f) => !f.isDir);
 
+    // Try to read TerraNova's internal manifest for project metadata.
+    // Check both the project root and one level up (if projectPath is HytaleGenerator itself).
+    let terraNovaManifest: Record<string, unknown> | null = null;
+    for (const candidate of [`${projectPath}/manifest.json`, `${projectPath}/../manifest.json`]) {
+      try {
+        const raw = await readAssetFile(candidate);
+        if (raw && typeof raw === "object") {
+          terraNovaManifest = raw as Record<string, unknown>;
+          break;
+        }
+      } catch {
+        // try next candidate
+      }
+    }
+
+    // Derive mod identifiers and build the named mod folder inside the target directory.
+    // Hytale manifest uses: Group (short org id), Name (hyphenated id), folder = Group.Name
+    const projectName = (terraNovaManifest?.name as string) || projectPath.split("/").pop() || "TerraNovaPack";
+    const projectVersion = (terraNovaManifest?.version as string) || "1.0.0";
+    const projectDescription = (terraNovaManifest?.description as string) || "";
+    const modGroup = "TerraNova";
+    const modName = projectName.replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-|-$/g, "");
+    const modFolderName = `${modGroup}.${modName}`;
+    const modRoot = `${targetDir}/${modFolderName}`;
+
     let exportedCount = 0;
+    const failedFiles: string[] = [];
     for (const file of allFiles) {
       // Compute relative path from project root
       const relativePath = file.path.slice(projectPath.length);
-      const destPath = `${targetDir}${relativePath}`;
+
+      // Skip TerraNova's internal manifest — we generate a Hytale-format one
+      if (relativePath === "/manifest.json") continue;
+
+      // Normalize: strip leading /HytaleGenerator if present so we can re-wrap consistently
+      const stripped = relativePath.replace(/^\/HytaleGenerator/, "");
+
+      // Hytale expects: ModName/Server/HytaleGenerator/<asset files>
+      const destPath = `${modRoot}/Server/HytaleGenerator${stripped}`;
 
       if (file.path.toLowerCase().endsWith(".json")) {
         // Convert JSON files through the export pipeline
@@ -284,7 +400,8 @@ export async function exportAssetPack(): Promise<void> {
             await exportAssetFile(destPath, converted);
           }
         } catch {
-          // If conversion fails, copy as-is
+          // If conversion fails, copy as-is and track the failure
+          failedFiles.push(relativePath);
           await copyFile(file.path, destPath);
         }
       } else {
@@ -294,7 +411,31 @@ export async function exportAssetPack(): Promise<void> {
       exportedCount++;
     }
 
-    addToast(`Exported ${exportedCount} files to ${targetDir}`, "success");
+    // Generate Hytale-format manifest.json at the mod root (sibling to Server/)
+    const hytaleManifest: Record<string, unknown> = {
+      Group: modGroup,
+      Name: modName,
+      Version: projectVersion,
+      Description: projectDescription,
+      Authors: [],
+      Website: "",
+      ServerVersion: "",
+      Dependencies: {},
+      OptionalDependencies: {},
+      LoadBefore: {},
+      DisabledByDefault: false,
+      IncludesAssetPack: false,
+      SubPlugins: [],
+    };
+    await exportAssetFile(`${modRoot}/manifest.json`, hytaleManifest);
+    exportedCount++;
+
+    if (failedFiles.length > 0) {
+      addToast(`Exported ${exportedCount} files (${failedFiles.length} copied without conversion: ${failedFiles.join(", ")})`, "warning");
+    } else {
+      addToast(`Exported ${exportedCount} files to ${modRoot}`, "success");
+    }
+    addToast(`Remember to enable the mod in your server/world config.json`, "info");
   } catch (err) {
     addToast(`Export failed: ${err}`, "error");
   }

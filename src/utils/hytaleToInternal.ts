@@ -864,10 +864,10 @@ function transformNodeToInternal(
     output.Type = "Conditional";
   }
 
-  // Collect all non-meta fields
+  // Collect all non-meta fields (strip all $-prefixed Hytale editor metadata)
   const fields: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(asset)) {
-    if (key === "Type" || key === "$NodeId" || key === "$Comment" || key === "$NodeEditorMetadata" || key === "Skip") {
+    if (key === "Type" || key === "Skip" || key.startsWith("$")) {
       continue;
     }
     fields[key] = value;
@@ -1244,7 +1244,8 @@ export function hytaleToInternalBiome(
   const output: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(json)) {
-    if (key === "$NodeId" || key === "$Comment" || key === "$NodeEditorMetadata") {
+    // Strip all $-prefixed Hytale editor metadata ($NodeId, $Comment, $Position, $Title, $WorkspaceID, $Groups, etc.)
+    if (key.startsWith("$")) {
       continue;
     }
 
@@ -1275,6 +1276,10 @@ export function hytaleToInternalBiome(
           if (fluidInfo) {
             output.FluidLevel = fluidInfo.level;
             output.FluidMaterial = fluidInfo.material;
+          } else {
+            // Preserve original Empty branch for lossless round-trip
+            // (complex Empty branches that don't match known fluid patterns)
+            output._originalEmptyBranch = mp.Empty;
           }
         }
       } else {

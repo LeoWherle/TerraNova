@@ -649,11 +649,12 @@ export function useTauriIO() {
       });
       if (!filePath) return;
 
-      const { nodes, edges } = useEditorStore.getState();
-      const json = graphToJson(nodes, edges);
+      // Use serializeCurrentFile() which handles all file types correctly
+      // (biome sections, NoiseRange config, settings, etc.)
+      const { serializeCurrentFile } = await import("@/utils/exportAssetPack");
+      const json = serializeCurrentFile();
       if (json) {
-        const hytaleJson = normalizeExport(json, nodes);
-        await writeAssetFile(filePath, hytaleJson);
+        await writeAssetFile(filePath, json);
         setCurrentFile(filePath);
         setDirty(false);
       }
