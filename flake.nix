@@ -113,7 +113,7 @@
           # Patch tauri.conf.json to use pre-built frontend
           postPatch = ''
             ${pkgs.jq}/bin/jq \
-              '.build.frontendDist = "${buildFrontend}" | .build.beforeBuildCommand = ""' \
+              'del(.build.devUrl) | .build.frontendDist = "${buildFrontend}" | .build.beforeBuildCommand = "" | .build.beforeDevCommand = ""' \
               tauri.conf.json > tauri.conf.json.tmp
             mv tauri.conf.json.tmp tauri.conf.json
 
