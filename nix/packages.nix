@@ -9,14 +9,27 @@
     extensions = ["rust-src" "rust-analyzer"];
   };
 
-  buildFrontend = pkgs.stdenvNoCC.mkDerivation {
+  frontendSrc = lib.cleanSourceWith {
+    src = inputs.self;
+    filter = let
+      excludeDirs = ["node_modules" ".pnpm-store" "dist" "build" "target" "result" "result-bin" ".direnv" ".git" ".github" "docs" "src-tauri" "nix"];
+      excludeFiles = ["README.md" "LICENSE" "CODE_OF_CONDUCT.md" ".gitignore"];
+    in
+      path: type: let
+        baseName = baseNameOf path;
+      in
+        !(builtins.elem baseName excludeDirs) && !(builtins.elem baseName excludeFiles);
+  };
+
+  buildFrontend = pkgs.stdenvNoCC.mkDerivation rec {
     pname = "terranova-frontend";
     version = "0.1.5";
 
-    src = inputs.self;
+    src = frontendSrc;
 
     pnpmDeps = pkgs.fetchPnpmDeps {
-      inherit (buildFrontend) pname version src;
+      inherit pname version;
+      src = inputs.self;
       hash = "sha256-WwxYAO+YBCA1WqAuOrQm6dG+VwvQv4otA1aIfagFGNU=";
       # fetcherVersion corresponds to lockfileVersion in pnpm-lock.yaml
       # lockfileVersion 9.0 -> fetcherVersion 3
@@ -63,17 +76,29 @@
       gsettings-desktop-schemas
     ];
 
+  tauriSrc = lib.cleanSourceWith {
+    src = inputs.self;
+    filter = let
+      excludeDirs = ["node_modules" ".pnpm-store" "dist" "build" "result" "result-bin" ".direnv" ".git" ".github" "docs" "nix"];
+      excludePaths = ["src" "public" "patches" "templates" "index.html" "vite.config.ts" "vitest.config.ts" "tsconfig.json" "tailwind.config.js" "postcss.config.js" "package.json" "package-lock.json" "pnpm-lock.yaml" "pnpm-workspace.yaml"];
+      excludeFiles = ["README.md" "LICENSE" "CODE_OF_CONDUCT.md" "NIX.md" "QUICKSTART_NIX.md" "NIX_CACHING.md" ".gitignore"];
+    in
+      path: type: let
+        baseName = baseNameOf path;
+        relPath = lib.removePrefix "${inputs.self}/" path;
+      in
+        !(builtins.elem baseName excludeDirs)
+        && !(builtins.elem baseName excludeFiles)
+        && !(builtins.elem relPath excludePaths);
+  };
+
   terranova = pkgs.rustPlatform.buildRustPackage {
     pname = "terranova";
     version = "0.1.5";
 
-    src = inputs.self;
+    src = tauriSrc;
 
-    # Set the source root to the Tauri directory
-    postUnpack = ''
-      cd $sourceRoot
-      sourceRoot=src-tauri
-    '';
+    sourceRoot = "source/src-tauri";
 
     cargoLock = {
       lockFile = "${inputs.self}/src-tauri/Cargo.lock";
@@ -82,13 +107,9 @@
     # Patch tauri.conf.json to use pre-built frontend
     postPatch = ''
       ${pkgs.jq}/bin/jq \
-        'del(.build.devUrl) | .build.frontendDist = "${buildFrontend}" | .build.beforeBuildCommand = "" | .build.beforeDevCommand = ""' \
+        'del(.build.devUrl) | .build.frontendDist = "${buildFrontend}" | .build.beforeBuildCommand = "" | .build.beforeDevCommand = "" | .bundle.resources = ["${buildFrontend}/templates/"]' \
         tauri.conf.json > tauri.conf.json.tmp
       mv tauri.conf.json.tmp tauri.conf.json
-
-      # Copy templates directory for bundling
-      mkdir -p ../templates
-      cp -r ${buildFrontend}/templates/* ../templates/ || true
     '';
 
     nativeBuildInputs = with pkgs;
@@ -136,8 +157,7 @@
 
         # Install desktop file and icon
         mkdir -p $out/share/applications
-        mk
-        dir -p $out/share/icons/hicolor/128x128/apps
+        mkdir -p $out/share/icons/hicolor/128x128/apps
 
         if [ -f icons/icon.png ]; then
           cp icons/icon.png $out/share/icons/hicolor/128x128/apps/terranova.png
@@ -177,6 +197,6 @@
 in {
   default = terranova;
   terranova = terranova;
-  # Expose for testing/debugging
+
   frontend = buildFrontend;
 }
