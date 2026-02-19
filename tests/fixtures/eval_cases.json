@@ -35,6 +35,56 @@
     ]
   },
   {
+    "name": "constant_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3.5
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -3.5
+      },
+      {
+        "x": 100,
+        "y": 200,
+        "z": 300,
+        "expected": -3.5
+      }
+    ]
+  },
+  {
+    "name": "constant_default",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
     "name": "zero_constant",
     "nodes": [
       {
@@ -85,260 +135,6 @@
         "y": 100,
         "z": -50,
         "expected": 1.0
-      }
-    ]
-  },
-  {
-    "name": "sum_of_constants",
-    "nodes": [
-      {
-        "id": "a",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 10
-          }
-        }
-      },
-      {
-        "id": "b",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 20
-          }
-        }
-      },
-      {
-        "id": "s",
-        "data": {
-          "type": "Sum",
-          "fields": {}
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "a",
-        "target": "s",
-        "targetHandle": "Input[0]"
-      },
-      {
-        "source": "b",
-        "target": "s",
-        "targetHandle": "Input[1]"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": 30.0
-      },
-      {
-        "x": 99,
-        "y": -10,
-        "z": 42,
-        "expected": 30.0
-      }
-    ]
-  },
-  {
-    "name": "negate_constant",
-    "nodes": [
-      {
-        "id": "c",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 7
-          }
-        }
-      },
-      {
-        "id": "n",
-        "data": {
-          "type": "Negate",
-          "fields": {}
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "c",
-        "target": "n",
-        "targetHandle": "Input"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": -7.0
-      },
-      {
-        "x": 50,
-        "y": 50,
-        "z": 50,
-        "expected": -7.0
-      }
-    ]
-  },
-  {
-    "name": "clamp_constant",
-    "nodes": [
-      {
-        "id": "c",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 150
-          }
-        }
-      },
-      {
-        "id": "cl",
-        "data": {
-          "type": "Clamp",
-          "fields": {
-            "Min": 0,
-            "Max": 100
-          }
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "c",
-        "target": "cl",
-        "targetHandle": "Input"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": 100.0
-      }
-    ]
-  },
-  {
-    "name": "clamp_within_range",
-    "nodes": [
-      {
-        "id": "c",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 50
-          }
-        }
-      },
-      {
-        "id": "cl",
-        "data": {
-          "type": "Clamp",
-          "fields": {
-            "Min": 0,
-            "Max": 100
-          }
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "c",
-        "target": "cl",
-        "targetHandle": "Input"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": 50.0
-      }
-    ]
-  },
-  {
-    "name": "clamp_below_min",
-    "nodes": [
-      {
-        "id": "c",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": -20
-          }
-        }
-      },
-      {
-        "id": "cl",
-        "data": {
-          "type": "Clamp",
-          "fields": {
-            "Min": 0,
-            "Max": 100
-          }
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "c",
-        "target": "cl",
-        "targetHandle": "Input"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": 0.0
-      }
-    ]
-  },
-  {
-    "name": "linear_transform",
-    "nodes": [
-      {
-        "id": "c",
-        "data": {
-          "type": "Constant",
-          "fields": {
-            "Value": 5
-          }
-        }
-      },
-      {
-        "id": "lt",
-        "data": {
-          "type": "LinearTransform",
-          "fields": {
-            "Scale": 3,
-            "Offset": 10
-          }
-        }
-      }
-    ],
-    "edges": [
-      {
-        "source": "c",
-        "target": "lt",
-        "targetHandle": "Input"
-      }
-    ],
-    "sample_points": [
-      {
-        "x": 0,
-        "y": 0,
-        "z": 0,
-        "expected": 25.0
       }
     ]
   },
@@ -424,6 +220,84 @@
     ]
   },
   {
+    "name": "negate_constant",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -7.0
+      },
+      {
+        "x": 50,
+        "y": 50,
+        "z": 50,
+        "expected": -7.0
+      }
+    ]
+  },
+  {
+    "name": "negate_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
     "name": "abs_negative",
     "nodes": [
       {
@@ -460,6 +334,1153 @@
     ]
   },
   {
+    "name": "abs_positive",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "a",
+        "data": {
+          "type": "Abs",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "a",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "square_root_perfect",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 16
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "SquareRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 4.0
+      }
+    ]
+  },
+  {
+    "name": "square_root_negative_input",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -9
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "SquareRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "square_root_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "SquareRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "cube_root_positive",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 27
+          }
+        }
+      },
+      {
+        "id": "cr",
+        "data": {
+          "type": "CubeRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "cube_root_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -8
+          }
+        }
+      },
+      {
+        "id": "cr",
+        "data": {
+          "type": "CubeRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -2.0
+      }
+    ]
+  },
+  {
+    "name": "square_node",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "sq",
+        "data": {
+          "type": "Square",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "sq",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 25.0
+      }
+    ]
+  },
+  {
+    "name": "square_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3
+          }
+        }
+      },
+      {
+        "id": "sq",
+        "data": {
+          "type": "Square",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "sq",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 9.0
+      }
+    ]
+  },
+  {
+    "name": "cube_math",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "cm",
+        "data": {
+          "type": "CubeMath",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cm",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 27.0
+      }
+    ]
+  },
+  {
+    "name": "cube_math_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -2
+          }
+        }
+      },
+      {
+        "id": "cm",
+        "data": {
+          "type": "CubeMath",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cm",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -8.0
+      }
+    ]
+  },
+  {
+    "name": "inverse_positive",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "inv",
+        "data": {
+          "type": "Inverse",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "inv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.25
+      }
+    ]
+  },
+  {
+    "name": "inverse_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -2
+          }
+        }
+      },
+      {
+        "id": "inv",
+        "data": {
+          "type": "Inverse",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "inv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -0.5
+      }
+    ]
+  },
+  {
+    "name": "inverse_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "inv",
+        "data": {
+          "type": "Inverse",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "inv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "sum_self_count_3",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "ss",
+        "data": {
+          "type": "SumSelf",
+          "fields": {
+            "Count": 3
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ss",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 15.0
+      }
+    ]
+  },
+  {
+    "name": "sum_self_default_count",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "ss",
+        "data": {
+          "type": "SumSelf",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ss",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 8.0
+      }
+    ]
+  },
+  {
+    "name": "modulo_basic",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "Modulo",
+          "fields": {
+            "Divisor": 3
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "modulo_zero_divisor",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "Modulo",
+          "fields": {
+            "Divisor": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "modulo_exact",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 9
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "Modulo",
+          "fields": {
+            "Divisor": 3
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "amplitude_constant_node",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "ac",
+        "data": {
+          "type": "AmplitudeConstant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ac",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 15.0
+      }
+    ]
+  },
+  {
+    "name": "pow_positive",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Pow",
+          "fields": {
+            "Exponent": 2
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 9.0
+      }
+    ]
+  },
+  {
+    "name": "pow_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Pow",
+          "fields": {
+            "Exponent": 2
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -9.0
+      }
+    ]
+  },
+  {
+    "name": "pow_fractional_exponent",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Pow",
+          "fields": {
+            "Exponent": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 2.0
+      }
+    ]
+  },
+  {
+    "name": "linear_transform",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "lt",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 3,
+            "Offset": 10
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 25.0
+      }
+    ]
+  },
+  {
+    "name": "linear_transform_defaults",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "lt",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "floor_node",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3.7
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Floor",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "f",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "floor_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -2.3
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Floor",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "f",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -3.0
+      }
+    ]
+  },
+  {
+    "name": "ceiling_node",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3.2
+          }
+        }
+      },
+      {
+        "id": "ce",
+        "data": {
+          "type": "Ceiling",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ce",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 4.0
+      }
+    ]
+  },
+  {
+    "name": "ceiling_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -2.8
+          }
+        }
+      },
+      {
+        "id": "ce",
+        "data": {
+          "type": "Ceiling",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ce",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -2.0
+      }
+    ]
+  },
+  {
+    "name": "sum_of_two_constants",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 30.0
+      },
+      {
+        "x": 99,
+        "y": -10,
+        "z": 42,
+        "expected": 30.0
+      }
+    ]
+  },
+  {
+    "name": "sum_of_three",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 6.0
+      }
+    ]
+  },
+  {
     "name": "product_of_constants",
     "nodes": [
       {
@@ -492,12 +1513,12 @@
       {
         "source": "a",
         "target": "p",
-        "targetHandle": "Input[0]"
+        "targetHandle": "Inputs[0]"
       },
       {
         "source": "b",
         "target": "p",
-        "targetHandle": "Input[1]"
+        "targetHandle": "Inputs[1]"
       }
     ],
     "sample_points": [
@@ -510,7 +1531,7 @@
     ]
   },
   {
-    "name": "product_short_circuit_zero",
+    "name": "product_with_zero",
     "nodes": [
       {
         "id": "a",
@@ -542,12 +1563,905 @@
       {
         "source": "a",
         "target": "p",
-        "targetHandle": "Input[0]"
+        "targetHandle": "Inputs[0]"
       },
       {
         "source": "b",
         "target": "p",
-        "targetHandle": "Input[1]"
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "min_function_two",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MinFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "min_function_three",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MinFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 2.0
+      }
+    ]
+  },
+  {
+    "name": "max_function_two",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MaxFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "max_function_three",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 9
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MaxFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 9.0
+      }
+    ]
+  },
+  {
+    "name": "average_function_two",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 8
+          }
+        }
+      },
+      {
+        "id": "avg",
+        "data": {
+          "type": "AverageFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "avg",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "avg",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 6.0
+      }
+    ]
+  },
+  {
+    "name": "average_function_three",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 6
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 9
+          }
+        }
+      },
+      {
+        "id": "avg",
+        "data": {
+          "type": "AverageFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "avg",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "avg",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "avg",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 6.0
+      }
+    ]
+  },
+  {
+    "name": "interpolate_half",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "interp",
+        "data": {
+          "type": "Interpolate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "interp",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "interp",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "interp",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "interpolate_quarter",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 100
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.25
+          }
+        }
+      },
+      {
+        "id": "interp",
+        "data": {
+          "type": "Interpolate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "interp",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "interp",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "interp",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 25.0
+      }
+    ]
+  },
+  {
+    "name": "interpolate_zero",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 90
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "interp",
+        "data": {
+          "type": "Interpolate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "interp",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "interp",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "interp",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "interpolate_one",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 90
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "interp",
+        "data": {
+          "type": "Interpolate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "interp",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "interp",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "interp",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 90.0
+      }
+    ]
+  },
+  {
+    "name": "offset_node",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "off",
+        "data": {
+          "type": "Offset",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "off",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "b",
+        "target": "off",
+        "targetHandle": "Offset"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "amplitude_dual_input",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "amp",
+        "data": {
+          "type": "Amplitude",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "amp",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "b",
+        "target": "amp",
+        "targetHandle": "Amplitude"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 15.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_above_max",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 150
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 100
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 100.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_below_min",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -20
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 100
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_within_range",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 50
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 100
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 50.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_to_index",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3.7
+          }
+        }
+      },
+      {
+        "id": "ci",
+        "data": {
+          "type": "ClampToIndex",
+          "fields": {
+            "Min": 0,
+            "Max": 255
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ci",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_to_index_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -5.9
+          }
+        }
+      },
+      {
+        "id": "ci",
+        "data": {
+          "type": "ClampToIndex",
+          "fields": {
+            "Min": 0,
+            "Max": 255
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ci",
+        "targetHandle": "Input"
       }
     ],
     "sample_points": [
@@ -576,10 +2490,14 @@
         "data": {
           "type": "Normalizer",
           "fields": {
-            "FromMin": 0,
-            "FromMax": 1,
-            "ToMin": -100,
-            "ToMax": 100
+            "SourceRange": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": -100,
+              "Max": 100
+            }
           }
         }
       }
@@ -592,6 +2510,1862 @@
       }
     ],
     "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "normalizer_edge_min",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -1
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": -1,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": 0,
+              "Max": 100
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "normalizer_edge_max",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": -1,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": 0,
+              "Max": 100
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 100.0
+      }
+    ]
+  },
+  {
+    "name": "double_normalizer_negative",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -0.5
+          }
+        }
+      },
+      {
+        "id": "dn",
+        "data": {
+          "type": "DoubleNormalizer",
+          "fields": {
+            "SourceRangeA": {
+              "Min": -1,
+              "Max": 0
+            },
+            "TargetRangeA": {
+              "Min": 0,
+              "Max": 0.5
+            },
+            "SourceRangeB": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRangeB": {
+              "Min": 0.5,
+              "Max": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "dn",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.25
+      }
+    ]
+  },
+  {
+    "name": "double_normalizer_positive",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "dn",
+        "data": {
+          "type": "DoubleNormalizer",
+          "fields": {
+            "SourceRangeA": {
+              "Min": -1,
+              "Max": 0
+            },
+            "TargetRangeA": {
+              "Min": 0,
+              "Max": 0.5
+            },
+            "SourceRangeB": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRangeB": {
+              "Min": 0.5,
+              "Max": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "dn",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.75
+      }
+    ]
+  },
+  {
+    "name": "range_choice_true",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.8
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "rc",
+        "data": {
+          "type": "RangeChoice",
+          "fields": {
+            "Threshold": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "rc",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "rc",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "rc",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "range_choice_false",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.2
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "rc",
+        "data": {
+          "type": "RangeChoice",
+          "fields": {
+            "Threshold": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "rc",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "rc",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "rc",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 20.0
+      }
+    ]
+  },
+  {
+    "name": "passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Passthrough",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "wrap_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "w",
+        "data": {
+          "type": "Wrap",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "w",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "flat_cache_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 99
+          }
+        }
+      },
+      {
+        "id": "fc",
+        "data": {
+          "type": "FlatCache",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "fc",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 99.0
+      }
+    ]
+  },
+  {
+    "name": "debug_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 12.5
+          }
+        }
+      },
+      {
+        "id": "d",
+        "data": {
+          "type": "Debug",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "d",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 12.5
+      }
+    ]
+  },
+  {
+    "name": "exported_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "e",
+        "data": {
+          "type": "Exported",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "e",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_origin_3_4",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromOrigin",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 4,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_axis_y",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromAxis",
+          "fields": {
+            "Axis": "Y"
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 100,
+        "z": 4,
+        "expected": 5.0
+      },
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_axis_x",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromAxis",
+          "fields": {
+            "Axis": "X"
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 100,
+        "y": 3,
+        "z": 4,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_axis_z",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromAxis",
+          "fields": {
+            "Axis": "Z"
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 4,
+        "z": 100,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_point",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromPoint",
+          "fields": {
+            "Point": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 4,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      },
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "angle_from_origin",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "AngleFromOrigin",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "expected": 1.5707963267948966
+      }
+    ]
+  },
+  {
+    "name": "y_gradient_0_100",
+    "nodes": [
+      {
+        "id": "yg",
+        "data": {
+          "type": "YGradient",
+          "fields": {
+            "FromY": 0,
+            "ToY": 100
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": 0.5
+      },
+      {
+        "x": 0,
+        "y": 100,
+        "z": 0,
+        "expected": 1.0
+      },
+      {
+        "x": 0,
+        "y": 25,
+        "z": 0,
+        "expected": 0.25
+      }
+    ]
+  },
+  {
+    "name": "gradient_density",
+    "nodes": [
+      {
+        "id": "gd",
+        "data": {
+          "type": "GradientDensity",
+          "fields": {
+            "FromY": 0,
+            "ToY": 320
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 160,
+        "z": 0,
+        "expected": 0.5
+      },
+      {
+        "x": 0,
+        "y": 320,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "gradient_alias",
+    "nodes": [
+      {
+        "id": "g",
+        "data": {
+          "type": "Gradient",
+          "fields": {
+            "FromY": 10,
+            "ToY": 110
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 10,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 60,
+        "z": 0,
+        "expected": 0.5
+      },
+      {
+        "x": 0,
+        "y": 110,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "y_gradient_zero_range",
+    "nodes": [
+      {
+        "id": "yg",
+        "data": {
+          "type": "YGradient",
+          "fields": {
+            "FromY": 50,
+            "ToY": 50
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "translated_position_x",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "tp",
+        "data": {
+          "type": "TranslatedPosition",
+          "fields": {
+            "Translation": {
+              "x": 10,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "tp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": -5.0
+      },
+      {
+        "x": 10,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 20,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "translated_position_y",
+    "nodes": [
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "tp",
+        "data": {
+          "type": "TranslatedPosition",
+          "fields": {
+            "Translation": {
+              "x": 0,
+              "y": 100,
+              "z": 0
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cy",
+        "target": "tp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": -50.0
+      }
+    ]
+  },
+  {
+    "name": "scaled_position_x",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "sp",
+        "data": {
+          "type": "ScaledPosition",
+          "fields": {
+            "Scale": {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "sp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 10,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "mirrored_position_x",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "mp",
+        "data": {
+          "type": "MirroredPosition",
+          "fields": {
+            "Axis": "X"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "mp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "mirrored_position_y",
+    "nodes": [
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "mp",
+        "data": {
+          "type": "MirroredPosition",
+          "fields": {
+            "Axis": "Y"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cy",
+        "target": "mp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": -10,
+        "z": 0,
+        "expected": 10.0
+      },
+      {
+        "x": 0,
+        "y": 10,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "quantized_position",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "qp",
+        "data": {
+          "type": "QuantizedPosition",
+          "fields": {
+            "StepSize": 10
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "qp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 15,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      },
+      {
+        "x": 25,
+        "y": 0,
+        "z": 0,
+        "expected": 20.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "y_override",
+    "nodes": [
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "yo",
+        "data": {
+          "type": "YOverride",
+          "fields": {
+            "OverrideY": 100
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cy",
+        "target": "yo",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": 100.0
+      },
+      {
+        "x": 0,
+        "y": 200,
+        "z": 0,
+        "expected": 100.0
+      }
+    ]
+  },
+  {
+    "name": "x_override",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "xo",
+        "data": {
+          "type": "XOverride",
+          "fields": {
+            "OverrideX": 42
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "xo",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 100,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "z_override",
+    "nodes": [
+      {
+        "id": "cz",
+        "data": {
+          "type": "CoordinateZ",
+          "fields": {}
+        }
+      },
+      {
+        "id": "zo",
+        "data": {
+          "type": "ZOverride",
+          "fields": {
+            "OverrideZ": 33
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cz",
+        "target": "zo",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 100,
+        "expected": 33.0
+      }
+    ]
+  },
+  {
+    "name": "conditional_true",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Conditional",
+          "fields": {
+            "Threshold": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "c",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "c",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "c",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "conditional_false",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 99
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Conditional",
+          "fields": {
+            "Threshold": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "c",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "c",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "c",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 99.0
+      }
+    ]
+  },
+  {
+    "name": "conditional_exact_threshold",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Conditional",
+          "fields": {
+            "Threshold": 0.5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "c",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "c",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "c",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "blend_with_factor",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "bl",
+        "data": {
+          "type": "Blend",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "bl",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "bl",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "bl",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "blend_no_factor",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "bl",
+        "data": {
+          "type": "Blend",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "bl",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "bl",
+        "targetHandle": "InputB"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "blend_factor_zero",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 90
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "bl",
+        "data": {
+          "type": "Blend",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "bl",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "bl",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "bl",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "blend_factor_one",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 90
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "bl",
+        "data": {
+          "type": "Blend",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "bl",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "bl",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "bl",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 90.0
+      }
+    ]
+  },
+  {
+    "name": "ellipsoid_origin",
+    "nodes": [
+      {
+        "id": "e",
+        "data": {
+          "type": "Ellipsoid",
+          "fields": {
+            "Scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      }
+    ]
+  },
+  {
+    "name": "ellipsoid_surface",
+    "nodes": [
+      {
+        "id": "e",
+        "data": {
+          "type": "Ellipsoid",
+          "fields": {
+            "Scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "ellipsoid_outside",
+    "nodes": [
+      {
+        "id": "e",
+        "data": {
+          "type": "Ellipsoid",
+          "fields": {
+            "Scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      },
+      {
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "expected": 2.0
+      }
+    ]
+  },
+  {
+    "name": "ellipsoid_scaled",
+    "nodes": [
+      {
+        "id": "e",
+        "data": {
+          "type": "Ellipsoid",
+          "fields": {
+            "Scale": {
+              "x": 2,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 2,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "plane_sdf_y_up",
+    "nodes": [
+      {
+        "id": "p",
+        "data": {
+          "type": "Plane",
+          "fields": {
+            "Normal": {
+              "x": 0,
+              "y": 1,
+              "z": 0
+            },
+            "Distance": 10
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 15,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 0,
+        "y": 10,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 5,
+        "z": 0,
+        "expected": -5.0
+      }
+    ]
+  },
+  {
+    "name": "plane_sdf_x",
+    "nodes": [
+      {
+        "id": "p",
+        "data": {
+          "type": "Plane",
+          "fields": {
+            "Normal": {
+              "x": 1,
+              "y": 0,
+              "z": 0
+            },
+            "Distance": 0
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": -5,
+        "y": 0,
+        "z": 0,
+        "expected": -5.0
+      },
       {
         "x": 0,
         "y": 0,
@@ -647,12 +4421,12 @@
       {
         "source": "a",
         "target": "s",
-        "targetHandle": "Input[0]"
+        "targetHandle": "Inputs[0]"
       },
       {
         "source": "b",
         "target": "s",
-        "targetHandle": "Input[1]"
+        "targetHandle": "Inputs[1]"
       },
       {
         "source": "s",
@@ -704,6 +4478,3846 @@
         "y": 0,
         "z": 0,
         "expected": 99.0
+      }
+    ]
+  },
+  {
+    "name": "chain_square_then_sqrt",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "sq",
+        "data": {
+          "type": "Square",
+          "fields": {}
+        }
+      },
+      {
+        "id": "sr",
+        "data": {
+          "type": "SquareRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "sq",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "sq",
+        "target": "sr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "chain_negate_negate",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "n1",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      },
+      {
+        "id": "n2",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n1",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "n1",
+        "target": "n2",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "product_then_clamp",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 100
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 200
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "p",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "p",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 200.0
+      }
+    ]
+  },
+  {
+    "name": "linear_transform_then_abs",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "lt",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": -3,
+            "Offset": -1
+          }
+        }
+      },
+      {
+        "id": "ab",
+        "data": {
+          "type": "Abs",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "lt",
+        "target": "ab",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "sum_with_coordinate",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": 15.0
+      },
+      {
+        "x": -3,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "min_of_coordinates",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MinFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "cy",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 10,
+        "y": 5,
+        "z": 0,
+        "expected": 5.0
+      },
+      {
+        "x": 3,
+        "y": 8,
+        "z": 0,
+        "expected": 3.0
+      },
+      {
+        "x": -5,
+        "y": 5,
+        "z": 0,
+        "expected": -5.0
+      }
+    ]
+  },
+  {
+    "name": "max_of_coordinates",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cz",
+        "data": {
+          "type": "CoordinateZ",
+          "fields": {}
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "MaxFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "m",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "cz",
+        "target": "m",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 0,
+        "z": 7,
+        "expected": 7.0
+      },
+      {
+        "x": 10,
+        "y": 0,
+        "z": 2,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_height_above_surface",
+    "nodes": [
+      {
+        "id": "h",
+        "data": {
+          "type": "HeightAboveSurface",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "h",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 64,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_terrain_boolean",
+    "nodes": [
+      {
+        "id": "tb",
+        "data": {
+          "type": "TerrainBoolean",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "tb",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_pipeline",
+    "nodes": [
+      {
+        "id": "p",
+        "data": {
+          "type": "Pipeline",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "p",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_surface_density",
+    "nodes": [
+      {
+        "id": "sd",
+        "data": {
+          "type": "SurfaceDensity",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "sd",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_terrain_mask",
+    "nodes": [
+      {
+        "id": "tm",
+        "data": {
+          "type": "TerrainMask",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "tm",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_cave_density",
+    "nodes": [
+      {
+        "id": "cd",
+        "data": {
+          "type": "CaveDensity",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cd",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_beard_density",
+    "nodes": [
+      {
+        "id": "bd",
+        "data": {
+          "type": "BeardDensity",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "bd",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_column_density",
+    "nodes": [
+      {
+        "id": "cd",
+        "data": {
+          "type": "ColumnDensity",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cd",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_terrain",
+    "nodes": [
+      {
+        "id": "t",
+        "data": {
+          "type": "Terrain",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "t",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "unsupported_distance_to_biome_edge",
+    "nodes": [
+      {
+        "id": "db",
+        "data": {
+          "type": "DistanceToBiomeEdge",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {},
+          "_outputNode": true
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "db",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "normalizer_identity_range",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": 0,
+              "Max": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.5
+      }
+    ]
+  },
+  {
+    "name": "sum_product_chain",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "s",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 20.0
+      }
+    ]
+  },
+  {
+    "name": "cube_then_inverse",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "cb",
+        "data": {
+          "type": "CubeMath",
+          "fields": {}
+        }
+      },
+      {
+        "id": "inv",
+        "data": {
+          "type": "Inverse",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cb",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "cb",
+        "target": "inv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.125
+      }
+    ]
+  },
+  {
+    "name": "translated_mirrored",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "mp",
+        "data": {
+          "type": "MirroredPosition",
+          "fields": {
+            "Axis": "X"
+          }
+        }
+      },
+      {
+        "id": "tp",
+        "data": {
+          "type": "TranslatedPosition",
+          "fields": {
+            "Translation": {
+              "x": 5,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "mp",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "mp",
+        "target": "tp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 0,
+        "z": 0,
+        "expected": 2.0
+      },
+      {
+        "x": 10,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "complex_normalizer_clamp",
+    "nodes": [
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": 0,
+              "Max": 100
+            },
+            "TargetRange": {
+              "Min": 0,
+              "Max": 1
+            }
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cy",
+        "target": "n",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "n",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 50,
+        "z": 0,
+        "expected": 0.5
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 100,
+        "z": 0,
+        "expected": 1.0
+      },
+      {
+        "x": 0,
+        "y": 150,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "rotated_position_90",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "rp",
+        "data": {
+          "type": "RotatedPosition",
+          "fields": {
+            "AngleDegrees": 90
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "rp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 10,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "rotated_position_180",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "rp",
+        "data": {
+          "type": "RotatedPosition",
+          "fields": {
+            "AngleDegrees": 180
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "rp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": -5.0
+      }
+    ]
+  },
+  {
+    "name": "weighted_sum_equal_weights",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "ws",
+        "data": {
+          "type": "WeightedSum",
+          "fields": {
+            "Weights": [
+              1,
+              1
+            ]
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "ws",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "ws",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 30.0
+      }
+    ]
+  },
+  {
+    "name": "weighted_sum_different_weights",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "ws",
+        "data": {
+          "type": "WeightedSum",
+          "fields": {
+            "Weights": [
+              2,
+              3
+            ]
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "ws",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "ws",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 80.0
+      }
+    ]
+  },
+  {
+    "name": "weighted_sum_zero_weight",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "ws",
+        "data": {
+          "type": "WeightedSum",
+          "fields": {
+            "Weights": [
+              0,
+              1
+            ]
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "ws",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "ws",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 20.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_origin_3d",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromOrigin",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 2,
+        "z": 2,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "angle_from_point",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "AngleFromPoint",
+          "fields": {
+            "Point": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "expected": 1.5707963267948966
+      }
+    ]
+  },
+  {
+    "name": "sum_four_constants",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "d",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 4
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Inputs[2]"
+      },
+      {
+        "source": "d",
+        "target": "s",
+        "targetHandle": "Inputs[3]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "product_three",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "p",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 30.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_negative_range",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": -10,
+            "Max": -1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      }
+    ]
+  },
+  {
+    "name": "sum_self_count_1",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "ss",
+        "data": {
+          "type": "SumSelf",
+          "fields": {
+            "Count": 1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ss",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "modulo_fractional",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5.5
+          }
+        }
+      },
+      {
+        "id": "m",
+        "data": {
+          "type": "Modulo",
+          "fields": {
+            "Divisor": 2
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "m",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.5
+      }
+    ]
+  },
+  {
+    "name": "amplitude_constant_one",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "ac",
+        "data": {
+          "type": "AmplitudeConstant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ac",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "amplitude_constant_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "ac",
+        "data": {
+          "type": "AmplitudeConstant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ac",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "pow_zero_input",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Pow",
+          "fields": {
+            "Exponent": 3
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "coordinate_y_multiple_points",
+    "nodes": [
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 32,
+        "z": 0,
+        "expected": 32.0
+      },
+      {
+        "x": 0,
+        "y": 64,
+        "z": 0,
+        "expected": 64.0
+      },
+      {
+        "x": 0,
+        "y": 128,
+        "z": 0,
+        "expected": 128.0
+      },
+      {
+        "x": 0,
+        "y": 256,
+        "z": 0,
+        "expected": 256.0
+      },
+      {
+        "x": 0,
+        "y": -10,
+        "z": 0,
+        "expected": -10.0
+      }
+    ]
+  },
+  {
+    "name": "normalizer_negative_target",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.5
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": -10,
+              "Max": -5
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -7.5
+      }
+    ]
+  },
+  {
+    "name": "linear_transform_identity",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "lt",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 1,
+            "Offset": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "linear_transform_scale_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "lt",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 0,
+            "Offset": 5
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "deep_chain_5_levels",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "lt1",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 2,
+            "Offset": 0
+          }
+        }
+      },
+      {
+        "id": "lt2",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 2,
+            "Offset": 0
+          }
+        }
+      },
+      {
+        "id": "lt3",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 2,
+            "Offset": 0
+          }
+        }
+      },
+      {
+        "id": "lt4",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 2,
+            "Offset": 0
+          }
+        }
+      },
+      {
+        "id": "lt5",
+        "data": {
+          "type": "LinearTransform",
+          "fields": {
+            "Scale": 2,
+            "Offset": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "lt1",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "lt1",
+        "target": "lt2",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "lt2",
+        "target": "lt3",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "lt3",
+        "target": "lt4",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "lt4",
+        "target": "lt5",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 32.0
+      }
+    ]
+  },
+  {
+    "name": "missing_input_negate",
+    "nodes": [
+      {
+        "id": "n",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "missing_input_sum",
+    "nodes": [
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "cuboid_origin",
+    "nodes": [
+      {
+        "id": "cb",
+        "data": {
+          "type": "Cuboid",
+          "fields": {
+            "Scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      }
+    ]
+  },
+  {
+    "name": "cuboid_on_face",
+    "nodes": [
+      {
+        "id": "cb",
+        "data": {
+          "type": "Cuboid",
+          "fields": {
+            "Scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "cylinder_origin",
+    "nodes": [
+      {
+        "id": "cyl",
+        "data": {
+          "type": "Cylinder",
+          "fields": {
+            "Radius": 1,
+            "Height": 2
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      }
+    ]
+  },
+  {
+    "name": "shell_sdf_simple",
+    "nodes": [
+      {
+        "id": "sh",
+        "data": {
+          "type": "Shell",
+          "fields": {
+            "InnerRadius": 4,
+            "OuterRadius": 6
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 5,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 4.0
+      }
+    ]
+  },
+  {
+    "name": "scaled_position_all_axes",
+    "nodes": [
+      {
+        "id": "do",
+        "data": {
+          "type": "DistanceFromOrigin",
+          "fields": {}
+        }
+      },
+      {
+        "id": "sp",
+        "data": {
+          "type": "ScaledPosition",
+          "fields": {
+            "Scale": {
+              "x": 2,
+              "y": 2,
+              "z": 2
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "do",
+        "target": "sp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 6,
+        "y": 0,
+        "z": 8,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "switch_selector_0",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "sw",
+        "data": {
+          "type": "Switch",
+          "fields": {
+            "Selector": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "sw",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "sw",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "switch_selector_1",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "sw",
+        "data": {
+          "type": "Switch",
+          "fields": {
+            "Selector": 1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "sw",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "sw",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 20.0
+      }
+    ]
+  },
+  {
+    "name": "cache_once_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "co",
+        "data": {
+          "type": "CacheOnce",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "co",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "positions_pinch_zero_dist",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "pp",
+        "data": {
+          "type": "PositionsPinch",
+          "fields": {
+            "Strength": 1
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "pp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "floor_ceiling_chain",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3.5
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Floor",
+          "fields": {}
+        }
+      },
+      {
+        "id": "ce",
+        "data": {
+          "type": "Ceiling",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "f",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "f",
+        "target": "ce",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "abs_then_square",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3
+          }
+        }
+      },
+      {
+        "id": "ab",
+        "data": {
+          "type": "Abs",
+          "fields": {}
+        }
+      },
+      {
+        "id": "sq",
+        "data": {
+          "type": "Square",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ab",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "ab",
+        "target": "sq",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 9.0
+      }
+    ]
+  },
+  {
+    "name": "min_then_max",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 3
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 7
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "mn",
+        "data": {
+          "type": "MinFunction",
+          "fields": {}
+        }
+      },
+      {
+        "id": "mx",
+        "data": {
+          "type": "MaxFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "mn",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "mn",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "mn",
+        "target": "mx",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "c",
+        "target": "mx",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 3.0
+      }
+    ]
+  },
+  {
+    "name": "three_constants_averaged",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "avg",
+        "data": {
+          "type": "AverageFunction",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "avg",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "avg",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "c",
+        "target": "avg",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 10.0
+      }
+    ]
+  },
+  {
+    "name": "switch_state_basic",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "ss",
+        "data": {
+          "type": "SwitchState",
+          "fields": {
+            "State": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "ss",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "switch_state_no_input",
+    "nodes": [
+      {
+        "id": "ss",
+        "data": {
+          "type": "SwitchState",
+          "fields": {
+            "State": 5
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "imported_value_passthrough",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 77
+          }
+        }
+      },
+      {
+        "id": "iv",
+        "data": {
+          "type": "ImportedValue",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "iv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 77.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_origin_at_origin",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromOrigin",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "distance_from_origin_unit",
+    "nodes": [
+      {
+        "id": "d",
+        "data": {
+          "type": "DistanceFromOrigin",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      },
+      {
+        "x": 0,
+        "y": 1,
+        "z": 0,
+        "expected": 1.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 1,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "y_gradient_defaults",
+    "nodes": [
+      {
+        "id": "yg",
+        "data": {
+          "type": "YGradient",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 160,
+        "z": 0,
+        "expected": 0.5
+      },
+      {
+        "x": 0,
+        "y": 320,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "inverse_one",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "inv",
+        "data": {
+          "type": "Inverse",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "inv",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "square_root_one",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "sr",
+        "data": {
+          "type": "SquareRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "sr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "cube_root_one",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "cr",
+        "data": {
+          "type": "CubeRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "normalizer_wide_range",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.25
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": 0,
+              "Max": 1000
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 250.0
+      }
+    ]
+  },
+  {
+    "name": "sum_negative_values",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -5
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -8.0
+      }
+    ]
+  },
+  {
+    "name": "product_negative_values",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -3
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -4
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "b",
+        "target": "p",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 12.0
+      }
+    ]
+  },
+  {
+    "name": "negate_then_clamp",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Negate",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": -3,
+            "Max": 3
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "n",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "n",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -3.0
+      }
+    ]
+  },
+  {
+    "name": "coordinate_x_z_product",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cz",
+        "data": {
+          "type": "CoordinateZ",
+          "fields": {}
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "cz",
+        "target": "p",
+        "targetHandle": "Inputs[1]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 3,
+        "y": 0,
+        "z": 4,
+        "expected": 12.0
+      },
+      {
+        "x": -2,
+        "y": 0,
+        "z": 5,
+        "expected": -10.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 100,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "y_gradient_outside_range",
+    "nodes": [
+      {
+        "id": "yg",
+        "data": {
+          "type": "YGradient",
+          "fields": {
+            "FromY": 0,
+            "ToY": 100
+          }
+        }
+      }
+    ],
+    "edges": [],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": -50,
+        "z": 0,
+        "expected": -0.5
+      },
+      {
+        "x": 0,
+        "y": 200,
+        "z": 0,
+        "expected": 2.0
+      }
+    ]
+  },
+  {
+    "name": "conditional_threshold_zero",
+    "nodes": [
+      {
+        "id": "cond",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "t",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 1
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 2
+          }
+        }
+      },
+      {
+        "id": "c",
+        "data": {
+          "type": "Conditional",
+          "fields": {
+            "Threshold": 0
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cond",
+        "target": "c",
+        "targetHandle": "Condition"
+      },
+      {
+        "source": "t",
+        "target": "c",
+        "targetHandle": "TrueInput"
+      },
+      {
+        "source": "f",
+        "target": "c",
+        "targetHandle": "FalseInput"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "sum_single_input",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "product_single_input",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 42
+          }
+        }
+      },
+      {
+        "id": "p",
+        "data": {
+          "type": "Product",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "p",
+        "targetHandle": "Inputs[0]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 42.0
+      }
+    ]
+  },
+  {
+    "name": "abs_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "a",
+        "data": {
+          "type": "Abs",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "a",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "square_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "sq",
+        "data": {
+          "type": "Square",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "sq",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "cube_math_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "cm",
+        "data": {
+          "type": "CubeMath",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cm",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "cube_root_zero",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "cr",
+        "data": {
+          "type": "CubeRoot",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cr",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "coordinate_all_three",
+    "nodes": [
+      {
+        "id": "cx",
+        "data": {
+          "type": "CoordinateX",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cy",
+        "data": {
+          "type": "CoordinateY",
+          "fields": {}
+        }
+      },
+      {
+        "id": "cz",
+        "data": {
+          "type": "CoordinateZ",
+          "fields": {}
+        }
+      },
+      {
+        "id": "s",
+        "data": {
+          "type": "Sum",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cx",
+        "target": "s",
+        "targetHandle": "Inputs[0]"
+      },
+      {
+        "source": "cy",
+        "target": "s",
+        "targetHandle": "Inputs[1]"
+      },
+      {
+        "source": "cz",
+        "target": "s",
+        "targetHandle": "Inputs[2]"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 1,
+        "y": 2,
+        "z": 3,
+        "expected": 6.0
+      },
+      {
+        "x": -1,
+        "y": -2,
+        "z": -3,
+        "expected": -6.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.0
+      }
+    ]
+  },
+  {
+    "name": "clamp_default_fields",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 5
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "cl",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "interpolate_negative_factor",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 10
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 20
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": -0.5
+          }
+        }
+      },
+      {
+        "id": "interp",
+        "data": {
+          "type": "Interpolate",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "interp",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "interp",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "interp",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 5.0
+      }
+    ]
+  },
+  {
+    "name": "blend_quarter",
+    "nodes": [
+      {
+        "id": "a",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "b",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 100
+          }
+        }
+      },
+      {
+        "id": "f",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0.25
+          }
+        }
+      },
+      {
+        "id": "bl",
+        "data": {
+          "type": "Blend",
+          "fields": {}
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "a",
+        "target": "bl",
+        "targetHandle": "InputA"
+      },
+      {
+        "source": "b",
+        "target": "bl",
+        "targetHandle": "InputB"
+      },
+      {
+        "source": "f",
+        "target": "bl",
+        "targetHandle": "Factor"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 25.0
+      }
+    ]
+  },
+  {
+    "name": "complex_gradient_clamp_normalizer",
+    "nodes": [
+      {
+        "id": "yg",
+        "data": {
+          "type": "YGradient",
+          "fields": {
+            "FromY": 0,
+            "ToY": 256
+          }
+        }
+      },
+      {
+        "id": "cl",
+        "data": {
+          "type": "Clamp",
+          "fields": {
+            "Min": 0,
+            "Max": 1
+          }
+        }
+      },
+      {
+        "id": "n",
+        "data": {
+          "type": "Normalizer",
+          "fields": {
+            "SourceRange": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRange": {
+              "Min": -1,
+              "Max": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "yg",
+        "target": "cl",
+        "targetHandle": "Input"
+      },
+      {
+        "source": "cl",
+        "target": "n",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 128,
+        "z": 0,
+        "expected": 0.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": -1.0
+      },
+      {
+        "x": 0,
+        "y": 256,
+        "z": 0,
+        "expected": 1.0
+      }
+    ]
+  },
+  {
+    "name": "mirrored_z",
+    "nodes": [
+      {
+        "id": "cz",
+        "data": {
+          "type": "CoordinateZ",
+          "fields": {}
+        }
+      },
+      {
+        "id": "mp",
+        "data": {
+          "type": "MirroredPosition",
+          "fields": {
+            "Axis": "Z"
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "cz",
+        "target": "mp",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": -7,
+        "expected": 7.0
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 7,
+        "expected": 7.0
+      }
+    ]
+  },
+  {
+    "name": "double_normalizer_zero_boundary",
+    "nodes": [
+      {
+        "id": "c",
+        "data": {
+          "type": "Constant",
+          "fields": {
+            "Value": 0
+          }
+        }
+      },
+      {
+        "id": "dn",
+        "data": {
+          "type": "DoubleNormalizer",
+          "fields": {
+            "SourceRangeA": {
+              "Min": -1,
+              "Max": 0
+            },
+            "TargetRangeA": {
+              "Min": 0,
+              "Max": 0.5
+            },
+            "SourceRangeB": {
+              "Min": 0,
+              "Max": 1
+            },
+            "TargetRangeB": {
+              "Min": 0.5,
+              "Max": 1
+            }
+          }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "source": "c",
+        "target": "dn",
+        "targetHandle": "Input"
+      }
+    ],
+    "sample_points": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "expected": 0.5
       }
     ]
   }
