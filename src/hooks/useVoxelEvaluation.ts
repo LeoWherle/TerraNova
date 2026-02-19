@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateVolumeInWorker, cancelVolumeEvaluation } from "@/utils/volumeWorkerClient";
+import { evaluateVolume as evaluateVolumeRust } from "@/utils/ipc";
 import { extractSurfaceVoxels, type FluidConfig } from "@/utils/voxelExtractor";
 import { resolveMaterials, DEFAULT_MATERIAL_PALETTE, matchMaterialName } from "@/utils/materialResolver";
 import { evaluateMaterialGraph } from "@/utils/materialEvaluator";
@@ -106,18 +107,64 @@ export function useVoxelEvaluation() {
         }
 
         try {
-          const result = await evaluateVolumeInWorker({
-            nodes,
-            edges,
-            resolution: res,
-            rangeMin,
-            rangeMax,
-            yMin: voxelYMin,
-            yMax: voxelYMax,
-            ySlices: Math.max(1, ySlices),
-            rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
-            options: { contentFields },
-          });
+          const useRust = useConfigStore.getState().useRustEvaluator;
+
+          let result: { densities: Float32Array; resolution: number; ySlices: number; minValue: number; maxValue: number };
+
+          if (useRust) {
+            // ── Rust evaluator path (Tauri IPC) ──
+            const t0 = performance.now();
+            const rustResult = await evaluateVolumeRust({
+              nodes: nodes.map((n) => ({
+                id: n.id,
+                type: n.type,
+                data: n.data,
+              })),
+              edges: edges.map((e) => ({
+                source: e.source,
+                target: e.target,
+                targetHandle: e.targetHandle,
+              })),
+              resolution: res,
+              range_min: rangeMin,
+              range_max: rangeMax,
+              y_min: voxelYMin,
+              y_max: voxelYMax,
+              y_slices: Math.max(1, ySlices),
+              root_node_id: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+              content_fields: contentFields,
+            });
+            const elapsed = performance.now() - t0;
+            if (import.meta.env.DEV) {
+              console.log(`[Rust eval] volume ${res}×${rustResult.y_slices}×${res} in ${elapsed.toFixed(1)}ms`);
+            }
+            result = {
+              densities: new Float32Array(rustResult.densities),
+              resolution: rustResult.resolution,
+              ySlices: rustResult.y_slices,
+              minValue: rustResult.min_value,
+              maxValue: rustResult.max_value,
+            };
+          } else {
+            // ── JS Worker path (unchanged) ──
+            const t0 = performance.now();
+            result = await evaluateVolumeInWorker({
+              nodes,
+              edges,
+              resolution: res,
+              rangeMin,
+              rangeMax,
+              yMin: voxelYMin,
+              yMax: voxelYMax,
+              ySlices: Math.max(1, ySlices),
+              rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+              options: { contentFields },
+            });
+            const elapsed = performance.now() - t0;
+            if (import.meta.env.DEV) {
+              console.log(`[JS eval] volume ${res}×${result.ySlices}×${res} in ${elapsed.toFixed(1)}ms`);
+            }
+          }
 
           if (evalId !== evalIdRef.current || unmountedRef.current) return;
 

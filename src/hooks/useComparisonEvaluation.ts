@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { createWorkerInstance, type WorkerInstance } from "@/utils/densityWorkerClient";
+import { evaluateGrid as evaluateGridRust } from "@/utils/ipc";
 import { useConfigStore } from "@/stores/configStore";
 
 /**
@@ -47,19 +48,96 @@ export function useComparisonEvaluation() {
       }
 
       const evalId = ++evalIdRef.current;
-      const baseParams = { nodes, edges, resolution, rangeMin, rangeMax, yLevel, options: { contentFields } };
-      const maxThreads = useConfigStore.getState().maxWorkerThreads;
+      const useRust = useConfigStore.getState().useRustEvaluator;
 
-      // When thread budget allows (>= 3), use parallel workers
-      const useParallel = maxThreads >= 3;
-      if (useParallel && !workerBRef.current) {
-        workerBRef.current = createWorkerInstance();
-      }
+      if (useRust) {
+        // ── Rust evaluator path (Tauri IPC) ──
+        const rustParams = {
+          nodes: nodes.map((n) => ({
+            id: n.id,
+            type: n.type,
+            data: n.data,
+          })),
+          edges: edges.map((e) => ({
+            source: e.source,
+            target: e.target,
+            targetHandle: e.targetHandle,
+          })),
+          resolution,
+          range_min: rangeMin,
+          range_max: rangeMax,
+          y_level: yLevel,
+          content_fields: contentFields,
+        };
 
-      if (useParallel) {
-        // ── Parallel evaluation ──
         const evalA = compareNodeA
           ? (async () => {
+            setCompareLoadingA(true);
+            try {
+              const t0 = performance.now();
+              const result = await evaluateGridRust({
+                ...rustParams,
+                root_node_id: compareNodeA,
+              });
+              if (import.meta.env.DEV) {
+                console.log(`[Rust eval] compare-A ${resolution}×${resolution} in ${(performance.now() - t0).toFixed(1)}ms`);
+              }
+              if (evalId === evalIdRef.current) {
+                const values = new Float32Array(result.values);
+                setCompareValuesA(values, result.min_value, result.max_value);
+              }
+            } catch (err) {
+              if (evalId === evalIdRef.current) {
+                setCompareValuesA(null, 0, 0);
+              }
+            } finally {
+              if (evalId === evalIdRef.current) setCompareLoadingA(false);
+            }
+          })()
+          : Promise.resolve();
+
+        const evalB = compareNodeB
+          ? (async () => {
+            setCompareLoadingB(true);
+            try {
+              const t0 = performance.now();
+              const result = await evaluateGridRust({
+                ...rustParams,
+                root_node_id: compareNodeB,
+              });
+              if (import.meta.env.DEV) {
+                console.log(`[Rust eval] compare-B ${resolution}×${resolution} in ${(performance.now() - t0).toFixed(1)}ms`);
+              }
+              if (evalId === evalIdRef.current) {
+                const values = new Float32Array(result.values);
+                setCompareValuesB(values, result.min_value, result.max_value);
+              }
+            } catch (err) {
+              if (evalId === evalIdRef.current) {
+                setCompareValuesB(null, 0, 0);
+              }
+            } finally {
+              if (evalId === evalIdRef.current) setCompareLoadingB(false);
+            }
+          })()
+          : Promise.resolve();
+
+        await Promise.all([evalA, evalB]);
+      } else {
+        // ── JS Worker path (unchanged) ──
+        const baseParams = { nodes, edges, resolution, rangeMin, rangeMax, yLevel, options: { contentFields } };
+        const maxThreads = useConfigStore.getState().maxWorkerThreads;
+
+        // When thread budget allows (>= 3), use parallel workers
+        const useParallel = maxThreads >= 3;
+        if (useParallel && !workerBRef.current) {
+          workerBRef.current = createWorkerInstance();
+        }
+
+        if (useParallel) {
+          // ── Parallel evaluation ──
+          const evalA = compareNodeA
+            ? (async () => {
               setCompareLoadingA(true);
               try {
                 const result = await workerARef.current!.evaluate({
@@ -77,10 +155,10 @@ export function useComparisonEvaluation() {
                 if (evalId === evalIdRef.current) setCompareLoadingA(false);
               }
             })()
-          : Promise.resolve();
+            : Promise.resolve();
 
-        const evalB = compareNodeB
-          ? (async () => {
+          const evalB = compareNodeB
+            ? (async () => {
               setCompareLoadingB(true);
               try {
                 const result = await workerBRef.current!.evaluate({
@@ -98,42 +176,43 @@ export function useComparisonEvaluation() {
                 if (evalId === evalIdRef.current) setCompareLoadingB(false);
               }
             })()
-          : Promise.resolve();
+            : Promise.resolve();
 
-        await Promise.all([evalA, evalB]);
-      } else {
-        // ── Sequential evaluation — uses a single worker ──
-        const worker = workerARef.current!;
+          await Promise.all([evalA, evalB]);
+        } else {
+          // ── Sequential evaluation — uses a single worker ──
+          const worker = workerARef.current!;
 
-        if (compareNodeA) {
-          setCompareLoadingA(true);
-          try {
-            const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeA });
-            if (evalId === evalIdRef.current) {
-              setCompareValuesA(result.values, result.minValue, result.maxValue);
+          if (compareNodeA) {
+            setCompareLoadingA(true);
+            try {
+              const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeA });
+              if (evalId === evalIdRef.current) {
+                setCompareValuesA(result.values, result.minValue, result.maxValue);
+              }
+            } catch (err) {
+              if (err !== "cancelled" && evalId === evalIdRef.current) {
+                setCompareValuesA(null, 0, 0);
+              }
+            } finally {
+              if (evalId === evalIdRef.current) setCompareLoadingA(false);
             }
-          } catch (err) {
-            if (err !== "cancelled" && evalId === evalIdRef.current) {
-              setCompareValuesA(null, 0, 0);
-            }
-          } finally {
-            if (evalId === evalIdRef.current) setCompareLoadingA(false);
           }
-        }
 
-        if (compareNodeB && evalId === evalIdRef.current) {
-          setCompareLoadingB(true);
-          try {
-            const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeB });
-            if (evalId === evalIdRef.current) {
-              setCompareValuesB(result.values, result.minValue, result.maxValue);
+          if (compareNodeB && evalId === evalIdRef.current) {
+            setCompareLoadingB(true);
+            try {
+              const result = await worker.evaluate({ ...baseParams, rootNodeId: compareNodeB });
+              if (evalId === evalIdRef.current) {
+                setCompareValuesB(result.values, result.minValue, result.maxValue);
+              }
+            } catch (err) {
+              if (err !== "cancelled" && evalId === evalIdRef.current) {
+                setCompareValuesB(null, 0, 0);
+              }
+            } finally {
+              if (evalId === evalIdRef.current) setCompareLoadingB(false);
             }
-          } catch (err) {
-            if (err !== "cancelled" && evalId === evalIdRef.current) {
-              setCompareValuesB(null, 0, 0);
-            }
-          } finally {
-            if (evalId === evalIdRef.current) setCompareLoadingB(false);
           }
         }
       }
@@ -145,5 +224,5 @@ export function useComparisonEvaluation() {
       workerBRef.current?.cancel();
     };
   }, [nodes, edges, contentFields, resolution, rangeMin, rangeMax, yLevel, viewMode, compareNodeA, compareNodeB,
-      setCompareValuesA, setCompareValuesB, setCompareLoadingA, setCompareLoadingB]);
+    setCompareValuesA, setCompareValuesB, setCompareLoadingA, setCompareLoadingB]);
 }

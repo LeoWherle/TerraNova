@@ -166,11 +166,10 @@ function ToggleControl({
         <label className="text-sm font-medium">{label}</label>
         <button
           onClick={() => onChange(!value)}
-          className={`px-3 py-1 text-xs rounded border ${
-            value
+          className={`px-3 py-1 text-xs rounded border ${value
               ? "border-tn-accent bg-tn-accent/10 text-tn-accent"
               : "border-tn-border bg-tn-bg text-tn-text-muted hover:bg-tn-surface"
-          }`}
+            }`}
         >
           {value ? "On" : "Off"}
         </button>
@@ -246,6 +245,8 @@ function CpuTab({ hw }: { hw: HardwareInfo | null }) {
   const setEnableProgressiveVoxel = useConfigStore((s) => s.setEnableProgressiveVoxel);
   const maxWorkerThreads = useConfigStore((s) => s.maxWorkerThreads);
   const setMaxWorkerThreads = useConfigStore((s) => s.setMaxWorkerThreads);
+  const useRustEvaluator = useConfigStore((s) => s.useRustEvaluator);
+  const setUseRustEvaluator = useConfigStore((s) => s.setUseRustEvaluator);
 
   const maxCores = hw?.cpuCores ?? navigator.hardwareConcurrency ?? 8;
 
@@ -266,6 +267,12 @@ function CpuTab({ hw }: { hw: HardwareInfo | null }) {
         step={1}
         format={(v) => `${v} / ${maxCores} cores`}
         onChange={applyCpuBudget}
+      />
+      <ToggleControl
+        label="Use Rust Evaluator (Experimental)"
+        description="Native evaluation via Tauri backend. Faster but may have minor differences from the JS evaluator."
+        value={useRustEvaluator}
+        onChange={setUseRustEvaluator}
       />
       <AdvancedSection>
         <SliderControl
@@ -491,11 +498,10 @@ export function ConfigurationDialog({ open, onClose }: ConfigurationDialogProps)
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-2 text-sm -mb-px ${
-                  activeTab === tab.id
+                className={`px-4 py-2 text-sm -mb-px ${activeTab === tab.id
                     ? "border-b-2 border-tn-accent text-tn-text font-medium"
                     : "text-tn-text-muted hover:text-tn-text"
-                }`}
+                  }`}
               >
                 {tab.label}
               </button>

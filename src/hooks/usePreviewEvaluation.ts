@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateInWorker, cancelEvaluation } from "@/utils/densityWorkerClient";
+import { evaluateGrid as evaluateGridRust } from "@/utils/ipc";
 import { computeFidelityScore } from "@/utils/graphDiagnostics";
 import { useConfigStore } from "@/stores/configStore";
 
@@ -45,22 +46,63 @@ export function usePreviewEvaluation() {
       setLoading(true);
       setPreviewError(null);
 
-      try {
-        const result = await evaluateInWorker({
-          nodes,
-          edges,
-          resolution,
-          rangeMin,
-          rangeMax,
-          yLevel,
-          rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
-          options: { contentFields },
-        });
+      const useRust = useConfigStore.getState().useRustEvaluator;
 
-        // Only apply if this is still the latest evaluation
-        if (evalId === evalIdRef.current) {
-          setValues(result.values, result.minValue, result.maxValue);
-          usePreviewStore.getState().setFidelityScore(computeFidelityScore(nodes));
+      try {
+        if (useRust) {
+          // ── Rust evaluator path (Tauri IPC) ──
+          const t0 = performance.now();
+          const result = await evaluateGridRust({
+            nodes: nodes.map((n) => ({
+              id: n.id,
+              type: n.type,
+              data: n.data,
+            })),
+            edges: edges.map((e) => ({
+              source: e.source,
+              target: e.target,
+              targetHandle: e.targetHandle,
+            })),
+            resolution,
+            range_min: rangeMin,
+            range_max: rangeMax,
+            y_level: yLevel,
+            root_node_id: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+            content_fields: contentFields,
+          });
+          const elapsed = performance.now() - t0;
+          if (import.meta.env.DEV) {
+            console.log(`[Rust eval] grid ${resolution}×${resolution} in ${elapsed.toFixed(1)}ms`);
+          }
+
+          if (evalId === evalIdRef.current) {
+            const values = new Float32Array(result.values);
+            setValues(values, result.min_value, result.max_value);
+            usePreviewStore.getState().setFidelityScore(computeFidelityScore(nodes));
+          }
+        } else {
+          // ── JS Worker path (unchanged) ──
+          const t0 = performance.now();
+          const result = await evaluateInWorker({
+            nodes,
+            edges,
+            resolution,
+            rangeMin,
+            rangeMax,
+            yLevel,
+            rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+            options: { contentFields },
+          });
+          const elapsed = performance.now() - t0;
+          if (import.meta.env.DEV) {
+            console.log(`[JS eval] grid ${resolution}×${resolution} in ${elapsed.toFixed(1)}ms`);
+          }
+
+          // Only apply if this is still the latest evaluation
+          if (evalId === evalIdRef.current) {
+            setValues(result.values, result.minValue, result.maxValue);
+            usePreviewStore.getState().setFidelityScore(computeFidelityScore(nodes));
+          }
         }
       } catch (err) {
         if (err === "cancelled") return; // expected
@@ -97,25 +139,59 @@ export function triggerManualEvaluation() {
   setLoading(true);
   setPreviewError(null);
 
-  evaluateInWorker({
-    nodes,
-    edges,
-    resolution,
-    rangeMin,
-    rangeMax,
-    yLevel,
-    rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
-    options: { contentFields },
-  })
-    .then((result) => {
-      setValues(result.values, result.minValue, result.maxValue);
+  const useRust = useConfigStore.getState().useRustEvaluator;
+
+  if (useRust) {
+    evaluateGridRust({
+      nodes: nodes.map((n) => ({
+        id: n.id,
+        type: n.type,
+        data: n.data,
+      })),
+      edges: edges.map((e) => ({
+        source: e.source,
+        target: e.target,
+        targetHandle: e.targetHandle,
+      })),
+      resolution,
+      range_min: rangeMin,
+      range_max: rangeMax,
+      y_level: yLevel,
+      root_node_id: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+      content_fields: contentFields,
     })
-    .catch((err) => {
-      if (err === "cancelled") return;
-      setValues(null, 0, 0);
-      setPreviewError(`Preview evaluation failed: ${err}`);
+      .then((result) => {
+        const values = new Float32Array(result.values);
+        setValues(values, result.min_value, result.max_value);
+      })
+      .catch((err) => {
+        setValues(null, 0, 0);
+        setPreviewError(`Preview evaluation failed: ${err}`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  } else {
+    evaluateInWorker({
+      nodes,
+      edges,
+      resolution,
+      rangeMin,
+      rangeMax,
+      yLevel,
+      rootNodeId: selectedPreviewNodeId ?? outputNodeId ?? undefined,
+      options: { contentFields },
     })
-    .finally(() => {
-      setLoading(false);
-    });
+      .then((result) => {
+        setValues(result.values, result.minValue, result.maxValue);
+      })
+      .catch((err) => {
+        if (err === "cancelled") return;
+        setValues(null, 0, 0);
+        setPreviewError(`Preview evaluation failed: ${err}`);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }
 }

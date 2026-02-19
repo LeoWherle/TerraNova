@@ -13,6 +13,7 @@ const DEFAULTS = {
   autoRefresh: true,
   enableProgressiveVoxel: true,
   maxWorkerThreads: 4,
+  useRustEvaluator: false,
 
   // GPU
   gpuMemoryBudgetMb: 4096,
@@ -111,6 +112,7 @@ interface ConfigValues {
   autoRefresh: boolean;
   enableProgressiveVoxel: boolean;
   maxWorkerThreads: number;
+  useRustEvaluator: boolean;
 
   // GPU
   gpuMemoryBudgetMb: number;
@@ -142,6 +144,7 @@ interface ConfigState extends ConfigValues {
   setAutoRefresh: (v: boolean) => void;
   setEnableProgressiveVoxel: (v: boolean) => void;
   setMaxWorkerThreads: (v: number) => void;
+  setUseRustEvaluator: (v: boolean) => void;
   setGpuPowerPreference: (v: GpuPowerPreference) => void;
   setRendererPixelRatio: (v: number) => void;
   setEnableShadows: (v: boolean) => void;
@@ -163,6 +166,7 @@ function getValues(state: ConfigState): ConfigValues {
     autoRefresh: state.autoRefresh,
     enableProgressiveVoxel: state.enableProgressiveVoxel,
     maxWorkerThreads: state.maxWorkerThreads,
+    useRustEvaluator: state.useRustEvaluator,
     gpuMemoryBudgetMb: state.gpuMemoryBudgetMb,
     gpuPowerPreference: state.gpuPowerPreference,
     rendererPixelRatio: state.rendererPixelRatio,
@@ -202,6 +206,7 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     autoRefresh: getStoredBool("autoRefresh", DEFAULTS.autoRefresh),
     enableProgressiveVoxel: getStoredBool("enableProgressiveVoxel", DEFAULTS.enableProgressiveVoxel),
     maxWorkerThreads: getStoredNumber("maxWorkerThreads", DEFAULTS.maxWorkerThreads),
+    useRustEvaluator: getStoredBool("useRustEvaluator", DEFAULTS.useRustEvaluator),
 
     gpuMemoryBudgetMb: getStoredNumber("gpuMemoryBudgetMb", DEFAULTS.gpuMemoryBudgetMb),
     gpuPowerPreference: getStoredString("gpuPowerPreference", DEFAULTS.gpuPowerPreference, ["high-performance", "default", "low-power"]),
@@ -243,6 +248,7 @@ export const useConfigStore = create<ConfigState>((set, get) => {
     setAutoRefresh: makeSetter("autoRefresh"),
     setEnableProgressiveVoxel: makeSetter("enableProgressiveVoxel"),
     setMaxWorkerThreads: makeSetter("maxWorkerThreads"),
+    setUseRustEvaluator: makeSetter("useRustEvaluator"),
     setGpuPowerPreference: makeSetter("gpuPowerPreference"),
     setRendererPixelRatio: makeSetter("rendererPixelRatio"),
     setEnableShadows: makeSetter("enableShadows"),
