@@ -7,6 +7,7 @@ import { CenterPanel } from "@/components/editor/CenterPanel";
 import { PropertyPanel } from "@/components/properties/PropertyPanel";
 import { HistoryPanel } from "@/components/editor/HistoryPanel";
 import { ValidationPanel } from "@/components/editor/ValidationPanel";
+import { Toolbar } from "@/components/layout/Toolbar";
 import { useGraphDiagnostics } from "@/hooks/useGraphDiagnostics";
 import { useUIStore, type SidebarSectionId } from "@/stores/uiStore";
 import { useDiagnosticsStore } from "@/stores/diagnosticsStore";
@@ -324,7 +325,8 @@ export function PanelLayout() {
       )}
 
       {/* Center: editor canvas */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col">
+        <Toolbar />
         <CenterPanel />
       </div>
 

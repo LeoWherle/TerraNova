@@ -58,7 +58,7 @@ export function HomeScreen() {
   }, [openAssetPack]);
 
   return (
-    <div className="flex h-screen bg-tn-bg text-tn-text">
+    <div className="flex flex-1 bg-tn-bg text-tn-text">
       <HomeSidebar
         activeTab={activeTab}
         onTabChange={setActiveTab}
