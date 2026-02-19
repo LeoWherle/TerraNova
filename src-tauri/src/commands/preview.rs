@@ -1,6 +1,7 @@
 use crate::noise::evaluator::DensityEvaluator;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use std::collections::HashMap;
 
 #[derive(Deserialize)]
 pub struct EvaluateRequest {
@@ -56,4 +57,19 @@ pub fn evaluate_density(request: EvaluateRequest) -> Result<EvaluateResponse, St
         min_value: min_val,
         max_value: max_val,
     })
+}
+
+/// Evaluate a React Flow graph at specific sample points using the Rust evaluator.
+/// Used for parity comparison between JS and Rust evaluation pipelines.
+#[tauri::command]
+pub fn evaluate_points(
+    nodes: Vec<Value>,
+    edges: Vec<Value>,
+    points: Vec<[f64; 3]>,
+    root_node_id: Option<String>,
+    content_fields: Option<HashMap<String, f64>>,
+) -> Result<Vec<f64>, String> {
+    // Phase 1 will implement this
+    let _ = (nodes, edges, points, root_node_id, content_fields);
+    Err("Not yet implemented — will be wired up in Phase 1".into())
 }

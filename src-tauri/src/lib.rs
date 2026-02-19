@@ -1,5 +1,6 @@
 mod bridge;
 mod commands;
+mod eval;
 mod io;
 mod noise;
 mod schema;
@@ -30,6 +31,7 @@ pub fn run() {
             io_commands::create_blank_project,
             validate::validate_asset_pack,
             preview::evaluate_density,
+            preview::evaluate_points,
             bridge_commands::bridge_connect,
             bridge_commands::bridge_disconnect,
             bridge_commands::bridge_status,

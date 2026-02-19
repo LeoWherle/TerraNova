@@ -27,6 +27,7 @@ mod tests {
             bridge_version: "1.0.0".into(),
             player_count: 5,
             port: 7854,
+            singleplayer: false,
         };
         let json = serde_json::to_string(&original).unwrap();
         let parsed: ServerStatus = serde_json::from_str(&json).unwrap();
@@ -196,11 +197,7 @@ mod tests {
         std::fs::write(&src, r#"{"hello": "world"}"#).unwrap();
 
         let dest = dir.join("nested").join("dest.json");
-        BridgeClient::sync_file(
-            src.to_str().unwrap(),
-            dest.to_str().unwrap(),
-        )
-        .unwrap();
+        BridgeClient::sync_file(src.to_str().unwrap(), dest.to_str().unwrap()).unwrap();
 
         let content = std::fs::read_to_string(&dest).unwrap();
         assert_eq!(content, r#"{"hello": "world"}"#);
@@ -218,11 +215,7 @@ mod tests {
         std::fs::write(&src, "test content").unwrap();
 
         let dest = dir.join("a").join("b").join("c").join("file.txt");
-        BridgeClient::sync_file(
-            src.to_str().unwrap(),
-            dest.to_str().unwrap(),
-        )
-        .unwrap();
+        BridgeClient::sync_file(src.to_str().unwrap(), dest.to_str().unwrap()).unwrap();
 
         assert!(dest.exists());
         assert_eq!(std::fs::read_to_string(&dest).unwrap(), "test content");
