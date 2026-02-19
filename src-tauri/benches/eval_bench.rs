@@ -18,7 +18,9 @@ use serde_json::{json, Value};
 use std::collections::HashMap;
 use terranova_lib::eval::graph::{EvalGraph, GraphEdge, GraphNode, NodeData};
 use terranova_lib::eval::grid::evaluate_grid;
+use terranova_lib::eval::mesh::build_voxel_meshes;
 use terranova_lib::eval::volume::evaluate_volume;
+use terranova_lib::eval::voxel::extract_surface_voxels;
 
 // ── Graph builder helpers ──────────────────────────────────────────
 
@@ -723,6 +725,185 @@ fn bench_response_sizes(c: &mut Criterion) {
     group.finish();
 }
 
+// ── Voxel extraction benchmarks ────────────────────────────────────
+
+/// Benchmarks surface voxel extraction at various volume resolutions.
+fn bench_voxel_extraction(c: &mut Criterion) {
+    let mut group = c.benchmark_group("voxel_extraction");
+    group.sample_size(20);
+
+    let graph = graph_realistic_terrain();
+
+    for &(res, ys) in &[(16u32, 16u32), (32, 32), (64, 32), (64, 64)] {
+        let volume = evaluate_volume(&graph, res, -64.0, 64.0, 0.0, 256.0, ys, &HashMap::new());
+        let total_voxels = (res * res * ys) as usize;
+
+        group.throughput(Throughput::Elements(total_voxels as u64));
+        group.bench_function(
+            BenchmarkId::new("extract_surface", format!("{}x{}x{}", res, ys, res)),
+            |b| {
+                b.iter(|| {
+                    black_box(extract_surface_voxels(
+                        &volume.densities,
+                        volume.resolution,
+                        volume.y_slices,
+                        None,
+                        None,
+                        None,
+                    ))
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+// ── Mesh building benchmarks ───────────────────────────────────────
+
+/// Benchmarks greedy mesh building at various volume resolutions.
+fn bench_mesh_building(c: &mut Criterion) {
+    let mut group = c.benchmark_group("mesh_building");
+    group.sample_size(20);
+
+    let graph = graph_realistic_terrain();
+
+    for &(res, ys) in &[(16u32, 16u32), (32, 32), (64, 32)] {
+        let volume = evaluate_volume(&graph, res, -64.0, 64.0, 0.0, 256.0, ys, &HashMap::new());
+        let voxels = extract_surface_voxels(
+            &volume.densities,
+            volume.resolution,
+            volume.y_slices,
+            None,
+            None,
+            None,
+        );
+        let surface_count = voxels.count;
+
+        group.throughput(Throughput::Elements(surface_count as u64));
+        group.bench_function(
+            BenchmarkId::new(
+                "build_meshes",
+                format!("{}x{}x{}_{}_surf", res, ys, res, surface_count),
+            ),
+            |b| {
+                b.iter(|| {
+                    black_box(build_voxel_meshes(
+                        &voxels,
+                        &volume.densities,
+                        volume.resolution,
+                        volume.y_slices,
+                        (1.0, 1.0, 1.0),
+                        (0.0, 0.0, 0.0),
+                    ))
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
+// ── Full pipeline benchmarks ───────────────────────────────────────
+
+/// Benchmarks the entire pipeline: volume eval → voxel extraction → mesh building.
+/// This is the workload that a single `evaluate_voxel_mesh` IPC call performs.
+fn bench_full_pipeline(c: &mut Criterion) {
+    let mut group = c.benchmark_group("full_pipeline");
+    group.sample_size(10);
+
+    let graphs: Vec<(&str, EvalGraph)> = vec![
+        ("constant", graph_constant()),
+        ("fractal2d", graph_fractal_noise_2d()),
+        ("terrain", graph_realistic_terrain()),
+    ];
+
+    for (label, graph) in &graphs {
+        for &(res, ys) in &[(16u32, 16u32), (32, 32), (64, 32)] {
+            let total = (res * res * ys) as u64;
+            group.throughput(Throughput::Elements(total));
+            group.bench_function(
+                BenchmarkId::new(*label, format!("{}x{}x{}", res, ys, res)),
+                |b| {
+                    b.iter(|| {
+                        let volume = evaluate_volume(
+                            graph,
+                            res,
+                            -64.0,
+                            64.0,
+                            0.0,
+                            256.0,
+                            ys,
+                            &HashMap::new(),
+                        );
+                        let voxels = extract_surface_voxels(
+                            &volume.densities,
+                            volume.resolution,
+                            volume.y_slices,
+                            None,
+                            None,
+                            None,
+                        );
+                        let meshes = build_voxel_meshes(
+                            &voxels,
+                            &volume.densities,
+                            volume.resolution,
+                            volume.y_slices,
+                            (1.0, 1.0, 1.0),
+                            (0.0, 0.0, 0.0),
+                        );
+                        black_box(meshes)
+                    });
+                },
+            );
+        }
+    }
+
+    group.finish();
+}
+
+/// Benchmarks the full pipeline including JSON serialization of the mesh result,
+/// simulating the complete IPC path for `evaluate_voxel_mesh`.
+fn bench_full_pipeline_with_serialization(c: &mut Criterion) {
+    let mut group = c.benchmark_group("full_pipeline_ipc");
+    group.sample_size(10);
+
+    let graph = graph_realistic_terrain();
+
+    for &(res, ys) in &[(16u32, 16u32), (32, 32), (64, 32)] {
+        group.bench_function(
+            BenchmarkId::new("terrain_ipc", format!("{}x{}x{}", res, ys, res)),
+            |b| {
+                b.iter(|| {
+                    let volume =
+                        evaluate_volume(&graph, res, -64.0, 64.0, 0.0, 256.0, ys, &HashMap::new());
+                    let voxels = extract_surface_voxels(
+                        &volume.densities,
+                        volume.resolution,
+                        volume.y_slices,
+                        None,
+                        None,
+                        None,
+                    );
+                    let meshes = build_voxel_meshes(
+                        &voxels,
+                        &volume.densities,
+                        volume.resolution,
+                        volume.y_slices,
+                        (1.0, 1.0, 1.0),
+                        (0.0, 0.0, 0.0),
+                    );
+                    // Simulate IPC serialization of the full response
+                    let json = serde_json::to_string(&meshes).unwrap();
+                    black_box(json)
+                });
+            },
+        );
+    }
+
+    group.finish();
+}
+
 criterion_group!(
     benches,
     bench_grid_resolution,
@@ -731,5 +912,9 @@ criterion_group!(
     bench_ipc_roundtrip,
     bench_ipc_roundtrip_volume,
     bench_response_sizes,
+    bench_voxel_extraction,
+    bench_mesh_building,
+    bench_full_pipeline,
+    bench_full_pipeline_with_serialization,
 );
 criterion_main!(benches);

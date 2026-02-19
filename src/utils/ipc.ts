@@ -177,6 +177,64 @@ export async function evaluateVoxelPreview(request: VoxelPreviewRequest): Promis
   return invoke<VoxelPreviewResponse>("evaluate_voxel_preview", { request });
 }
 
+// ── Full voxel mesh pipeline (Phase 6) ──
+
+export interface FluidConfig {
+  fluid_level: number;
+  fluid_material_index: number;
+}
+
+export interface VoxelMeshRequest {
+  nodes: unknown[];
+  edges: unknown[];
+  resolution: number;
+  range_min: number;
+  range_max: number;
+  y_min: number;
+  y_max: number;
+  y_slices: number;
+  root_node_id?: string;
+  content_fields?: Record<string, number>;
+  scale: [number, number, number];
+  offset: [number, number, number];
+  show_material_colors: boolean;
+  fluid_config?: FluidConfig;
+  fluid_material?: MaterialEntry;
+}
+
+export interface VoxelMeshMaterialProperties {
+  roughness: number;
+  metalness: number;
+  emissive: string;
+  emissive_intensity: number;
+}
+
+export interface VoxelMeshDataEntry {
+  material_index: number;
+  color: string;
+  positions: number[];
+  normals: number[];
+  colors: number[];
+  indices: number[];
+  material_properties: VoxelMeshMaterialProperties;
+}
+
+export interface VoxelMeshResponse {
+  meshes: VoxelMeshDataEntry[];
+  densities: number[];
+  resolution: number;
+  y_slices: number;
+  min_value: number;
+  max_value: number;
+  surface_voxel_count: number;
+  surface_material_ids: number[];
+  surface_materials: MaterialEntry[];
+}
+
+export async function evaluateVoxelMesh(request: VoxelMeshRequest): Promise<VoxelMeshResponse> {
+  return invoke<VoxelMeshResponse>("evaluate_voxel_mesh", { request });
+}
+
 export async function validateAssetPack(path: string): Promise<ValidationResult> {
   return invoke<ValidationResult>("validate_asset_pack", { path });
 }

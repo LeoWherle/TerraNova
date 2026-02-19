@@ -2,12 +2,13 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateVolumeInWorker, cancelVolumeEvaluation } from "@/utils/volumeWorkerClient";
-import { evaluateVoxelPreview as evaluateVoxelPreviewRust } from "@/utils/ipc";
+import { evaluateVoxelMesh } from "@/utils/ipc";
+import type { VoxelMeshDataEntry } from "@/utils/ipc";
 import { extractSurfaceVoxels, type FluidConfig } from "@/utils/voxelExtractor";
 import { resolveMaterials, DEFAULT_MATERIAL_PALETTE, matchMaterialName } from "@/utils/materialResolver";
 import { evaluateMaterialGraph } from "@/utils/materialEvaluator";
 import { createEvaluationContext } from "@/utils/densityEvaluator";
-import { buildVoxelMeshes } from "@/utils/voxelMeshBuilder";
+import { buildVoxelMeshes, type VoxelMeshData } from "@/utils/voxelMeshBuilder";
 import { useConfigStore } from "@/stores/configStore";
 import { scanDensityGridYBounds, computeGraphHash, analyzeGraphDefaults } from "@/utils/previewAutoFit";
 
@@ -109,17 +110,44 @@ export function useVoxelEvaluation() {
         try {
           const useRust = useConfigStore.getState().useRustEvaluator;
 
-          let result: { densities: Float32Array; resolution: number; ySlices: number; minValue: number; maxValue: number };
-
-          // Track whether Rust provided material data (skip JS material eval if so)
-          let rustMaterialIds: Uint8Array | undefined;
-          let rustPalette: typeof palette | undefined;
-
           if (useRust) {
-            // ── Rust evaluator path (Tauri IPC) ──
-            // Uses combined density + material evaluation in a single IPC call
+            // ── Rust full mesh pipeline (Phase 6) ──
+            // Single IPC call: density → materials → surface extraction → greedy meshing
+            // Returns ready-to-render mesh buffers, eliminating all JS computation.
+
+            const sceneSize = 50;
+            const effectiveYSlices = Math.max(1, ySlices);
+            const meshScaleX = sceneSize / res;
+            const meshScaleZ = sceneSize / res;
+            const meshScaleY = sceneSize / Math.max(res, effectiveYSlices);
+            const meshOffsetX = -sceneSize / 2;
+            const meshOffsetZ = -sceneSize / 2;
+            const meshOffsetY = -sceneSize / 2;
+
+            // Build fluid config for Rust if biome has fluid
+            let rustFluidConfig: { fluid_level: number; fluid_material_index: number } | undefined;
+            let rustFluidMaterial: { name: string; color: string; roughness: number; metalness: number; emissive: string; emissive_intensity: number } | undefined;
+            if (materialConfig?.fluidLevel != null && materialConfig.fluidMaterial) {
+              const yRange = voxelYMax - voxelYMin;
+              const fluidSlice = yRange > 0
+                ? Math.round(((materialConfig.fluidLevel - voxelYMin) / yRange) * effectiveYSlices)
+                : 0;
+              if (fluidSlice >= 0 && fluidSlice < effectiveYSlices) {
+                rustFluidConfig = { fluid_level: fluidSlice, fluid_material_index: 0 }; // index set by Rust
+                const fluidMatName = materialConfig.fluidMaterial;
+                rustFluidMaterial = {
+                  name: fluidMatName,
+                  color: matchMaterialName(fluidMatName),
+                  roughness: 0.3,
+                  metalness: 0.0,
+                  emissive: "#000000",
+                  emissive_intensity: 0.0,
+                };
+              }
+            }
+
             const t0 = performance.now();
-            const rustResult = await evaluateVoxelPreviewRust({
+            const rustResult = await evaluateVoxelMesh({
               nodes: nodes.map((n) => ({
                 id: n.id,
                 type: n.type,
@@ -135,37 +163,106 @@ export function useVoxelEvaluation() {
               range_max: rangeMax,
               y_min: voxelYMin,
               y_max: voxelYMax,
-              y_slices: Math.max(1, ySlices),
+              y_slices: effectiveYSlices,
               root_node_id: selectedPreviewNodeId ?? outputNodeId ?? undefined,
               content_fields: contentFields,
+              scale: [meshScaleX, meshScaleY, meshScaleZ],
+              offset: [meshOffsetX, meshOffsetY, meshOffsetZ],
+              show_material_colors: showMaterialColors,
+              fluid_config: rustFluidConfig,
+              fluid_material: rustFluidMaterial,
             });
             const elapsed = performance.now() - t0;
             if (import.meta.env.DEV) {
-              const hasMats = rustResult.material_ids != null;
-              console.log(`[Rust eval] volume ${res}×${rustResult.y_slices}×${res} in ${elapsed.toFixed(1)}ms (materials: ${hasMats})`);
+              console.log(
+                `[Rust mesh] ${res}×${rustResult.y_slices}×${res} → ${rustResult.meshes.length} materials, ` +
+                `${rustResult.surface_voxel_count} surface voxels in ${elapsed.toFixed(1)}ms`
+              );
             }
-            result = {
-              densities: new Float32Array(rustResult.densities),
-              resolution: rustResult.resolution,
-              ySlices: rustResult.y_slices,
-              minValue: rustResult.min_value,
-              maxValue: rustResult.max_value,
-            };
 
-            // Capture Rust-provided material data if present
-            if (rustResult.material_ids && rustResult.palette) {
-              rustMaterialIds = new Uint8Array(rustResult.material_ids);
-              rustPalette = rustResult.palette.map((m) => ({
-                name: m.name,
-                color: m.color,
-                roughness: m.roughness,
-                metalness: m.metalness,
-                emissive: m.emissive,
-                emissiveIntensity: m.emissive_intensity,
-              }));
+            if (evalId !== evalIdRef.current || unmountedRef.current) return;
+
+            const resultDensities = new Float32Array(rustResult.densities);
+
+            // ── Auto-fit Y bounds after coarse pass ──
+            if (stepIdx === 0 && autoFitYEnabled) {
+              const store = usePreviewStore.getState();
+              const currentHash = computeGraphHash(nodes, edges);
+              if (currentHash !== store._autoFitGraphHash) {
+                store._setUserManualYAdjust(false);
+                const yBounds = scanDensityGridYBounds(
+                  resultDensities,
+                  rustResult.resolution,
+                  rustResult.y_slices,
+                  voxelYMin,
+                  voxelYMax,
+                );
+                if (yBounds.hasSolids) {
+                  store._setAutoFitGraphHash(currentHash);
+                  store.setVoxelYMin(yBounds.worldYMin);
+                  store.setVoxelYMax(yBounds.worldYMax);
+                  return;
+                }
+              }
             }
+
+            setVoxelDensities(resultDensities);
+
+            // Convert Rust mesh data to the VoxelMeshData format expected by the renderer
+            const meshData: VoxelMeshData[] = rustResult.meshes.map((m: VoxelMeshDataEntry) => ({
+              materialIndex: m.material_index,
+              color: m.color,
+              positions: new Float32Array(m.positions),
+              normals: new Float32Array(m.normals),
+              colors: new Float32Array(m.colors),
+              indices: new Uint32Array(m.indices),
+              materialProperties: {
+                roughness: m.material_properties.roughness,
+                metalness: m.material_properties.metalness,
+                emissive: m.material_properties.emissive,
+                emissiveIntensity: m.material_properties.emissive_intensity,
+              },
+            }));
+
+            // Convert surface material info for the store
+            const surfaceMaterials = rustResult.surface_materials.map((m) => ({
+              name: m.name,
+              color: m.color,
+              roughness: m.roughness,
+              metalness: m.metalness,
+              emissive: m.emissive,
+              emissiveIntensity: m.emissive_intensity,
+            }));
+
+            setVoxelMaterials(
+              new Uint8Array(rustResult.surface_material_ids),
+              surfaceMaterials,
+            );
+
+            // Compute fluid plane config for the 3D scene
+            if (rustFluidConfig) {
+              const fluidY = meshOffsetY + (rustFluidConfig.fluid_level * meshScaleY);
+              const fluidMatName = materialConfig?.fluidMaterial ?? "";
+              const isLava = fluidMatName.toLowerCase().includes("lava");
+              usePreviewStore.getState().setFluidPlaneConfig({
+                type: isLava ? "lava" : "water",
+                yPosition: fluidY,
+              });
+            } else {
+              usePreviewStore.getState().setFluidPlaneConfig(null);
+            }
+
+            // Store mesh data for the renderer
+            usePreviewStore.setState({
+              _voxelVolumeRes: rustResult.resolution,
+              _voxelVolumeYSlices: rustResult.y_slices,
+              voxelMeshData: meshData,
+            } as any);
+
           } else {
             // ── JS Worker path (unchanged) ──
+            let result: { densities: Float32Array; resolution: number; ySlices: number; minValue: number; maxValue: number };
+
             const t0 = performance.now();
             result = await evaluateVolumeInWorker({
               nodes,
@@ -183,48 +280,39 @@ export function useVoxelEvaluation() {
             if (import.meta.env.DEV) {
               console.log(`[JS eval] volume ${res}×${result.ySlices}×${res} in ${elapsed.toFixed(1)}ms`);
             }
-          }
 
-          if (evalId !== evalIdRef.current || unmountedRef.current) return;
+            if (evalId !== evalIdRef.current || unmountedRef.current) return;
 
-          // ── Feature 1: Auto-fit Y bounds after coarse pass ──
-          if (stepIdx === 0 && autoFitYEnabled) {
-            const store = usePreviewStore.getState();
-            const currentHash = computeGraphHash(nodes, edges);
-            if (currentHash !== store._autoFitGraphHash) {
-              // Graph changed — reset manual flag and run auto-fit
-              store._setUserManualYAdjust(false);
-              const yBounds = scanDensityGridYBounds(
-                result.densities,
-                result.resolution,
-                result.ySlices,
-                voxelYMin,
-                voxelYMax,
-              );
-              if (yBounds.hasSolids) {
-                store._setAutoFitGraphHash(currentHash);
-                store.setVoxelYMin(yBounds.worldYMin);
-                store.setVoxelYMax(yBounds.worldYMax);
-                // The Y bound change will trigger a re-eval, but the hash
-                // will now match, so auto-fit won't loop.
-                return;
+            // ── Auto-fit Y bounds after coarse pass ──
+            if (stepIdx === 0 && autoFitYEnabled) {
+              const store = usePreviewStore.getState();
+              const currentHash = computeGraphHash(nodes, edges);
+              if (currentHash !== store._autoFitGraphHash) {
+                store._setUserManualYAdjust(false);
+                const yBounds = scanDensityGridYBounds(
+                  result.densities,
+                  result.resolution,
+                  result.ySlices,
+                  voxelYMin,
+                  voxelYMax,
+                );
+                if (yBounds.hasSolids) {
+                  store._setAutoFitGraphHash(currentHash);
+                  store.setVoxelYMin(yBounds.worldYMin);
+                  store.setVoxelYMax(yBounds.worldYMax);
+                  return;
+                }
               }
             }
-          }
 
-          setVoxelDensities(result.densities);
+            setVoxelDensities(result.densities);
 
-          // Resolve materials — graph-based evaluation with depth-based fallback
-          let materialIds: Uint8Array | undefined;
-          let palette = DEFAULT_MATERIAL_PALETTE;
+            // Resolve materials — graph-based evaluation with depth-based fallback
+            let materialIds: Uint8Array | undefined;
+            let palette = DEFAULT_MATERIAL_PALETTE;
 
-          if (showMaterialColors) {
-            // If Rust already provided material data, use it directly
-            if (rustMaterialIds && rustPalette) {
-              materialIds = rustMaterialIds;
-              palette = rustPalette;
-            } else {
-              // Check if there's a material graph to evaluate (JS path)
+            if (showMaterialColors) {
+              // Check if there's a material graph to evaluate
               const hasMaterialGraph = nodes.some(n =>
                 typeof n.type === 'string' && n.type.startsWith('Material:')
               );
@@ -258,85 +346,83 @@ export function useVoxelEvaluation() {
                 palette = matResult.palette;
               }
             }
-          }
 
-          // Compute fluid config if biome has fluid (e.g. lava sea)
-          let fluidCfg: FluidConfig | undefined;
-          if (materialConfig?.fluidLevel != null && materialConfig.fluidMaterial) {
-            // Convert world-space fluid level to Y-slice index
-            const yRange = voxelYMax - voxelYMin;
-            const fluidSlice = yRange > 0
-              ? Math.round(((materialConfig.fluidLevel - voxelYMin) / yRange) * result.ySlices)
-              : 0;
-            // Find or add fluid material in palette
-            const fluidMatName = materialConfig.fluidMaterial;
-            let fluidIdx = palette.findIndex((m) => m.name === fluidMatName);
-            if (fluidIdx < 0) {
-              fluidIdx = palette.length;
-              palette = [...palette, { name: fluidMatName, color: matchMaterialName(fluidMatName) }];
+            // Compute fluid config if biome has fluid (e.g. lava sea)
+            let fluidCfg: FluidConfig | undefined;
+            if (materialConfig?.fluidLevel != null && materialConfig.fluidMaterial) {
+              const yRange = voxelYMax - voxelYMin;
+              const fluidSlice = yRange > 0
+                ? Math.round(((materialConfig.fluidLevel - voxelYMin) / yRange) * result.ySlices)
+                : 0;
+              const fluidMatName = materialConfig.fluidMaterial;
+              let fluidIdx = palette.findIndex((m) => m.name === fluidMatName);
+              if (fluidIdx < 0) {
+                fluidIdx = palette.length;
+                palette = [...palette, { name: fluidMatName, color: matchMaterialName(fluidMatName) }];
+              }
+              if (fluidSlice >= 0 && fluidSlice < result.ySlices) {
+                fluidCfg = { fluidLevel: fluidSlice, fluidMaterialIndex: fluidIdx };
+              }
             }
-            if (fluidSlice >= 0 && fluidSlice < result.ySlices) {
-              fluidCfg = { fluidLevel: fluidSlice, fluidMaterialIndex: fluidIdx };
-            }
-          }
 
-          // Compute fluid plane config for the 3D scene
-          if (fluidCfg) {
+            // Compute fluid plane config for the 3D scene
+            if (fluidCfg) {
+              const sceneSize = 50;
+              const meshScaleY = sceneSize / Math.max(result.resolution, result.ySlices);
+              const meshOffsetY = -sceneSize / 2;
+              const fluidY = meshOffsetY + (fluidCfg.fluidLevel * meshScaleY);
+              const fluidMatName = materialConfig?.fluidMaterial ?? "";
+              const isLava = fluidMatName.toLowerCase().includes("lava");
+              usePreviewStore.getState().setFluidPlaneConfig({
+                type: isLava ? "lava" : "water",
+                yPosition: fluidY,
+              });
+            } else {
+              usePreviewStore.getState().setFluidPlaneConfig(null);
+            }
+
+            const voxels = extractSurfaceVoxels(
+              result.densities,
+              result.resolution,
+              result.ySlices,
+              materialIds,
+              palette,
+              fluidCfg,
+            );
+
+            if (evalId !== evalIdRef.current || unmountedRef.current) return;
+
+            setVoxelMaterials(
+              voxels.materialIds,
+              voxels.materials,
+            );
+
+            // Build merged geometry meshes with AO + face shading
             const sceneSize = 50;
+            const meshScaleX = sceneSize / result.resolution;
+            const meshScaleZ = sceneSize / result.resolution;
             const meshScaleY = sceneSize / Math.max(result.resolution, result.ySlices);
+            const meshOffsetX = -sceneSize / 2;
+            const meshOffsetZ = -sceneSize / 2;
             const meshOffsetY = -sceneSize / 2;
-            const fluidY = meshOffsetY + (fluidCfg.fluidLevel * meshScaleY);
-            const fluidMatName = materialConfig?.fluidMaterial ?? "";
-            const isLava = fluidMatName.toLowerCase().includes("lava");
-            usePreviewStore.getState().setFluidPlaneConfig({
-              type: isLava ? "lava" : "water",
-              yPosition: fluidY,
-            });
-          } else {
-            usePreviewStore.getState().setFluidPlaneConfig(null);
+
+            const meshData = buildVoxelMeshes(
+              voxels,
+              result.densities,
+              result.resolution,
+              result.ySlices,
+              meshScaleX, meshScaleY, meshScaleZ,
+              meshOffsetX, meshOffsetY, meshOffsetZ,
+            );
+
+            // Store extracted voxel data on the store for the renderer
+            usePreviewStore.setState({
+              _voxelData: voxels,
+              _voxelVolumeRes: result.resolution,
+              _voxelVolumeYSlices: result.ySlices,
+              voxelMeshData: meshData,
+            } as any);
           }
-
-          const voxels = extractSurfaceVoxels(
-            result.densities,
-            result.resolution,
-            result.ySlices,
-            materialIds,
-            palette,
-            fluidCfg,
-          );
-
-          if (evalId !== evalIdRef.current || unmountedRef.current) return;
-
-          setVoxelMaterials(
-            voxels.materialIds,
-            voxels.materials,
-          );
-
-          // Build merged geometry meshes with AO + face shading
-          const sceneSize = 50;
-          const meshScaleX = sceneSize / result.resolution;
-          const meshScaleZ = sceneSize / result.resolution;
-          const meshScaleY = sceneSize / Math.max(result.resolution, result.ySlices);
-          const meshOffsetX = -sceneSize / 2;
-          const meshOffsetZ = -sceneSize / 2;
-          const meshOffsetY = -sceneSize / 2;
-
-          const meshData = buildVoxelMeshes(
-            voxels,
-            result.densities,
-            result.resolution,
-            result.ySlices,
-            meshScaleX, meshScaleY, meshScaleZ,
-            meshOffsetX, meshOffsetY, meshOffsetZ,
-          );
-
-          // Store extracted voxel data on the store for the renderer
-          usePreviewStore.setState({
-            _voxelData: voxels,
-            _voxelVolumeRes: result.resolution,
-            _voxelVolumeYSlices: result.ySlices,
-            voxelMeshData: meshData,
-          } as any);
 
           // Schedule next progressive step
           stepIdx++;

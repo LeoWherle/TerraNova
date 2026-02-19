@@ -10,13 +10,20 @@
 //!   5. Complex multi-node graphs produce finite, reasonable results
 //!   6. Edge cases: empty inputs, single-cell grids, extreme ranges
 //!   7. Determinism: same graph + same inputs = same outputs
+//!   8. Surface voxel extraction from density volumes
+//!   9. Greedy mesh building from extracted voxels
+//!  10. Full pipeline: graph → volume → voxels → mesh
 
 use serde_json::{json, Value};
 use std::collections::HashMap;
 use terranova_lib::eval::graph::{EvalGraph, GraphEdge, GraphNode, NodeData};
 use terranova_lib::eval::grid::{evaluate_grid, GridResult};
+use terranova_lib::eval::mesh::{build_voxel_meshes, VoxelMeshData};
 use terranova_lib::eval::nodes::{evaluate, EvalContext};
 use terranova_lib::eval::volume::{evaluate_volume, VolumeResult};
+use terranova_lib::eval::voxel::{
+    extract_surface_voxels, FluidConfig, VoxelMaterial, SOLID_THRESHOLD,
+};
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -1184,4 +1191,671 @@ fn ipc_roundtrip_128_completes_in_reasonable_time() {
     assert_eq!(result.values.len(), 128 * 128);
     assert!(elapsed.as_secs() < 5, "IPC roundtrip took {:?}", elapsed);
     eprintln!("IPC roundtrip grid 128x128 fractal: {:?}", elapsed);
+}
+
+// ════════════════════════════════════════════════════════════════════
+// 8. Surface voxel extraction
+// ════════════════════════════════════════════════════════════════════
+
+#[test]
+fn voxel_extraction_from_constant_volume() {
+    // Constant density > 0 everywhere → all voxels solid
+    // In a 4x4x4 volume, surface voxels are those touching a boundary
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(1.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("c")).unwrap();
+
+    let volume = evaluate_volume(&graph, 4, -10.0, 10.0, 0.0, 30.0, 4, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    // 4x4x4 = 64 total, interior 2x2x2 = 8, surface = 56
+    assert_eq!(voxels.count, 56);
+    assert_eq!(voxels.positions.len(), 56 * 3);
+    assert_eq!(voxels.material_ids.len(), 56);
+    // Default material
+    assert_eq!(voxels.materials[0].name, "Stone");
+}
+
+#[test]
+fn voxel_extraction_from_air_volume() {
+    // Constant density < 0 → no solid voxels
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(-1.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("c")).unwrap();
+
+    let volume = evaluate_volume(&graph, 4, -10.0, 10.0, 0.0, 30.0, 4, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    assert_eq!(voxels.count, 0);
+    assert!(voxels.positions.is_empty());
+}
+
+#[test]
+fn voxel_extraction_y_gradient_creates_surface_layer() {
+    // YGradient: normalized 0→1 over [y_min, y_max].
+    // With y_min=0, y_max=100, y_slices=10:
+    //   slices at y = 0, 11.1, 22.2, ..., 100
+    //   gradient values range from 0.0 to 1.0
+    // All values >= 0 are solid, so all slices are solid.
+    // But if we use CoordinateY and offset it, we can create a surface.
+    // Instead, use a Sum of Constant(-50) + CoordinateY to create
+    // a surface at y=50.
+    let mut const_fields = HashMap::new();
+    const_fields.insert("Value".to_string(), json!(-50.0));
+    let nodes = vec![
+        make_node("cy", "CoordinateY", HashMap::new()),
+        make_node("c", "Constant", const_fields),
+        make_node("s", "Sum", HashMap::new()),
+    ];
+    let edges = vec![
+        make_edge("cy", "s", Some("Inputs[0]")),
+        make_edge("c", "s", Some("Inputs[1]")),
+    ];
+    let graph = EvalGraph::from_raw(nodes, edges, Some("s")).unwrap();
+
+    let volume = evaluate_volume(&graph, 8, -40.0, 40.0, 0.0, 100.0, 11, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    // Should have some solid voxels (y >= 50) and some air (y < 50)
+    assert!(voxels.count > 0, "Should have some surface voxels");
+    assert!(
+        (voxels.count as usize)
+            < (volume.resolution * volume.resolution * volume.y_slices) as usize,
+        "Should not have ALL voxels as surface"
+    );
+
+    // All surface voxel y positions should be in the solid region (y >= 50 → slice index >= 5)
+    for i in 0..voxels.count as usize {
+        let vy = voxels.positions[i * 3 + 1];
+        assert!(vy >= 0.0, "Surface voxel y should be non-negative");
+    }
+}
+
+#[test]
+fn voxel_extraction_preserves_material_ids() {
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(1.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("c")).unwrap();
+
+    let volume = evaluate_volume(&graph, 4, -10.0, 10.0, 0.0, 30.0, 2, &HashMap::new());
+    let total = (volume.resolution * volume.resolution * volume.y_slices) as usize;
+
+    // Assign alternating material IDs
+    let mat_ids: Vec<u8> = (0..total).map(|i| (i % 3) as u8).collect();
+    let palette = vec![
+        VoxelMaterial {
+            name: "Stone".into(),
+            color: "#808080".into(),
+            ..Default::default()
+        },
+        VoxelMaterial {
+            name: "Dirt".into(),
+            color: "#8B4513".into(),
+            ..Default::default()
+        },
+        VoxelMaterial {
+            name: "Grass".into(),
+            color: "#228B22".into(),
+            ..Default::default()
+        },
+    ];
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        Some(&mat_ids),
+        Some(&palette),
+        None,
+    );
+
+    assert!(voxels.count > 0);
+    assert_eq!(voxels.materials.len(), 3);
+    // Every material ID should be 0, 1, or 2
+    for &mid in &voxels.material_ids {
+        assert!(mid < 3, "Material ID {} out of range", mid);
+    }
+}
+
+#[test]
+fn voxel_extraction_with_fluid_config() {
+    // Create a volume with bottom half solid, top half air
+    // Then add fluid in the air region
+    let mut const_fields = HashMap::new();
+    const_fields.insert("Value".to_string(), json!(-50.0));
+    let nodes = vec![
+        make_node("cy", "CoordinateY", HashMap::new()),
+        make_node("c", "Constant", const_fields),
+        make_node("s", "Sum", HashMap::new()),
+    ];
+    let edges = vec![
+        make_edge("cy", "s", Some("Inputs[0]")),
+        make_edge("c", "s", Some("Inputs[1]")),
+    ];
+    let graph = EvalGraph::from_raw(nodes, edges, Some("s")).unwrap();
+
+    let volume = evaluate_volume(&graph, 4, -20.0, 20.0, 0.0, 100.0, 10, &HashMap::new());
+
+    let fluid_config = FluidConfig {
+        fluid_level: 7, // fluid fills up to slice 7
+        fluid_material_index: 1,
+    };
+    let palette = vec![
+        VoxelMaterial::default(),
+        VoxelMaterial {
+            name: "Water".into(),
+            color: "#4488CC".into(),
+            ..Default::default()
+        },
+    ];
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        Some(&palette),
+        Some(&fluid_config),
+    );
+
+    // Should have both solid and fluid voxels
+    assert!(voxels.count > 0);
+    let has_solid = voxels.material_ids.iter().any(|&m| m == 0);
+    let has_fluid = voxels.material_ids.iter().any(|&m| m == 1);
+    assert!(has_solid, "Should have solid surface voxels");
+    assert!(has_fluid, "Should have fluid surface voxels");
+}
+
+// ════════════════════════════════════════════════════════════════════
+// 9. Greedy mesh building
+// ════════════════════════════════════════════════════════════════════
+
+#[test]
+fn mesh_from_single_voxel() {
+    let densities = vec![1.0_f32; 1]; // 1x1x1 solid
+    let voxels = extract_surface_voxels(&densities, 1, 1, None, None, None);
+    assert_eq!(voxels.count, 1);
+
+    let meshes = build_voxel_meshes(&voxels, &densities, 1, 1, (1.0, 1.0, 1.0), (0.0, 0.0, 0.0));
+
+    assert_eq!(meshes.len(), 1);
+    let mesh = &meshes[0];
+    // 6 faces, 4 verts each = 24 verts, 6 indices each = 36 indices
+    assert_eq!(mesh.positions.len(), 24 * 3);
+    assert_eq!(mesh.normals.len(), 24 * 3);
+    assert_eq!(mesh.colors.len(), 24 * 3);
+    assert_eq!(mesh.indices.len(), 36);
+
+    // All normals should be unit length
+    for i in (0..mesh.normals.len()).step_by(3) {
+        let len =
+            (mesh.normals[i].powi(2) + mesh.normals[i + 1].powi(2) + mesh.normals[i + 2].powi(2))
+                .sqrt();
+        assert!((len - 1.0).abs() < 0.001);
+    }
+
+    // All colors should be in [0, 1]
+    for &c in &mesh.colors {
+        assert!(c >= 0.0 && c <= 1.0, "Color {} out of range", c);
+    }
+}
+
+#[test]
+fn mesh_greedy_merging_flat_plane() {
+    // 8x8x1 solid plane — top and bottom should each merge to 1 quad
+    let n = 8_u32;
+    let ys = 1_u32;
+    let densities = vec![1.0_f32; (n * n * ys) as usize];
+    let voxels = extract_surface_voxels(&densities, n, ys, None, None, None);
+
+    let meshes = build_voxel_meshes(&voxels, &densities, n, ys, (1.0, 1.0, 1.0), (0.0, 0.0, 0.0));
+
+    assert_eq!(meshes.len(), 1);
+    let total_quads = meshes[0].positions.len() / 12; // 4 verts * 3 components
+                                                      // Should be 6 quads: top, bottom, +X, -X, +Z, -Z (all fully merged)
+    assert_eq!(
+        total_quads, 6,
+        "Flat 8x8 plane should produce 6 merged quads"
+    );
+}
+
+#[test]
+fn mesh_multiple_materials() {
+    let n = 4_u32;
+    let ys = 1_u32;
+    let densities = vec![1.0_f32; (n * n * ys) as usize];
+
+    // Checkerboard material pattern
+    let mat_ids: Vec<u8> = (0..(n * n * ys) as usize)
+        .map(|i| {
+            let x = i % n as usize;
+            let z = (i / n as usize) % n as usize;
+            ((x + z) % 2) as u8
+        })
+        .collect();
+
+    let palette = vec![
+        VoxelMaterial {
+            name: "Stone".into(),
+            color: "#808080".into(),
+            ..Default::default()
+        },
+        VoxelMaterial {
+            name: "Dirt".into(),
+            color: "#8B4513".into(),
+            roughness: 0.9,
+            metalness: 0.0,
+            ..Default::default()
+        },
+    ];
+
+    let voxels = extract_surface_voxels(&densities, n, ys, Some(&mat_ids), Some(&palette), None);
+    let meshes = build_voxel_meshes(&voxels, &densities, n, ys, (1.0, 1.0, 1.0), (0.0, 0.0, 0.0));
+
+    // Should produce 2 material groups
+    assert_eq!(meshes.len(), 2);
+    let mat_indices: Vec<u32> = meshes.iter().map(|m| m.material_index).collect();
+    assert!(mat_indices.contains(&0));
+    assert!(mat_indices.contains(&1));
+
+    // Check material properties are propagated
+    let dirt_mesh = meshes.iter().find(|m| m.material_index == 1).unwrap();
+    assert_eq!(dirt_mesh.color, "#8B4513");
+    assert!((dirt_mesh.material_properties.roughness - 0.9).abs() < 0.01);
+}
+
+#[test]
+fn mesh_scale_and_offset_applied() {
+    let densities = vec![1.0_f32; 1];
+    let voxels = extract_surface_voxels(&densities, 1, 1, None, None, None);
+
+    let meshes = build_voxel_meshes(
+        &voxels,
+        &densities,
+        1,
+        1,
+        (2.0, 3.0, 4.0),
+        (10.0, 20.0, 30.0),
+    );
+
+    let positions = &meshes[0].positions;
+    // Vertices of a unit cube scaled by (2,3,4) and offset by (10,20,30)
+    // should be in ranges [10, 12], [20, 23], [30, 34]
+    for i in (0..positions.len()).step_by(3) {
+        assert!(
+            positions[i] >= 10.0 && positions[i] <= 12.0,
+            "x={} out of [10, 12]",
+            positions[i]
+        );
+        assert!(
+            positions[i + 1] >= 20.0 && positions[i + 1] <= 23.0,
+            "y={} out of [20, 23]",
+            positions[i + 1]
+        );
+        assert!(
+            positions[i + 2] >= 30.0 && positions[i + 2] <= 34.0,
+            "z={} out of [30, 34]",
+            positions[i + 2]
+        );
+    }
+}
+
+#[test]
+fn mesh_indices_are_valid() {
+    // Build a small volume with some interesting topology
+    let n = 4_u32;
+    let ys = 4_u32;
+    let mut densities = vec![-1.0_f32; (n * n * ys) as usize];
+
+    // Create a 3D cross shape
+    for y in 0..4_i32 {
+        for z in 0..4_i32 {
+            for x in 0..4_i32 {
+                if (x == 1 || x == 2) && (z == 1 || z == 2) {
+                    densities[(y * 16 + z * 4 + x) as usize] = 1.0;
+                }
+            }
+        }
+    }
+
+    let voxels = extract_surface_voxels(&densities, n, ys, None, None, None);
+    let meshes = build_voxel_meshes(&voxels, &densities, n, ys, (1.0, 1.0, 1.0), (0.0, 0.0, 0.0));
+
+    for mesh in &meshes {
+        let num_verts = mesh.positions.len() / 3;
+        // All indices should reference valid vertices
+        for &idx in &mesh.indices {
+            assert!(
+                (idx as usize) < num_verts,
+                "Index {} >= num_verts {}",
+                idx,
+                num_verts
+            );
+        }
+        // Triangle count must be a multiple of 3
+        assert_eq!(mesh.indices.len() % 3, 0);
+        // Vertex count must be a multiple of 4 (quads)
+        assert_eq!(num_verts % 4, 0);
+    }
+}
+
+#[test]
+fn mesh_empty_volume_produces_no_meshes() {
+    let densities = vec![-1.0_f32; 64]; // 4x4x4 all air
+    let voxels = extract_surface_voxels(&densities, 4, 4, None, None, None);
+    assert_eq!(voxels.count, 0);
+
+    let meshes = build_voxel_meshes(&voxels, &densities, 4, 4, (1.0, 1.0, 1.0), (0.0, 0.0, 0.0));
+
+    assert!(meshes.is_empty());
+}
+
+// ════════════════════════════════════════════════════════════════════
+// 10. Full pipeline: graph → volume → voxels → mesh
+// ════════════════════════════════════════════════════════════════════
+
+#[test]
+fn full_pipeline_constant_solid() {
+    // End-to-end: constant density → volume → extract → mesh
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(1.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("c")).unwrap();
+
+    let volume = evaluate_volume(&graph, 8, -40.0, 40.0, 0.0, 80.0, 8, &HashMap::new());
+    assert_eq!(volume.densities.len(), 8 * 8 * 8);
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    // 8x8x8 solid: interior 6x6x6=216, total=512, surface=296
+    assert_eq!(voxels.count, 296);
+
+    let scene_size = 50.0_f32;
+    let scale_x = scene_size / volume.resolution as f32;
+    let scale_y = scene_size / volume.y_slices.max(volume.resolution) as f32;
+    let scale_z = scale_x;
+    let offset = -scene_size / 2.0;
+
+    let meshes = build_voxel_meshes(
+        &voxels,
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        (scale_x, scale_y, scale_z),
+        (offset, offset, offset),
+    );
+
+    assert_eq!(meshes.len(), 1); // single material
+    let mesh = &meshes[0];
+
+    // Greedy merging of a solid cube → 6 faces
+    let total_quads = mesh.positions.len() / 12;
+    assert_eq!(total_quads, 6, "Solid cube should produce 6 merged quads");
+
+    // Verify positions are within the scene box
+    for i in (0..mesh.positions.len()).step_by(3) {
+        assert!(
+            mesh.positions[i].abs() <= scene_size,
+            "x={} out of scene",
+            mesh.positions[i]
+        );
+        assert!(
+            mesh.positions[i + 1].abs() <= scene_size,
+            "y={} out of scene",
+            mesh.positions[i + 1]
+        );
+        assert!(
+            mesh.positions[i + 2].abs() <= scene_size,
+            "z={} out of scene",
+            mesh.positions[i + 2]
+        );
+    }
+}
+
+#[test]
+fn full_pipeline_terrain_surface() {
+    // Realistic terrain: CoordinateY + Constant(-50) creates a surface at y=50.
+    // Only the surface layer should produce mesh faces.
+    let mut const_fields = HashMap::new();
+    const_fields.insert("Value".to_string(), json!(-50.0));
+    let nodes = vec![
+        make_node("cy", "CoordinateY", HashMap::new()),
+        make_node("c", "Constant", const_fields),
+        make_node("s", "Sum", HashMap::new()),
+    ];
+    let edges = vec![
+        make_edge("cy", "s", Some("Inputs[0]")),
+        make_edge("c", "s", Some("Inputs[1]")),
+    ];
+    let graph = EvalGraph::from_raw(nodes, edges, Some("s")).unwrap();
+
+    let volume = evaluate_volume(&graph, 16, -80.0, 80.0, 0.0, 100.0, 20, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    assert!(voxels.count > 0, "Should have surface voxels");
+
+    let meshes = build_voxel_meshes(
+        &voxels,
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.0),
+    );
+
+    assert!(!meshes.is_empty(), "Should produce at least one mesh");
+
+    // Verify mesh integrity
+    for mesh in &meshes {
+        let num_verts = mesh.positions.len() / 3;
+        assert!(num_verts > 0);
+        assert_eq!(mesh.normals.len(), mesh.positions.len());
+        assert_eq!(mesh.colors.len(), mesh.positions.len());
+        assert!(mesh.indices.len() > 0);
+        assert_eq!(mesh.indices.len() % 3, 0);
+
+        for &idx in &mesh.indices {
+            assert!((idx as usize) < num_verts);
+        }
+        for &c in &mesh.colors {
+            assert!(c >= 0.0 && c <= 1.0);
+        }
+    }
+}
+
+#[test]
+fn full_pipeline_with_noise() {
+    // Fractal noise creates an interesting terrain surface
+    let mut noise_fields = HashMap::new();
+    noise_fields.insert("Seed".to_string(), json!("test_seed"));
+    noise_fields.insert("Frequency".to_string(), json!(0.02));
+    noise_fields.insert("Octaves".to_string(), json!(3));
+    noise_fields.insert("Lacunarity".to_string(), json!(2.0));
+    noise_fields.insert("Gain".to_string(), json!(0.5));
+
+    let nodes = vec![make_node("n", "FractalNoise2D", noise_fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("n")).unwrap();
+
+    let volume = evaluate_volume(&graph, 16, -80.0, 80.0, 0.0, 10.0, 4, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    // Noise should create a mix of solid and air
+    assert!(
+        voxels.count > 0,
+        "Should have some surface voxels from noise"
+    );
+
+    let meshes = build_voxel_meshes(
+        &voxels,
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.0),
+    );
+
+    assert!(!meshes.is_empty());
+
+    // Verify mesh integrity
+    for mesh in &meshes {
+        let num_verts = mesh.positions.len() / 3;
+        for &idx in &mesh.indices {
+            assert!((idx as usize) < num_verts);
+        }
+    }
+}
+
+#[test]
+fn full_pipeline_deterministic() {
+    // Same graph evaluated twice should produce identical meshes
+    let mut fields = HashMap::new();
+    fields.insert("Seed".to_string(), json!("det_test"));
+    fields.insert("Frequency".to_string(), json!(0.05));
+    fields.insert("Octaves".to_string(), json!(2));
+
+    let nodes = vec![make_node("n", "FractalNoise2D", fields.clone())];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("n")).unwrap();
+
+    let run = |g: &EvalGraph| -> Vec<VoxelMeshData> {
+        let volume = evaluate_volume(g, 8, -40.0, 40.0, 0.0, 10.0, 4, &HashMap::new());
+        let voxels = extract_surface_voxels(
+            &volume.densities,
+            volume.resolution,
+            volume.y_slices,
+            None,
+            None,
+            None,
+        );
+        build_voxel_meshes(
+            &voxels,
+            &volume.densities,
+            volume.resolution,
+            volume.y_slices,
+            (1.0, 1.0, 1.0),
+            (0.0, 0.0, 0.0),
+        )
+    };
+
+    let meshes1 = run(&graph);
+
+    // Rebuild graph from scratch
+    let nodes2 = vec![make_node("n", "FractalNoise2D", fields)];
+    let graph2 = EvalGraph::from_raw(nodes2, vec![], Some("n")).unwrap();
+    let meshes2 = run(&graph2);
+
+    assert_eq!(meshes1.len(), meshes2.len());
+    for (m1, m2) in meshes1.iter().zip(meshes2.iter()) {
+        assert_eq!(m1.material_index, m2.material_index);
+        assert_eq!(m1.positions.len(), m2.positions.len());
+        assert_eq!(m1.indices.len(), m2.indices.len());
+        for (a, b) in m1.positions.iter().zip(m2.positions.iter()) {
+            assert!((a - b).abs() < 1e-6, "Position mismatch: {} vs {}", a, b);
+        }
+        for (a, b) in m1.colors.iter().zip(m2.colors.iter()) {
+            assert!((a - b).abs() < 1e-6, "Color mismatch: {} vs {}", a, b);
+        }
+    }
+}
+
+#[test]
+fn full_pipeline_32_completes_quickly() {
+    // Performance sanity check: 32x32x32 full pipeline should be fast
+    let mut fields = HashMap::new();
+    fields.insert("Seed".to_string(), json!("perf_test"));
+    fields.insert("Frequency".to_string(), json!(0.03));
+    fields.insert("Octaves".to_string(), json!(3));
+
+    let nodes = vec![make_node("n", "FractalNoise2D", fields)];
+    let graph = EvalGraph::from_raw(nodes, vec![], Some("n")).unwrap();
+
+    let start = std::time::Instant::now();
+
+    let volume = evaluate_volume(&graph, 32, -160.0, 160.0, 0.0, 100.0, 32, &HashMap::new());
+
+    let voxels = extract_surface_voxels(
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        None,
+        None,
+        None,
+    );
+
+    let scene_size = 50.0_f32;
+    let scale = scene_size / 32.0;
+    let offset = -scene_size / 2.0;
+
+    let meshes = build_voxel_meshes(
+        &voxels,
+        &volume.densities,
+        volume.resolution,
+        volume.y_slices,
+        (scale, scale, scale),
+        (offset, offset, offset),
+    );
+
+    let elapsed = start.elapsed();
+
+    eprintln!(
+        "Full pipeline 32x32x32: {:?} ({} surface voxels, {} material groups)",
+        elapsed,
+        voxels.count,
+        meshes.len()
+    );
+
+    assert!(
+        elapsed.as_secs() < 5,
+        "Full pipeline 32x32x32 took {:?}",
+        elapsed
+    );
 }
