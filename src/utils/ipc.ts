@@ -90,6 +90,55 @@ export async function evaluateDensity(request: EvaluateRequest): Promise<Evaluat
   return invoke<EvaluateResponse>("evaluate_density", { request });
 }
 
+// ── Rust graph evaluator (Phase 3) ──
+
+export interface GridRequest {
+  nodes: unknown[];
+  edges: unknown[];
+  resolution: number;
+  range_min: number;
+  range_max: number;
+  y_level: number;
+  root_node_id?: string;
+  content_fields?: Record<string, number>;
+}
+
+export interface GridResponse {
+  values: number[];
+  resolution: number;
+  min_value: number;
+  max_value: number;
+}
+
+export async function evaluateGrid(request: GridRequest): Promise<GridResponse> {
+  return invoke<GridResponse>("evaluate_grid", { request });
+}
+
+export interface VolumeRequest {
+  nodes: unknown[];
+  edges: unknown[];
+  resolution: number;
+  range_min: number;
+  range_max: number;
+  y_min: number;
+  y_max: number;
+  y_slices: number;
+  root_node_id?: string;
+  content_fields?: Record<string, number>;
+}
+
+export interface VolumeResponse {
+  densities: number[];
+  resolution: number;
+  y_slices: number;
+  min_value: number;
+  max_value: number;
+}
+
+export async function evaluateVolume(request: VolumeRequest): Promise<VolumeResponse> {
+  return invoke<VolumeResponse>("evaluate_volume", { request });
+}
+
 export async function validateAssetPack(path: string): Promise<ValidationResult> {
   return invoke<ValidationResult>("validate_asset_pack", { path });
 }

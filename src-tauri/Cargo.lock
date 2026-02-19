@@ -3973,6 +3973,7 @@ name = "terranova"
 version = "0.1.5"
 dependencies = [
  "fastnoise-lite",
+ "rayon",
  "reqwest 0.12.28",
  "serde",
  "serde_json",

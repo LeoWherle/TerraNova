@@ -32,6 +32,8 @@ pub fn run() {
             validate::validate_asset_pack,
             preview::evaluate_density,
             preview::evaluate_points,
+            preview::evaluate_grid,
+            preview::evaluate_volume,
             bridge_commands::bridge_connect,
             bridge_commands::bridge_disconnect,
             bridge_commands::bridge_status,
