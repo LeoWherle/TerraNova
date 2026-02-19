@@ -2,9 +2,13 @@
 //
 // Evaluates a density graph over an NxN grid of world-space positions.
 // Each row is evaluated in parallel using rayon::par_iter.
+//
+// Uses the fast indexed evaluator (`evaluate_fast` + `EvalState`) which
+// eliminates all String hashing, HashMap cloning, and node cloning from
+// the hot evaluation loop.
 
 use crate::eval::graph::EvalGraph;
-use crate::eval::nodes::{evaluate, EvalContext};
+use crate::eval::nodes::{evaluate_compiled, EvalState};
 use rayon::prelude::*;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -42,12 +46,16 @@ pub fn evaluate_grid(
     let n = resolution as usize;
     let step = (range_max - range_min) / n as f64;
 
+    let root_idx = graph.root_idx;
+    let node_count = graph.node_count();
+
     // Evaluate rows in parallel — each row is one Z coordinate
     let row_results: Vec<(Vec<f32>, f32, f32)> = (0..n)
         .into_par_iter()
         .map(|z_idx| {
-            // Each thread gets its own EvalContext (perm caches are per-thread)
-            let mut ctx = EvalContext::new(graph, content_fields.clone());
+            // Each thread gets its own EvalState (perm caches are per-thread).
+            // Uses flat Vec-based memo with generation counter — O(1) clear.
+            let mut state = EvalState::new(node_count, content_fields.clone());
             let z = range_min + (z_idx as f64 + 0.5) * step;
 
             let mut row = Vec::with_capacity(n);
@@ -56,8 +64,8 @@ pub fn evaluate_grid(
 
             for x_idx in 0..n {
                 let x = range_min + (x_idx as f64 + 0.5) * step;
-                ctx.clear_memo();
-                let val = evaluate(&mut ctx, &graph.root_id, x, y_level, z) as f32;
+                state.clear_memo(); // O(1) — just bumps generation counter
+                let val = evaluate_compiled(graph, &mut state, root_idx, x, y_level, z) as f32;
                 row_min = row_min.min(val);
                 row_max = row_max.max(val);
                 row.push(val);

@@ -2,7 +2,17 @@
 //
 // Parses the flat { nodes, edges } format that React Flow uses into an
 // indexed graph structure ready for recursive evaluation.
+//
+// Performance: nodes are stored both by-name (for backward compatibility)
+// and by-index (for the fast evaluator). The indexed path eliminates all
+// String hashing from the hot evaluation loop.
+//
+// The compiled layer (`ResolvedInputs` + density type tags) further
+// eliminates per-evaluation string operations by pre-resolving all input
+// handle names into fixed-position array slots and mapping density type
+// strings to u16 tags at construction time.
 
+use crate::eval::compiled::{self, ResolvedInputs};
 use serde::Deserialize;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
@@ -159,27 +169,75 @@ pub struct GraphEdge {
 }
 
 /// Parsed, indexed graph ready for evaluation.
+///
+/// Contains both string-keyed maps (for backward compatibility and IPC
+/// commands) and flat indexed vectors (for the fast evaluation path).
+/// The indexed path eliminates all String hashing from the hot loop.
+///
+/// The compiled layer adds:
+/// - `resolved`: per-node `ResolvedInputs` with fixed-position array slots
+///   for input handles (zero string hashing at eval time)
+/// - `type_tags`: per-node u16 density type tag (eliminates string matching)
 pub struct EvalGraph {
-    /// All nodes keyed by id.
+    /// All nodes keyed by id (legacy — used by commands and tests).
     pub nodes: HashMap<String, GraphNode>,
-    /// Input adjacency: target_id → { handle_name → source_id }
+    /// Input adjacency: target_id → { handle_name → source_id } (legacy).
     pub inputs: HashMap<String, HashMap<String, String>>,
-    /// The root node to start evaluation from.
+    /// The root node to start evaluation from (string id).
     pub root_id: String,
+
+    // ── Indexed fields (fast path) ──────────────────────────────────
+    /// Flat node list indexed by `usize`. Contiguous memory for cache
+    /// locality. Built once at construction time.
+    pub node_list: Vec<GraphNode>,
+    /// Map from node string id → dense index into `node_list`.
+    pub id_to_idx: HashMap<String, usize>,
+    /// Root node index (indexes into `node_list`).
+    pub root_idx: usize,
+    /// Per-node input adjacency indexed by node index.
+    /// `inputs_by_idx[target_idx]` maps handle_name → source_node_idx.
+    pub inputs_by_idx: Vec<HashMap<String, usize>>,
+
+    // ── Compiled fields (zero-overhead path) ────────────────────────
+    /// Per-node pre-resolved inputs. Named handles are fixed-position array
+    /// slots; array handles are pre-sorted SmallVecs. No string operations
+    /// at evaluation time.
+    pub resolved: Vec<ResolvedInputs>,
+    /// Per-node density type tag (u16). Eliminates string matching in the
+    /// evaluation dispatch loop.
+    pub type_tags: Vec<u16>,
+}
+
+impl EvalGraph {
+    /// Number of nodes in the graph.
+    #[inline]
+    pub fn node_count(&self) -> usize {
+        self.node_list.len()
+    }
+
+    /// Look up the dense index for a node id. Returns `None` if not found.
+    #[inline]
+    pub fn idx_of(&self, id: &str) -> Option<usize> {
+        self.id_to_idx.get(id).copied()
+    }
 }
 
 impl EvalGraph {
     /// Build an `EvalGraph` from raw React Flow nodes and edges.
+    ///
+    /// Constructs both the legacy string-keyed maps, the fast indexed
+    /// vectors, and the compiled zero-overhead representation in a
+    /// single pass.
     pub fn from_raw(
         nodes: Vec<GraphNode>,
         edges: Vec<GraphEdge>,
         root_node_id: Option<&str>,
     ) -> Result<Self, String> {
-        // Build node map
+        // ── 1. Build legacy string-keyed maps ──
+
         let node_map: HashMap<String, GraphNode> =
             nodes.into_iter().map(|n| (n.id.clone(), n)).collect();
 
-        // Build input adjacency: target → { handle → source }
         let mut inputs: HashMap<String, HashMap<String, String>> = HashMap::new();
         for edge in &edges {
             let handle = edge.target_handle.clone().unwrap_or_else(|| "Input".into());
@@ -189,13 +247,73 @@ impl EvalGraph {
                 .insert(handle, edge.source.clone());
         }
 
-        // Find root (same strategy as TS findDensityRoot())
         let root_id = Self::find_root(&node_map, &edges, root_node_id)?;
+
+        // ── 2. Build dense index mapping ──
+
+        // Deterministic ordering: sort node ids so indices are stable.
+        let mut sorted_ids: Vec<&String> = node_map.keys().collect();
+        sorted_ids.sort();
+
+        let id_to_idx: HashMap<String, usize> = sorted_ids
+            .iter()
+            .enumerate()
+            .map(|(i, id)| ((*id).clone(), i))
+            .collect();
+
+        let node_list: Vec<GraphNode> = sorted_ids.iter().map(|id| node_map[*id].clone()).collect();
+
+        let root_idx = *id_to_idx
+            .get(&root_id)
+            .ok_or_else(|| "Root node id not in index map".to_string())?;
+
+        // ── 3. Build per-node indexed input adjacency ──
+
+        let node_count = node_list.len();
+        let mut inputs_by_idx: Vec<HashMap<String, usize>> =
+            (0..node_count).map(|_| HashMap::new()).collect();
+
+        for (target_id, handle_map) in &inputs {
+            if let Some(&target_idx) = id_to_idx.get(target_id) {
+                for (handle, source_id) in handle_map {
+                    if let Some(&source_idx) = id_to_idx.get(source_id) {
+                        inputs_by_idx[target_idx].insert(handle.clone(), source_idx);
+                    }
+                }
+            }
+        }
+
+        // ── 4. Build compiled representation ──
+
+        // Resolve inputs: convert string-keyed HashMap per node into
+        // fixed-position array slots + pre-sorted SmallVecs.
+        let resolved: Vec<ResolvedInputs> = inputs_by_idx
+            .iter()
+            .map(|handle_map| compiled::resolve_inputs(handle_map))
+            .collect();
+
+        // Map density type strings to u16 tags.
+        let type_tags: Vec<u16> = node_list
+            .iter()
+            .map(|node| {
+                node.data
+                    .density_type
+                    .as_deref()
+                    .map(compiled::density_type_to_tag)
+                    .unwrap_or(compiled::DT_UNKNOWN)
+            })
+            .collect();
 
         Ok(EvalGraph {
             nodes: node_map,
             inputs,
             root_id,
+            node_list,
+            id_to_idx,
+            root_idx,
+            inputs_by_idx,
+            resolved,
+            type_tags,
         })
     }
 
@@ -409,5 +527,115 @@ mod tests {
             nodes[0].data.fields.get("Value").and_then(|v| v.as_f64()),
             Some(42.0)
         );
+    }
+
+    // ── Compiled layer tests ────────────────────────────────────────
+
+    #[test]
+    fn resolved_inputs_for_sum_node() {
+        let nodes = vec![
+            make_node("a", "Constant"),
+            make_node("b", "Constant"),
+            make_node("s", "Sum"),
+        ];
+        let edges = vec![
+            make_edge("a", "s", Some("Inputs[0]")),
+            make_edge("b", "s", Some("Inputs[1]")),
+        ];
+        let graph = EvalGraph::from_raw(nodes, edges, None).unwrap();
+
+        let s_idx = graph.idx_of("s").unwrap();
+        let a_idx = graph.idx_of("a").unwrap();
+        let b_idx = graph.idx_of("b").unwrap();
+
+        let ri = &graph.resolved[s_idx];
+        assert_eq!(ri.array_inputs.len(), 2);
+        // Pre-sorted by array index: [0]→a, [1]→b
+        assert_eq!(ri.array_inputs[0] as usize, a_idx);
+        assert_eq!(ri.array_inputs[1] as usize, b_idx);
+    }
+
+    #[test]
+    fn resolved_inputs_for_negate_node() {
+        use crate::eval::compiled::H_INPUT;
+
+        let nodes = vec![make_node("a", "Constant"), make_node("n", "Negate")];
+        let edges = vec![make_edge("a", "n", None)]; // defaults to "Input"
+        let graph = EvalGraph::from_raw(nodes, edges, None).unwrap();
+
+        let n_idx = graph.idx_of("n").unwrap();
+        let a_idx = graph.idx_of("a").unwrap();
+
+        let ri = &graph.resolved[n_idx];
+        assert!(ri.has(H_INPUT));
+        assert_eq!(ri.get(H_INPUT), Some(a_idx));
+    }
+
+    #[test]
+    fn type_tags_assigned_correctly() {
+        use crate::eval::compiled::{DT_CONSTANT, DT_SUM};
+
+        let nodes = vec![make_node("a", "Constant"), make_node("s", "Sum")];
+        let graph = EvalGraph::from_raw(nodes, vec![], Some("s")).unwrap();
+
+        let a_idx = graph.idx_of("a").unwrap();
+        let s_idx = graph.idx_of("s").unwrap();
+
+        assert_eq!(graph.type_tags[a_idx], DT_CONSTANT);
+        assert_eq!(graph.type_tags[s_idx], DT_SUM);
+    }
+
+    #[test]
+    fn resolved_inputs_for_blend_node() {
+        use crate::eval::compiled::{H_FACTOR, H_INPUT_A, H_INPUT_B};
+
+        let nodes = vec![
+            make_node("a", "Constant"),
+            make_node("b", "Constant"),
+            make_node("f", "Constant"),
+            make_node("bl", "Blend"),
+        ];
+        let edges = vec![
+            make_edge("a", "bl", Some("InputA")),
+            make_edge("b", "bl", Some("InputB")),
+            make_edge("f", "bl", Some("Factor")),
+        ];
+        let graph = EvalGraph::from_raw(nodes, edges, None).unwrap();
+
+        let bl_idx = graph.idx_of("bl").unwrap();
+        let a_idx = graph.idx_of("a").unwrap();
+        let b_idx = graph.idx_of("b").unwrap();
+        let f_idx = graph.idx_of("f").unwrap();
+
+        let ri = &graph.resolved[bl_idx];
+        assert_eq!(ri.get(H_INPUT_A), Some(a_idx));
+        assert_eq!(ri.get(H_INPUT_B), Some(b_idx));
+        assert_eq!(ri.get(H_FACTOR), Some(f_idx));
+    }
+
+    #[test]
+    fn resolved_inputs_no_connections() {
+        use crate::eval::compiled::H_INPUT;
+
+        let nodes = vec![make_node("c", "Constant")];
+        let graph = EvalGraph::from_raw(nodes, vec![], Some("c")).unwrap();
+
+        let c_idx = graph.idx_of("c").unwrap();
+        let ri = &graph.resolved[c_idx];
+        assert!(!ri.has(H_INPUT));
+        assert!(ri.array_inputs.is_empty());
+    }
+
+    #[test]
+    fn node_count_matches() {
+        let nodes = vec![
+            make_node("a", "Constant"),
+            make_node("b", "Sum"),
+            make_node("c", "Negate"),
+        ];
+        let graph = EvalGraph::from_raw(nodes, vec![], Some("a")).unwrap();
+        assert_eq!(graph.node_count(), 3);
+        assert_eq!(graph.resolved.len(), 3);
+        assert_eq!(graph.type_tags.len(), 3);
     }
 }

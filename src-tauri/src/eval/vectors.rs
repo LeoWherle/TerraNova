@@ -5,6 +5,7 @@
 
 use crate::eval::graph::EvalGraph;
 use crate::eval::nodes::evaluate;
+use rustc_hash::FxHashMap;
 use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 
@@ -64,7 +65,7 @@ pub fn evaluate_vector(
     graph: &EvalGraph,
     memo: &mut HashMap<String, f64>,
     visiting: &mut HashSet<String>,
-    perm_cache: &mut HashMap<i32, [u8; 512]>,
+    perm_cache: &mut FxHashMap<i32, [u8; 512]>,
     content_fields: &HashMap<String, f64>,
     node_id: &str,
     x: f64,
@@ -182,7 +183,7 @@ fn evaluate_density_at(
     graph: &EvalGraph,
     _memo: &mut HashMap<String, f64>,
     visiting: &mut HashSet<String>,
-    perm_cache: &mut HashMap<i32, [u8; 512]>,
+    perm_cache: &mut FxHashMap<i32, [u8; 512]>,
     content_fields: &HashMap<String, f64>,
     node_id: &str,
     x: f64,
@@ -277,7 +278,7 @@ mod tests {
 
         let mut memo = HashMap::new();
         let mut visiting = HashSet::new();
-        let mut perm_cache = HashMap::new();
+        let mut perm_cache = FxHashMap::default();
         let content_fields = HashMap::new();
 
         let result = evaluate_vector(
@@ -312,7 +313,7 @@ mod tests {
 
         let mut memo = HashMap::new();
         let mut visiting = HashSet::new();
-        let mut perm_cache = HashMap::new();
+        let mut perm_cache = FxHashMap::default();
         let content_fields = HashMap::new();
 
         let result = evaluate_vector(
@@ -348,7 +349,7 @@ mod tests {
 
         let mut memo = HashMap::new();
         let mut visiting = HashSet::new();
-        let mut perm_cache = HashMap::new();
+        let mut perm_cache = FxHashMap::default();
         let content_fields = HashMap::new();
 
         let result = evaluate_vector(
@@ -387,7 +388,7 @@ mod tests {
 
         let mut memo = HashMap::new();
         let mut visiting = HashSet::new();
-        let mut perm_cache = HashMap::new();
+        let mut perm_cache = FxHashMap::default();
         let content_fields = HashMap::new();
 
         let result = evaluate_vector(
@@ -425,7 +426,7 @@ mod tests {
 
         let mut memo = HashMap::new();
         let mut visiting = HashSet::new();
-        let mut perm_cache = HashMap::new();
+        let mut perm_cache = FxHashMap::default();
         let content_fields = HashMap::new();
 
         let result = evaluate_vector(

@@ -182,45 +182,36 @@ pub fn extract_surface_voxels(
 ) -> VoxelData {
     let n = resolution as i32;
     let ys = y_slices as i32;
+    let total = (n * n * ys) as usize;
     let materials: Vec<VoxelMaterial> = palette.map(|p| p.to_vec()).unwrap_or_else(default_palette);
 
-    // First pass: count surface voxels for pre-allocation
+    // Estimate: surface voxels are typically a small fraction of the volume.
+    // A reasonable heuristic is ~6× the cross-section area (the six faces of
+    // a cube). For a 64³ volume that's ~24 576 out of 262 144 — about 9%.
+    // Pre-allocating to 10% avoids most re-allocs without wasting memory.
+    let estimate = (total / 10).max(64);
+    let mut positions = Vec::with_capacity(estimate * 3);
+    let mut out_material_ids = Vec::with_capacity(estimate);
+
+    // Single pass — each voxel is checked exactly once.
+    // The old two-pass approach (count then fill) doubled the work by running
+    // is_surface / is_fluid_surface twice per voxel.
     let mut count: u32 = 0;
-    for y in 0..ys {
-        let y_off = y * n * n;
-        for z in 0..n {
-            for x in 0..n {
-                let idx = (y_off + z * n + x) as usize;
-                if densities[idx] >= SOLID_THRESHOLD {
-                    if is_surface(densities, x, y, z, n, ys) {
-                        count += 1;
-                    }
-                } else if let Some(fc) = fluid_config {
-                    if y <= fc.fluid_level
-                        && is_fluid_surface(densities, x, y, z, n, ys, fc.fluid_level)
-                    {
-                        count += 1;
-                    }
-                }
-            }
-        }
-    }
-
-    // Second pass: fill positions and material IDs
-    let mut positions = Vec::with_capacity(count as usize * 3);
-    let mut out_material_ids = Vec::with_capacity(count as usize);
 
     for y in 0..ys {
         let y_off = y * n * n;
         for z in 0..n {
+            let yz_off = y_off + z * n;
             for x in 0..n {
-                let idx = (y_off + z * n + x) as usize;
-                if densities[idx] >= SOLID_THRESHOLD {
+                let idx = (yz_off + x) as usize;
+                let d = densities[idx];
+                if d >= SOLID_THRESHOLD {
                     if is_surface(densities, x, y, z, n, ys) {
                         positions.push(x as f32);
                         positions.push(y as f32);
                         positions.push(z as f32);
                         out_material_ids.push(material_ids.map(|m| m[idx]).unwrap_or(0));
+                        count += 1;
                     }
                 } else if let Some(fc) = fluid_config {
                     if y <= fc.fluid_level
@@ -230,6 +221,7 @@ pub fn extract_surface_voxels(
                         positions.push(y as f32);
                         positions.push(z as f32);
                         out_material_ids.push(fc.fluid_material_index);
+                        count += 1;
                     }
                 }
             }

@@ -2,6 +2,9 @@
 //
 // Caches grid and volume evaluation results keyed by a hash of the graph
 // structure + evaluation parameters. Thread-safe via Mutex.
+//
+// Results are stored behind `Arc` so cache hits return a cheap reference
+// count bump instead of cloning potentially multi-MB `Vec<f32>` buffers.
 
 use crate::eval::graph::{GraphEdge, GraphNode};
 use crate::eval::grid::GridResult;
@@ -10,13 +13,17 @@ use lru::LruCache;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 
 /// Content-addressable cache for evaluation results.
-/// Key = hash(graph_structure + params), Value = result.
+/// Key = hash(graph_structure + params), Value = Arc<result>.
+///
+/// Using `Arc` means cache hits only bump a reference count instead of
+/// cloning the entire result buffer (which can be 64³ = 262 144 floats
+/// for volume results — over 1 MB).
 pub struct EvalCache {
-    grid_cache: Mutex<LruCache<u64, GridResult>>,
-    volume_cache: Mutex<LruCache<u64, VolumeResult>>,
+    grid_cache: Mutex<LruCache<u64, Arc<GridResult>>>,
+    volume_cache: Mutex<LruCache<u64, Arc<VolumeResult>>>,
 }
 
 impl EvalCache {
@@ -30,21 +37,38 @@ impl EvalCache {
 
     // ── Grid cache ──
 
-    pub fn get_grid(&self, hash: u64) -> Option<GridResult> {
+    /// Get a cached grid result. Returns a cheap `Arc` clone (ref-count bump).
+    pub fn get_grid(&self, hash: u64) -> Option<Arc<GridResult>> {
         self.grid_cache.lock().unwrap().get(&hash).cloned()
     }
 
+    /// Insert a grid result into the cache, wrapping it in an `Arc`.
     pub fn put_grid(&self, hash: u64, result: GridResult) {
+        self.grid_cache.lock().unwrap().put(hash, Arc::new(result));
+    }
+
+    /// Insert a pre-wrapped `Arc<GridResult>` into the cache.
+    pub fn put_grid_arc(&self, hash: u64, result: Arc<GridResult>) {
         self.grid_cache.lock().unwrap().put(hash, result);
     }
 
     // ── Volume cache ──
 
-    pub fn get_volume(&self, hash: u64) -> Option<VolumeResult> {
+    /// Get a cached volume result. Returns a cheap `Arc` clone (ref-count bump).
+    pub fn get_volume(&self, hash: u64) -> Option<Arc<VolumeResult>> {
         self.volume_cache.lock().unwrap().get(&hash).cloned()
     }
 
+    /// Insert a volume result into the cache, wrapping it in an `Arc`.
     pub fn put_volume(&self, hash: u64, result: VolumeResult) {
+        self.volume_cache
+            .lock()
+            .unwrap()
+            .put(hash, Arc::new(result));
+    }
+
+    /// Insert a pre-wrapped `Arc<VolumeResult>` into the cache.
+    pub fn put_volume_arc(&self, hash: u64, result: Arc<VolumeResult>) {
         self.volume_cache.lock().unwrap().put(hash, result);
     }
 
@@ -472,5 +496,43 @@ mod tests {
         cache.clear();
         assert_eq!(cache.len(), 0);
         assert!(cache.get_grid(1).is_none());
+    }
+
+    #[test]
+    fn cache_arc_returns_same_data() {
+        // Verify that Arc-based cache returns the same data without full clone
+        let cache = EvalCache::new(4);
+        let result = VolumeResult {
+            densities: vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
+            resolution: 2,
+            y_slices: 2,
+            min_value: 1.0,
+            max_value: 8.0,
+        };
+        cache.put_volume(100, result);
+
+        let arc1 = cache.get_volume(100).unwrap();
+        let arc2 = cache.get_volume(100).unwrap();
+
+        // Both Arcs point to the same allocation
+        assert!(Arc::ptr_eq(&arc1, &arc2));
+        assert_eq!(arc1.densities.len(), 8);
+        assert_eq!(arc1.min_value, 1.0);
+        assert_eq!(arc1.max_value, 8.0);
+    }
+
+    #[test]
+    fn cache_put_arc_directly() {
+        let cache = EvalCache::new(4);
+        let result = Arc::new(GridResult {
+            values: vec![42.0],
+            resolution: 1,
+            min_value: 42.0,
+            max_value: 42.0,
+        });
+
+        cache.put_grid_arc(55, result.clone());
+        let cached = cache.get_grid(55).unwrap();
+        assert!(Arc::ptr_eq(&result, &cached));
     }
 }

@@ -32,6 +32,8 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 sysinfo = "0.33"
 rayon = "1.10"
 lru = "0.12"
+rustc-hash = "2"
+smallvec = "1.13"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
@@ -44,5 +46,5 @@ harness = false
 panic = "abort"
 codegen-units = 1
 lto = true
-opt-level = "s"
+opt-level = 3
 strip = true

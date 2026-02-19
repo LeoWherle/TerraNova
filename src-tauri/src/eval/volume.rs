@@ -2,9 +2,13 @@
 //
 // Evaluates a density graph over a 3D volume (NxN XZ grid × Y slices).
 // Y-slices are evaluated in parallel using rayon::par_iter.
+//
+// Uses the fast indexed evaluator (`evaluate_fast` + `EvalState`) which
+// eliminates all String hashing, HashMap cloning, and node cloning from
+// the hot evaluation loop.
 
 use crate::eval::graph::EvalGraph;
-use crate::eval::nodes::{evaluate, EvalContext};
+use crate::eval::nodes::{evaluate_compiled, EvalState};
 use rayon::prelude::*;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -51,11 +55,16 @@ pub fn evaluate_volume(
         0.0
     };
 
+    let root_idx = graph.root_idx;
+    let node_count = graph.node_count();
+
     // Evaluate Y-slices in parallel
     let slice_results: Vec<(Vec<f32>, f32, f32)> = (0..ys)
         .into_par_iter()
         .map(|yi| {
-            let mut ctx = EvalContext::new(graph, content_fields.clone());
+            // Each thread gets its own EvalState (perm caches are per-thread).
+            // Uses flat Vec-based memo with generation counter — O(1) clear.
+            let mut state = EvalState::new(node_count, content_fields.clone());
             let wy = y_min + yi as f64 * step_y;
 
             let mut slice = Vec::with_capacity(n * n);
@@ -66,8 +75,8 @@ pub fn evaluate_volume(
                 let wz = range_min + (zi as f64 + 0.5) * step_xz;
                 for xi in 0..n {
                     let wx = range_min + (xi as f64 + 0.5) * step_xz;
-                    ctx.clear_memo();
-                    let val = evaluate(&mut ctx, &graph.root_id, wx, wy, wz) as f32;
+                    state.clear_memo(); // O(1) — just bumps generation counter
+                    let val = evaluate_compiled(graph, &mut state, root_idx, wx, wy, wz) as f32;
                     min_v = min_v.min(val);
                     max_v = max_v.max(val);
                     slice.push(val);

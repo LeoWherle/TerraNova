@@ -10,6 +10,7 @@ use commands::{
     bridge as bridge_commands, hardware, io as io_commands, preview, process, validate,
 };
 use eval::cache::EvalCache;
+use std::sync::Arc;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -19,7 +20,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(BridgeState::default())
-        .manage(EvalCache::new(32))
+        .manage(Arc::new(EvalCache::new(8)))
         .invoke_handler(tauri::generate_handler![
             io_commands::open_asset_pack,
             io_commands::save_asset_pack,
