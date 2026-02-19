@@ -104,37 +104,41 @@ function TabSidebar() {
       {/* Tab bar */}
       <div className="flex border-b border-tn-border shrink-0">
         <button
-          className={`flex-1 px-3 py-1.5 text-xs font-medium ${leftTab === "nodes"
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "nodes"
               ? "text-tn-accent border-b-2 border-tn-accent"
               : "text-tn-text-muted hover:text-tn-text"
-            }`}
+          }`}
           onClick={() => setLeftTab("nodes")}
         >
           Nodes
         </button>
         <button
-          className={`flex-1 px-3 py-1.5 text-xs font-medium ${leftTab === "files"
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "files"
               ? "text-tn-accent border-b-2 border-tn-accent"
               : "text-tn-text-muted hover:text-tn-text"
-            }`}
+          }`}
           onClick={() => setLeftTab("files")}
         >
           Files
         </button>
         <button
-          className={`flex-1 px-3 py-1.5 text-xs font-medium ${leftTab === "history"
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "history"
               ? "text-tn-accent border-b-2 border-tn-accent"
               : "text-tn-text-muted hover:text-tn-text"
-            }`}
+          }`}
           onClick={() => setLeftTab("history")}
         >
           History
         </button>
         <button
-          className={`flex-1 px-3 py-1.5 text-xs font-medium ${leftTab === "validation"
+          className={`flex-1 px-3 py-1.5 text-xs font-medium ${
+            leftTab === "validation"
               ? "text-tn-accent border-b-2 border-tn-accent"
               : "text-tn-text-muted hover:text-tn-text"
-            }`}
+          }`}
           onClick={() => setLeftTab("validation")}
         >
           Issues

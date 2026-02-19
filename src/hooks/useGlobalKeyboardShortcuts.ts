@@ -5,10 +5,9 @@ import { useEditorStore } from "@/stores/editorStore";
 import { usePreviewStore, type ViewMode } from "@/stores/previewStore";
 import { useBridgeStore } from "@/stores/bridgeStore";
 import { useUIStore } from "@/stores/uiStore";
-import { useSettingsStore } from "@/stores/settingsStore";
 import { matchesKeybinding } from "@/config/keybindings";
 import { exportAssetPack, exportCurrentJson } from "@/utils/exportAssetPack";
-import { useToastStore } from "@/stores/toastStore";
+import { handleAutoLayout, handleAutoLayoutSelected, handleTidyUp } from "@/utils/layoutActions";
 
 interface GlobalShortcutCallbacks {
   onCloseProject: () => void;
@@ -108,7 +107,7 @@ export function useGlobalKeyboardShortcuts({
       // Auto layout all
       if (matchesKeybinding("autoLayoutAll", e)) {
         e.preventDefault();
-        handleAutoLayout();
+        handleAutoLayout(reactFlow);
         return;
       }
 
@@ -285,58 +284,4 @@ export function useGlobalKeyboardShortcuts({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [openAssetPack, saveFile, saveFileAs, undo, redo, reactFlow, onCloseProject, onNewProject, onSettings, onExportSvg]);
-
-  // Helper functions for auto layout
-  async function handleAutoLayout() {
-    const { nodes, edges, setNodes, commitState } = useEditorStore.getState();
-    if (nodes.length === 0) return;
-    try {
-      const { autoLayout } = await import("@/utils/autoLayout");
-      const layouted = await autoLayout(
-        nodes,
-        edges,
-        useSettingsStore.getState().flowDirection,
-      );
-      setNodes(layouted);
-      commitState("Auto layout");
-      setTimeout(() => {
-        reactFlow.fitView({ padding: 0.1, duration: 300 });
-      }, 50);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("Auto layout failed:", err);
-      useToastStore.getState().addToast(`Auto layout failed: ${errorMessage}`, "error");
-    }
-  }
-
-  async function handleAutoLayoutSelected() {
-    const { nodes, edges, setNodes, commitState } = useEditorStore.getState();
-    const selectedIds = new Set(nodes.filter((n) => n.selected).map((n) => n.id));
-    if (selectedIds.size < 2) return;
-    try {
-      const { autoLayoutSelected } = await import("@/utils/autoLayout");
-      const layouted = await autoLayoutSelected(
-        nodes,
-        edges,
-        selectedIds,
-        useSettingsStore.getState().flowDirection,
-      );
-      setNodes(layouted);
-      commitState("Auto layout selected");
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : String(err);
-      console.error("Auto layout selected failed:", err);
-      useToastStore.getState().addToast(`Auto layout failed: ${errorMessage}`, "error");
-    }
-  }
-
-  async function handleTidyUp() {
-    const { nodes, setNodes, commitState } = useEditorStore.getState();
-    if (nodes.length === 0) return;
-    const { tidyUp } = await import("@/utils/autoLayout");
-    const gridSize = useUIStore.getState().gridSize;
-    const tidied = tidyUp(nodes, gridSize);
-    setNodes(tidied);
-    commitState("Tidy up");
-  }
 }

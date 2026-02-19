@@ -18,6 +18,7 @@ import { KeyboardShortcutsDialog } from "@/components/dialogs/KeyboardShortcutsD
 import { ConfigurationDialog } from "@/components/dialogs/ConfigurationDialog";
 import { ExportSvgDialog } from "@/components/dialogs/ExportSvgDialog";
 import { saveRef } from "@/utils/saveRef";
+import { isMac } from "@/utils/platform";
 import { checkForUpdates } from "@/utils/updater";
 import { useSettingsStore } from "@/stores/settingsStore";
 import { useToastStore } from "@/stores/toastStore";
@@ -60,6 +61,13 @@ export default function App() {
   const closeDialog = useCallback(() => {
     dialogOpenRef.current = false;
     setShowDialog(false);
+  }, []);
+
+  // ---- Disable native decorations on non-macOS (macOS keeps native traffic lights) ----
+  useEffect(() => {
+    if (!isMac) {
+      getCurrentWindow().setDecorations(false);
+    }
   }, []);
 
   // ---- Post-update verification + auto-check for updates ----

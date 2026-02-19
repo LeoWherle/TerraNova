@@ -5,9 +5,7 @@ mod noise;
 mod schema;
 
 use bridge::client::BridgeState;
-use commands::{
-    bridge as bridge_commands, hardware, io as io_commands, preview, process, validate,
-};
+use commands::{bridge as bridge_commands, hardware, io as io_commands, preview, process, validate};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {

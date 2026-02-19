@@ -1,5 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useEffect, useState } from "react";
+import { isMac } from "@/utils/platform";
 
 // Simple title bar for home screen (no menus, no ReactFlow dependencies)
 export function SimpleTitleBar() {
@@ -7,6 +8,8 @@ export function SimpleTitleBar() {
   const appWindow = getCurrentWindow();
 
   useEffect(() => {
+    if (isMac) return;
+
     appWindow.isMaximized().then(setIsMaximized);
 
     const unlisten = appWindow.onResized(() => {
@@ -29,6 +32,13 @@ export function SimpleTitleBar() {
   const handleClose = () => {
     appWindow.close();
   };
+
+  // On macOS, native traffic lights handle window controls — just render a minimal drag region
+  if (isMac) {
+    return (
+      <div className="h-8 bg-tn-panel border-b border-tn-border flex items-center select-none shrink-0" />
+    );
+  }
 
   return (
     <div
