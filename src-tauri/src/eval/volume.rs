@@ -10,7 +10,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 /// Result of evaluating a density graph over a 3D volume.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct VolumeResult {
     /// Y-major layout: densities[y * n * n + z * n + x].
     /// Length = resolution × resolution × y_slices.

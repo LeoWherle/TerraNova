@@ -31,6 +31,7 @@ reqwest = { version = "0.12", features = [
 tokio = { version = "1", features = ["rt-multi-thread"] }
 sysinfo = "0.33"
 rayon = "1.10"
+lru = "0.12"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }

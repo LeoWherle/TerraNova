@@ -1,3 +1,4 @@
+use crate::eval::cache::{hash_grid_request, hash_volume_request, EvalCache};
 use crate::eval::graph::{EvalGraph, GraphEdge, GraphNode};
 use crate::eval::grid::GridResult;
 use crate::eval::material::{VoxelPreviewRequest, VoxelPreviewResult};
@@ -9,6 +10,7 @@ use crate::noise::evaluator::DensityEvaluator;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+use tauri::{Emitter, State};
 
 #[derive(Deserialize)]
 pub struct EvaluateRequest {
@@ -108,19 +110,47 @@ pub struct GridRequest {
 
 /// Evaluate a React Flow graph over an NxN 2D grid using the Rust evaluator.
 /// Uses rayon for multi-core parallelism across rows.
+/// Results are cached via LRU so repeated identical requests return instantly.
 #[tauri::command]
-pub fn evaluate_grid(request: GridRequest) -> Result<GridResult, String> {
+pub fn evaluate_grid(
+    request: GridRequest,
+    cache: State<'_, EvalCache>,
+) -> Result<GridResult, String> {
     let (graph_nodes, graph_edges) = parse_raw_graph(request.nodes, request.edges)?;
+    let content_fields = request.content_fields.unwrap_or_default();
+
+    let hash = hash_grid_request(
+        &graph_nodes,
+        &graph_edges,
+        request.resolution,
+        request.range_min,
+        request.range_max,
+        request.y_level,
+        request.root_node_id.as_deref(),
+        &content_fields,
+    );
+
+    // Cache hit — return immediately
+    if let Some(cached) = cache.get_grid(hash) {
+        if import_meta_dev() {
+            eprintln!("[cache] grid hit hash={:#018x}", hash);
+        }
+        return Ok(cached);
+    }
+
     let graph = EvalGraph::from_raw(graph_nodes, graph_edges, request.root_node_id.as_deref())?;
 
-    Ok(crate::eval::grid::evaluate_grid(
+    let result = crate::eval::grid::evaluate_grid(
         &graph,
         request.resolution,
         request.range_min,
         request.range_max,
         request.y_level,
-        &request.content_fields.unwrap_or_default(),
-    ))
+        &content_fields,
+    );
+
+    cache.put_grid(hash, result.clone());
+    Ok(result)
 }
 
 // ── Volume evaluation (Phase 3) ────────────────────────────────────
@@ -141,12 +171,38 @@ pub struct VolumeRequest {
 
 /// Evaluate a React Flow graph over a 3D volume using the Rust evaluator.
 /// Uses rayon for multi-core parallelism across Y-slices.
+/// Results are cached via LRU.
 #[tauri::command]
-pub fn evaluate_volume(request: VolumeRequest) -> Result<VolumeResult, String> {
+pub fn evaluate_volume(
+    request: VolumeRequest,
+    cache: State<'_, EvalCache>,
+) -> Result<VolumeResult, String> {
     let (graph_nodes, graph_edges) = parse_raw_graph(request.nodes, request.edges)?;
+    let content_fields = request.content_fields.unwrap_or_default();
+
+    let hash = hash_volume_request(
+        &graph_nodes,
+        &graph_edges,
+        request.resolution,
+        request.range_min,
+        request.range_max,
+        request.y_min,
+        request.y_max,
+        request.y_slices,
+        request.root_node_id.as_deref(),
+        &content_fields,
+    );
+
+    if let Some(cached) = cache.get_volume(hash) {
+        if import_meta_dev() {
+            eprintln!("[cache] volume hit hash={:#018x}", hash);
+        }
+        return Ok(cached);
+    }
+
     let graph = EvalGraph::from_raw(graph_nodes, graph_edges, request.root_node_id.as_deref())?;
 
-    Ok(crate::eval::volume::evaluate_volume(
+    let result = crate::eval::volume::evaluate_volume(
         &graph,
         request.resolution,
         request.range_min,
@@ -154,8 +210,11 @@ pub fn evaluate_volume(request: VolumeRequest) -> Result<VolumeResult, String> {
         request.y_min,
         request.y_max,
         request.y_slices,
-        &request.content_fields.unwrap_or_default(),
-    ))
+        &content_fields,
+    );
+
+    cache.put_volume(hash, result.clone());
+    Ok(result)
 }
 
 // ── Combined voxel preview (Phase 5) ───────────────────────────────
@@ -353,6 +412,105 @@ pub fn evaluate_voxel_mesh(request: VoxelMeshRequest) -> Result<VoxelMeshRespons
     })
 }
 
+// ── Progressive grid streaming (Phase 7) ───────────────────────────
+
+/// Progressive grid evaluation request.
+/// Same fields as GridRequest, plus the target resolution steps are computed
+/// automatically: 16 → 32 → 64 → target.
+#[derive(Deserialize)]
+pub struct ProgressiveGridRequest {
+    pub nodes: Vec<Value>,
+    pub edges: Vec<Value>,
+    pub resolution: u32,
+    pub range_min: f64,
+    pub range_max: f64,
+    pub y_level: f64,
+    pub root_node_id: Option<String>,
+    pub content_fields: Option<HashMap<String, f64>>,
+}
+
+/// Evaluate a grid at progressively increasing resolutions, emitting each
+/// intermediate result as a Tauri event (`eval_progressive_grid`).
+///
+/// The frontend listens for `eval_progressive_grid` events and updates the
+/// preview as each step arrives, giving instant visual feedback even for
+/// expensive graphs.
+///
+/// Resolutions: 16 → 32 → 64 → target (duplicates and steps > target are filtered).
+/// Each step checks the LRU cache before evaluating.
+#[tauri::command]
+pub async fn evaluate_grid_progressive(
+    app: tauri::AppHandle,
+    request: ProgressiveGridRequest,
+    cache: State<'_, EvalCache>,
+) -> Result<(), String> {
+    let (graph_nodes, graph_edges) = parse_raw_graph(request.nodes, request.edges)?;
+    let content_fields = request.content_fields.unwrap_or_default();
+
+    // Build progressive resolution steps: 16 → 32 → 64 → target
+    let mut steps: Vec<u32> = vec![16, 32, 64, request.resolution]
+        .into_iter()
+        .filter(|&r| r <= request.resolution && r > 0)
+        .collect();
+    steps.sort();
+    steps.dedup();
+
+    let graph = EvalGraph::from_raw(
+        graph_nodes.clone(),
+        graph_edges.clone(),
+        request.root_node_id.as_deref(),
+    )?;
+
+    for resolution in steps {
+        let hash = hash_grid_request(
+            &graph_nodes,
+            &graph_edges,
+            resolution,
+            request.range_min,
+            request.range_max,
+            request.y_level,
+            request.root_node_id.as_deref(),
+            &content_fields,
+        );
+
+        let result = if let Some(cached) = cache.get_grid(hash) {
+            if import_meta_dev() {
+                eprintln!(
+                    "[progressive] cache hit res={} hash={:#018x}",
+                    resolution, hash
+                );
+            }
+            cached
+        } else {
+            let r = crate::eval::grid::evaluate_grid(
+                &graph,
+                resolution,
+                request.range_min,
+                request.range_max,
+                request.y_level,
+                &content_fields,
+            );
+            cache.put_grid(hash, r.clone());
+            r
+        };
+
+        app.emit("eval_progressive_grid", &result)
+            .map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+// ── Cache management (Phase 7) ─────────────────────────────────────
+
+/// Clear all evaluation caches. Useful when the user explicitly wants to
+/// force re-evaluation (e.g. after toggling a global setting).
+#[tauri::command]
+pub fn clear_eval_cache(cache: State<'_, EvalCache>) -> Result<(), String> {
+    cache.clear();
+    Ok(())
+}
+
 // ── Shared helpers ─────────────────────────────────────────────────
 
 /// Parse raw JSON node/edge arrays into typed graph structures.
@@ -371,4 +529,12 @@ fn parse_raw_graph(
         .collect::<Result<Vec<_>, _>>()?;
 
     Ok((graph_nodes, graph_edges))
+}
+
+/// Returns true in debug/dev builds for verbose cache logging.
+/// In release builds this always returns false and the logging is
+/// compiled away.
+#[inline]
+fn import_meta_dev() -> bool {
+    cfg!(debug_assertions)
 }

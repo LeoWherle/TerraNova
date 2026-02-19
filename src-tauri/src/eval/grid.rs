@@ -10,7 +10,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 /// Result of evaluating a density graph over a 2D grid.
-#[derive(Debug, Serialize)]
+#[derive(Debug, Clone, Serialize)]
 pub struct GridResult {
     /// Row-major f32 values (matches TS Float32Array layout).
     /// Length = resolution × resolution.

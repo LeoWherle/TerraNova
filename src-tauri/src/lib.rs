@@ -9,6 +9,7 @@ use bridge::client::BridgeState;
 use commands::{
     bridge as bridge_commands, hardware, io as io_commands, preview, process, validate,
 };
+use eval::cache::EvalCache;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -18,6 +19,7 @@ pub fn run() {
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
         .manage(BridgeState::default())
+        .manage(EvalCache::new(32))
         .invoke_handler(tauri::generate_handler![
             io_commands::open_asset_pack,
             io_commands::save_asset_pack,
@@ -36,6 +38,8 @@ pub fn run() {
             preview::evaluate_volume,
             preview::evaluate_voxel_preview,
             preview::evaluate_voxel_mesh,
+            preview::evaluate_grid_progressive,
+            preview::clear_eval_cache,
             bridge_commands::bridge_connect,
             bridge_commands::bridge_disconnect,
             bridge_commands::bridge_status,

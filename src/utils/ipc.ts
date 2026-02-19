@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 export interface AssetPackData {
   path: string;
@@ -112,6 +113,41 @@ export interface GridResponse {
 
 export async function evaluateGrid(request: GridRequest): Promise<GridResponse> {
   return invoke<GridResponse>("evaluate_grid", { request });
+}
+
+// ── Progressive grid evaluation (Phase 7) ──
+
+/**
+ * Evaluate a grid at progressively increasing resolutions (16 → 32 → 64 → target).
+ * Each intermediate result is emitted as a Tauri event (`eval_progressive_grid`).
+ *
+ * @param request  Same shape as GridRequest
+ * @param onStep   Callback invoked for each progressive result
+ * @returns A promise that resolves when all steps are complete
+ */
+export async function evaluateGridProgressive(
+  request: GridRequest,
+  onStep: (result: GridResponse) => void,
+): Promise<void> {
+  const unlisten: UnlistenFn = await listen<GridResponse>(
+    "eval_progressive_grid",
+    (event) => {
+      onStep(event.payload);
+    },
+  );
+
+  try {
+    await invoke("evaluate_grid_progressive", { request });
+  } finally {
+    unlisten();
+  }
+}
+
+// ── Cache management (Phase 7) ──
+
+/** Clear all Rust-side evaluation caches (grid + volume). */
+export async function clearEvalCache(): Promise<void> {
+  return invoke("clear_eval_cache");
 }
 
 export interface VolumeRequest {

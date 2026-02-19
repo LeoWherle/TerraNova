@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateInWorker, cancelEvaluation } from "@/utils/densityWorkerClient";
-import { evaluateGrid as evaluateGridRust } from "@/utils/ipc";
+import { evaluateGrid as evaluateGridRust, evaluateGridProgressive } from "@/utils/ipc";
 import { computeFidelityScore } from "@/utils/graphDiagnostics";
 import { useConfigStore } from "@/stores/configStore";
 
@@ -50,9 +50,9 @@ export function usePreviewEvaluation() {
 
       try {
         if (useRust) {
-          // ── Rust evaluator path (Tauri IPC) ──
+          // ── Rust evaluator path — progressive streaming via Tauri events ──
           const t0 = performance.now();
-          const result = await evaluateGridRust({
+          const gridRequest = {
             nodes: nodes.map((n) => ({
               id: n.id,
               type: n.type,
@@ -69,15 +69,21 @@ export function usePreviewEvaluation() {
             y_level: yLevel,
             root_node_id: selectedPreviewNodeId ?? outputNodeId ?? undefined,
             content_fields: contentFields,
+          };
+
+          await evaluateGridProgressive(gridRequest, (stepResult) => {
+            if (evalId === evalIdRef.current) {
+              const values = new Float32Array(stepResult.values);
+              setValues(values, stepResult.min_value, stepResult.max_value);
+            }
           });
+
           const elapsed = performance.now() - t0;
           if (import.meta.env.DEV) {
-            console.log(`[Rust eval] grid ${resolution}×${resolution} in ${elapsed.toFixed(1)}ms`);
+            console.log(`[Rust eval] progressive grid → ${resolution}×${resolution} in ${elapsed.toFixed(1)}ms`);
           }
 
           if (evalId === evalIdRef.current) {
-            const values = new Float32Array(result.values);
-            setValues(values, result.min_value, result.max_value);
             usePreviewStore.getState().setFidelityScore(computeFidelityScore(nodes));
           }
         } else {

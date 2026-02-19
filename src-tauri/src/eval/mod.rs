@@ -1,3 +1,4 @@
+pub mod cache;
 pub mod curves;
 pub mod graph;
 pub mod grid;

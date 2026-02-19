@@ -16,14 +16,13 @@
 
 use serde_json::{json, Value};
 use std::collections::HashMap;
+use terranova_lib::eval::cache::{hash_grid_request, hash_volume_request, EvalCache};
 use terranova_lib::eval::graph::{EvalGraph, GraphEdge, GraphNode, NodeData};
 use terranova_lib::eval::grid::{evaluate_grid, GridResult};
 use terranova_lib::eval::mesh::{build_voxel_meshes, VoxelMeshData};
 use terranova_lib::eval::nodes::{evaluate, EvalContext};
 use terranova_lib::eval::volume::{evaluate_volume, VolumeResult};
-use terranova_lib::eval::voxel::{
-    extract_surface_voxels, FluidConfig, VoxelMaterial, SOLID_THRESHOLD,
-};
+use terranova_lib::eval::voxel::{extract_surface_voxels, FluidConfig, VoxelMaterial};
 
 // ── Helpers ────────────────────────────────────────────────────────
 
@@ -1858,4 +1857,228 @@ fn full_pipeline_32_completes_quickly() {
         "Full pipeline 32x32x32 took {:?}",
         elapsed
     );
+}
+
+// ── Cache integration tests (Phase 7) ──────────────────────────────
+
+#[test]
+fn cache_grid_hit_returns_same_result() {
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(42.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let edges: Vec<GraphEdge> = vec![];
+    let cf = HashMap::new();
+
+    let graph = EvalGraph::from_raw(nodes.clone(), edges.clone(), Some("c")).unwrap();
+    let result = evaluate_grid(&graph, 16, -64.0, 64.0, 64.0, &cf);
+
+    let hash = hash_grid_request(&nodes, &edges, 16, -64.0, 64.0, 64.0, Some("c"), &cf);
+
+    let cache = EvalCache::new(8);
+    assert!(cache.get_grid(hash).is_none());
+
+    cache.put_grid(hash, result.clone());
+    let cached = cache.get_grid(hash).unwrap();
+
+    assert_eq!(cached.values.len(), result.values.len());
+    assert_eq!(cached.resolution, result.resolution);
+    assert!((cached.min_value - result.min_value).abs() < 1e-9);
+    assert!((cached.max_value - result.max_value).abs() < 1e-9);
+    for (a, b) in cached.values.iter().zip(result.values.iter()) {
+        assert!((a - b).abs() < 1e-9);
+    }
+}
+
+#[test]
+fn cache_volume_hit_returns_same_result() {
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(5.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let edges: Vec<GraphEdge> = vec![];
+    let cf = HashMap::new();
+
+    let graph = EvalGraph::from_raw(nodes.clone(), edges.clone(), Some("c")).unwrap();
+    let result = evaluate_volume(&graph, 8, -10.0, 10.0, 0.0, 64.0, 4, &cf);
+
+    let hash = hash_volume_request(&nodes, &edges, 8, -10.0, 10.0, 0.0, 64.0, 4, Some("c"), &cf);
+
+    let cache = EvalCache::new(8);
+    cache.put_volume(hash, result.clone());
+    let cached = cache.get_volume(hash).unwrap();
+
+    assert_eq!(cached.densities.len(), result.densities.len());
+    assert_eq!(cached.resolution, result.resolution);
+    assert_eq!(cached.y_slices, result.y_slices);
+}
+
+#[test]
+fn cache_miss_on_changed_field() {
+    let mut f1 = HashMap::new();
+    f1.insert("Value".to_string(), json!(42.0));
+    let mut f2 = HashMap::new();
+    f2.insert("Value".to_string(), json!(43.0));
+
+    let nodes1 = vec![make_node("c", "Constant", f1)];
+    let nodes2 = vec![make_node("c", "Constant", f2)];
+    let edges: Vec<GraphEdge> = vec![];
+    let cf = HashMap::new();
+
+    let graph1 = EvalGraph::from_raw(nodes1.clone(), edges.clone(), Some("c")).unwrap();
+    let result1 = evaluate_grid(&graph1, 8, -10.0, 10.0, 0.0, &cf);
+
+    let hash1 = hash_grid_request(&nodes1, &edges, 8, -10.0, 10.0, 0.0, Some("c"), &cf);
+    let hash2 = hash_grid_request(&nodes2, &edges, 8, -10.0, 10.0, 0.0, Some("c"), &cf);
+
+    assert_ne!(
+        hash1, hash2,
+        "different field values should produce different hashes"
+    );
+
+    let cache = EvalCache::new(8);
+    cache.put_grid(hash1, result1);
+    assert!(cache.get_grid(hash1).is_some());
+    assert!(cache.get_grid(hash2).is_none());
+}
+
+#[test]
+fn cache_miss_on_changed_resolution() {
+    let mut fields = HashMap::new();
+    fields.insert("Value".to_string(), json!(1.0));
+    let nodes = vec![make_node("c", "Constant", fields)];
+    let edges: Vec<GraphEdge> = vec![];
+    let cf = HashMap::new();
+
+    let hash_64 = hash_grid_request(&nodes, &edges, 64, -64.0, 64.0, 64.0, Some("c"), &cf);
+    let hash_128 = hash_grid_request(&nodes, &edges, 128, -64.0, 64.0, 64.0, Some("c"), &cf);
+
+    assert_ne!(hash_64, hash_128);
+}
+
+#[test]
+fn cache_miss_on_changed_edges() {
+    let nodes = vec![
+        make_node("a", "Constant", {
+            let mut f = HashMap::new();
+            f.insert("Value".to_string(), json!(10.0));
+            f
+        }),
+        make_node("b", "Constant", {
+            let mut f = HashMap::new();
+            f.insert("Value".to_string(), json!(20.0));
+            f
+        }),
+        make_node("s", "Sum", HashMap::new()),
+    ];
+    let edges1 = vec![make_edge("a", "s", Some("Inputs[0]"))];
+    let edges2 = vec![
+        make_edge("a", "s", Some("Inputs[0]")),
+        make_edge("b", "s", Some("Inputs[1]")),
+    ];
+    let cf = HashMap::new();
+
+    let h1 = hash_grid_request(&nodes, &edges1, 32, -64.0, 64.0, 64.0, Some("s"), &cf);
+    let h2 = hash_grid_request(&nodes, &edges2, 32, -64.0, 64.0, 64.0, Some("s"), &cf);
+
+    assert_ne!(
+        h1, h2,
+        "different edge sets should produce different hashes"
+    );
+}
+
+#[test]
+fn cache_lru_eviction_integration() {
+    let cache = EvalCache::new(2);
+    let cf = HashMap::new();
+
+    // Build 3 different graphs
+    for val in [1.0, 2.0, 3.0] {
+        let mut fields = HashMap::new();
+        fields.insert("Value".to_string(), json!(val));
+        let nodes = vec![make_node("c", "Constant", fields)];
+        let edges: Vec<GraphEdge> = vec![];
+        let graph = EvalGraph::from_raw(nodes.clone(), edges.clone(), Some("c")).unwrap();
+        let result = evaluate_grid(&graph, 4, -10.0, 10.0, 0.0, &cf);
+        let hash = hash_grid_request(&nodes, &edges, 4, -10.0, 10.0, 0.0, Some("c"), &cf);
+        cache.put_grid(hash, result);
+    }
+
+    // Capacity is 2, so the first entry (val=1.0) should be evicted
+    let mut f1 = HashMap::new();
+    f1.insert("Value".to_string(), json!(1.0));
+    let n1 = vec![make_node("c", "Constant", f1)];
+    let h1 = hash_grid_request(&n1, &[], 4, -10.0, 10.0, 0.0, Some("c"), &cf);
+    assert!(
+        cache.get_grid(h1).is_none(),
+        "first entry should be evicted"
+    );
+
+    // But the third entry (val=3.0) should still be present
+    let mut f3 = HashMap::new();
+    f3.insert("Value".to_string(), json!(3.0));
+    let n3 = vec![make_node("c", "Constant", f3)];
+    let h3 = hash_grid_request(&n3, &[], 4, -10.0, 10.0, 0.0, Some("c"), &cf);
+    assert!(
+        cache.get_grid(h3).is_some(),
+        "third entry should still be cached"
+    );
+}
+
+#[test]
+fn hash_deterministic_with_complex_graph() {
+    // Build a complex graph and verify hashing is deterministic
+    let nodes = vec![
+        make_node("noise", "SimplexNoise2D", {
+            let mut f = HashMap::new();
+            f.insert("Frequency".to_string(), json!(0.02));
+            f.insert("Amplitude".to_string(), json!(1.0));
+            f.insert("Seed".to_string(), json!("test_seed"));
+            f
+        }),
+        make_node("offset", "Constant", {
+            let mut f = HashMap::new();
+            f.insert("Value".to_string(), json!(64.0));
+            f
+        }),
+        make_node("sum", "Sum", HashMap::new()),
+    ];
+    let edges = vec![
+        make_edge("noise", "sum", Some("Inputs[0]")),
+        make_edge("offset", "sum", Some("Inputs[1]")),
+    ];
+    let mut cf = HashMap::new();
+    cf.insert("Terrain".to_string(), 1.0);
+
+    let h1 = hash_grid_request(&nodes, &edges, 128, -64.0, 64.0, 64.0, Some("sum"), &cf);
+    let h2 = hash_grid_request(&nodes, &edges, 128, -64.0, 64.0, 64.0, Some("sum"), &cf);
+
+    assert_eq!(
+        h1, h2,
+        "hashing should be deterministic for the same inputs"
+    );
+}
+
+#[test]
+fn cache_clear_removes_all_entries() {
+    let cache = EvalCache::new(8);
+    let cf = HashMap::new();
+
+    for val in [10.0, 20.0, 30.0] {
+        let mut fields = HashMap::new();
+        fields.insert("Value".to_string(), json!(val));
+        let nodes = vec![make_node("c", "Constant", fields)];
+        let graph = EvalGraph::from_raw(nodes.clone(), vec![], Some("c")).unwrap();
+
+        let grid_result = evaluate_grid(&graph, 4, -10.0, 10.0, 0.0, &cf);
+        let grid_hash = hash_grid_request(&nodes, &[], 4, -10.0, 10.0, 0.0, Some("c"), &cf);
+        cache.put_grid(grid_hash, grid_result);
+
+        let vol_result = evaluate_volume(&graph, 4, -10.0, 10.0, 0.0, 64.0, 2, &cf);
+        let vol_hash =
+            hash_volume_request(&nodes, &[], 4, -10.0, 10.0, 0.0, 64.0, 2, Some("c"), &cf);
+        cache.put_volume(vol_hash, vol_result);
+    }
+
+    assert_eq!(cache.len(), 6);
+    cache.clear();
+    assert_eq!(cache.len(), 0);
 }
