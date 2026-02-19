@@ -1,5 +1,6 @@
 use crate::eval::graph::{EvalGraph, GraphEdge, GraphNode};
 use crate::eval::grid::GridResult;
+use crate::eval::material::{VoxelPreviewRequest, VoxelPreviewResult};
 use crate::eval::nodes::{evaluate, EvalContext};
 use crate::eval::volume::VolumeResult;
 use crate::noise::evaluator::DensityEvaluator;
@@ -152,6 +153,25 @@ pub fn evaluate_volume(request: VolumeRequest) -> Result<VolumeResult, String> {
         request.y_max,
         request.y_slices,
         &request.content_fields.unwrap_or_default(),
+    ))
+}
+
+// ── Combined voxel preview (Phase 5) ───────────────────────────────
+
+/// Evaluate both density volume and material graph in one IPC call.
+/// Runs density evaluation first, then (if material nodes are present)
+/// evaluates the material graph over the resulting volume.
+#[tauri::command]
+pub fn evaluate_voxel_preview(request: VoxelPreviewRequest) -> Result<VoxelPreviewResult, String> {
+    let (graph_nodes, graph_edges) = parse_raw_graph(request.nodes.clone(), request.edges.clone())?;
+    let density_graph =
+        EvalGraph::from_raw(graph_nodes, graph_edges, request.root_node_id.as_deref())?;
+    let content_fields = request.content_fields.clone().unwrap_or_default();
+
+    Ok(crate::eval::material::evaluate_voxel_preview(
+        &request,
+        &density_graph,
+        &content_fields,
     ))
 }
 

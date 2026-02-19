@@ -139,6 +139,44 @@ export async function evaluateVolume(request: VolumeRequest): Promise<VolumeResp
   return invoke<VolumeResponse>("evaluate_volume", { request });
 }
 
+// ── Combined voxel preview (Phase 5) ──
+
+export interface MaterialEntry {
+  name: string;
+  color: string;
+  roughness: number;
+  metalness: number;
+  emissive: string;
+  emissive_intensity: number;
+}
+
+export interface VoxelPreviewRequest {
+  nodes: unknown[];
+  edges: unknown[];
+  resolution: number;
+  range_min: number;
+  range_max: number;
+  y_min: number;
+  y_max: number;
+  y_slices: number;
+  root_node_id?: string;
+  content_fields?: Record<string, number>;
+}
+
+export interface VoxelPreviewResponse {
+  densities: number[];
+  resolution: number;
+  y_slices: number;
+  min_value: number;
+  max_value: number;
+  material_ids: number[] | null;
+  palette: MaterialEntry[] | null;
+}
+
+export async function evaluateVoxelPreview(request: VoxelPreviewRequest): Promise<VoxelPreviewResponse> {
+  return invoke<VoxelPreviewResponse>("evaluate_voxel_preview", { request });
+}
+
 export async function validateAssetPack(path: string): Promise<ValidationResult> {
   return invoke<ValidationResult>("validate_asset_pack", { path });
 }

@@ -1,6 +1,7 @@
 pub mod curves;
 pub mod graph;
 pub mod grid;
+pub mod material;
 pub mod nodes;
 pub mod noise;
 pub mod vectors;

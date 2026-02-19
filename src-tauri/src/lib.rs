@@ -34,6 +34,7 @@ pub fn run() {
             preview::evaluate_points,
             preview::evaluate_grid,
             preview::evaluate_volume,
+            preview::evaluate_voxel_preview,
             bridge_commands::bridge_connect,
             bridge_commands::bridge_disconnect,
             bridge_commands::bridge_status,

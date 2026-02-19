@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { usePreviewStore } from "@/stores/previewStore";
 import { useEditorStore } from "@/stores/editorStore";
 import { evaluateVolumeInWorker, cancelVolumeEvaluation } from "@/utils/volumeWorkerClient";
-import { evaluateVolume as evaluateVolumeRust } from "@/utils/ipc";
+import { evaluateVoxelPreview as evaluateVoxelPreviewRust } from "@/utils/ipc";
 import { extractSurfaceVoxels, type FluidConfig } from "@/utils/voxelExtractor";
 import { resolveMaterials, DEFAULT_MATERIAL_PALETTE, matchMaterialName } from "@/utils/materialResolver";
 import { evaluateMaterialGraph } from "@/utils/materialEvaluator";
@@ -111,10 +111,15 @@ export function useVoxelEvaluation() {
 
           let result: { densities: Float32Array; resolution: number; ySlices: number; minValue: number; maxValue: number };
 
+          // Track whether Rust provided material data (skip JS material eval if so)
+          let rustMaterialIds: Uint8Array | undefined;
+          let rustPalette: typeof palette | undefined;
+
           if (useRust) {
             // ── Rust evaluator path (Tauri IPC) ──
+            // Uses combined density + material evaluation in a single IPC call
             const t0 = performance.now();
-            const rustResult = await evaluateVolumeRust({
+            const rustResult = await evaluateVoxelPreviewRust({
               nodes: nodes.map((n) => ({
                 id: n.id,
                 type: n.type,
@@ -136,7 +141,8 @@ export function useVoxelEvaluation() {
             });
             const elapsed = performance.now() - t0;
             if (import.meta.env.DEV) {
-              console.log(`[Rust eval] volume ${res}×${rustResult.y_slices}×${res} in ${elapsed.toFixed(1)}ms`);
+              const hasMats = rustResult.material_ids != null;
+              console.log(`[Rust eval] volume ${res}×${rustResult.y_slices}×${res} in ${elapsed.toFixed(1)}ms (materials: ${hasMats})`);
             }
             result = {
               densities: new Float32Array(rustResult.densities),
@@ -145,6 +151,19 @@ export function useVoxelEvaluation() {
               minValue: rustResult.min_value,
               maxValue: rustResult.max_value,
             };
+
+            // Capture Rust-provided material data if present
+            if (rustResult.material_ids && rustResult.palette) {
+              rustMaterialIds = new Uint8Array(rustResult.material_ids);
+              rustPalette = rustResult.palette.map((m) => ({
+                name: m.name,
+                color: m.color,
+                roughness: m.roughness,
+                metalness: m.metalness,
+                emissive: m.emissive,
+                emissiveIntensity: m.emissive_intensity,
+              }));
+            }
           } else {
             // ── JS Worker path (unchanged) ──
             const t0 = performance.now();
@@ -200,38 +219,44 @@ export function useVoxelEvaluation() {
           let palette = DEFAULT_MATERIAL_PALETTE;
 
           if (showMaterialColors) {
-            // Check if there's a material graph to evaluate
-            const hasMaterialGraph = nodes.some(n =>
-              typeof n.type === 'string' && n.type.startsWith('Material:')
-            );
-
-            if (hasMaterialGraph) {
-              const densityCtx = createEvaluationContext(nodes, edges,
-                selectedPreviewNodeId ?? outputNodeId ?? undefined,
-                { contentFields });
-              const matResult = evaluateMaterialGraph(
-                nodes, edges, result.densities,
-                result.resolution, result.ySlices,
-                rangeMin, rangeMax, voxelYMin, voxelYMax,
-                densityCtx ?? undefined,
+            // If Rust already provided material data, use it directly
+            if (rustMaterialIds && rustPalette) {
+              materialIds = rustMaterialIds;
+              palette = rustPalette;
+            } else {
+              // Check if there's a material graph to evaluate (JS path)
+              const hasMaterialGraph = nodes.some(n =>
+                typeof n.type === 'string' && n.type.startsWith('Material:')
               );
-              if (matResult) {
+
+              if (hasMaterialGraph) {
+                const densityCtx = createEvaluationContext(nodes, edges,
+                  selectedPreviewNodeId ?? outputNodeId ?? undefined,
+                  { contentFields });
+                const matResult = evaluateMaterialGraph(
+                  nodes, edges, result.densities,
+                  result.resolution, result.ySlices,
+                  rangeMin, rangeMax, voxelYMin, voxelYMax,
+                  densityCtx ?? undefined,
+                );
+                if (matResult) {
+                  materialIds = matResult.materialIds;
+                  palette = matResult.palette;
+                }
+              }
+
+              // Fallback: no material graph or evaluation returned null
+              if (!materialIds) {
+                const matResult = resolveMaterials(
+                  result.densities,
+                  result.resolution,
+                  result.ySlices,
+                  undefined,
+                  materialConfig ?? undefined,
+                );
                 materialIds = matResult.materialIds;
                 palette = matResult.palette;
               }
-            }
-
-            // Fallback: no material graph or evaluation returned null
-            if (!materialIds) {
-              const matResult = resolveMaterials(
-                result.densities,
-                result.resolution,
-                result.ySlices,
-                undefined,
-                materialConfig ?? undefined,
-              );
-              materialIds = matResult.materialIds;
-              palette = matResult.palette;
             }
           }
 
