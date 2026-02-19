@@ -1,6 +1,6 @@
 mod bridge;
 mod commands;
-mod eval;
+pub mod eval;
 mod io;
 mod noise;
 mod schema;

@@ -32,6 +32,13 @@ tokio = { version = "1", features = ["rt-multi-thread"] }
 sysinfo = "0.33"
 rayon = "1.10"
 
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+
+[[bench]]
+name = "eval_bench"
+harness = false
+
 [profile.release]
 panic = "abort"
 codegen-units = 1
