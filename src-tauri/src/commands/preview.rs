@@ -1,3 +1,5 @@
+use crate::eval::graph::{EvalGraph, GraphEdge, GraphNode};
+use crate::eval::nodes::{evaluate, EvalContext};
 use crate::noise::evaluator::DensityEvaluator;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -69,7 +71,28 @@ pub fn evaluate_points(
     root_node_id: Option<String>,
     content_fields: Option<HashMap<String, f64>>,
 ) -> Result<Vec<f64>, String> {
-    // Phase 1 will implement this
-    let _ = (nodes, edges, points, root_node_id, content_fields);
-    Err("Not yet implemented — will be wired up in Phase 1".into())
+    // Deserialize into our graph types
+    let graph_nodes: Vec<GraphNode> = nodes
+        .into_iter()
+        .map(|v| serde_json::from_value(v).map_err(|e| e.to_string()))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let graph_edges: Vec<GraphEdge> = edges
+        .into_iter()
+        .map(|v| serde_json::from_value(v).map_err(|e| e.to_string()))
+        .collect::<Result<Vec<_>, _>>()?;
+
+    let graph = EvalGraph::from_raw(graph_nodes, graph_edges, root_node_id.as_deref())?;
+
+    let mut ctx = EvalContext::new(&graph, content_fields.unwrap_or_default());
+
+    let results: Vec<f64> = points
+        .iter()
+        .map(|[x, y, z]| {
+            ctx.clear_memo();
+            evaluate(&mut ctx, &graph.root_id, *x, *y, *z)
+        })
+        .collect();
+
+    Ok(results)
 }
